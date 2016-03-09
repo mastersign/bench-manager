@@ -14,14 +14,14 @@ namespace Mastersign.Bench
         /// </remarks>
         public Regex GroupVariablePattern { get; set; }
 
-        public IGroupedPropertySource ValueSource { get; set; }
+        public IGroupedPropertyCollection ValueSource { get; set; }
 
         public GroupedVariableResolver()
         {
             GroupVariablePattern = DefaultGroupVariablePattern;
         }
 
-        public GroupedVariableResolver(IGroupedPropertySource valueSource)
+        public GroupedVariableResolver(IGroupedPropertyCollection valueSource)
         {
             ValueSource = valueSource;
         }
@@ -35,7 +35,7 @@ namespace Mastersign.Bench
                 {
                     var g = m.Groups["group"].Value;
                     var n = m.Groups["name"].Value;
-                    return ValueSource.GetStringValue(g, n, string.Format("#{0}:{1}#", g, n));
+                    return ValueSource.GetStringGroupValue(g, n, string.Format("#{0}:{1}#", g, n));
                 });
             }
             return value;

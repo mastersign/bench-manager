@@ -14,14 +14,14 @@ namespace Mastersign.Bench
         /// </remarks>
         public Regex VariablePattern { get; set; }
 
-        public IPropertySource ValueSource { get; set; }
+        public IPropertyCollection ValueSource { get; set; }
 
         public VariableResolver()
         {
             VariablePattern = DefaultVariablePattern;
         }
 
-        public VariableResolver(IPropertySource valueSource)
+        public VariableResolver(IPropertyCollection valueSource)
         {
             ValueSource = valueSource;
         }

@@ -6,24 +6,14 @@ namespace Mastersign.Bench
 {
     public interface IGroupedPropertySource
     {
-        IEnumerable<string> Groups();
+        object GetGroupValue(string group, string name);
 
-        string GetGroupCategory(string group);
+        string GetStringGroupValue(string group, string name);
 
-        IEnumerable<string> GroupsByCategory(string category);
+        string[] GetStringListGroupValue(string group, string name);
 
-        IEnumerable<string> PropertyNames(string group);
+        bool GetBooleanGroupValue(string group, string name);
 
-        object GetValue(string group, string name, object def);
-
-        string GetStringValue(string group, string name, string def = "");
-
-        bool GetBooleanValue(string group, string name, bool def = false);
-
-        string[] GetStringListValue(string group, string name, string[] def = null);
-
-        bool ContainsGroup(string group);
-
-        bool ContainsValue(string group, string name);
+        bool CanGetGroupValue(string group, string name);
     }
 }

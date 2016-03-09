@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public class ResolvingPropertyCollection : PropertyCollection
+    public class ResolvingPropertyCollection : GroupedPropertyCollection
     {
         private readonly List<IValueResolver> resolvers = new List<IValueResolver>();
 

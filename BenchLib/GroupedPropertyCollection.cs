@@ -5,12 +5,16 @@ using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
-    public class PropertyCollection : IPropertyTarget, IGroupedPropertyTarget, IPropertySource, IGroupedPropertySource
+    public class GroupedPropertyCollection : IPropertyTarget, IGroupedPropertyTarget, IPropertyCollection, IGroupedPropertyCollection
     {
         private readonly List<string> groupNames = new List<string>(); // ordered list for group names
         private readonly Dictionary<string, string> groupCategories = new Dictionary<string, string>();
         private readonly Dictionary<string, List<string>> groupKeys = new Dictionary<string, List<string>>(); // ordered lists for property names
         private readonly Dictionary<string, Dictionary<string, object>> groups = new Dictionary<string, Dictionary<string, object>>();
+
+        public IPropertySource DefaultValueSource { get; set; }
+
+        public IGroupedPropertySource GroupedDefaultValueSource { get; set; }
 
         public void Clear()
         {
@@ -46,13 +50,25 @@ namespace Mastersign.Bench
             return groups.ContainsKey(group);
         }
 
-        public bool ContainsValue(string name) { return ContainsValue(null, name); }
+        public bool ContainsValue(string name) { return ContainsGroupValue(null, name); }
 
-        public bool ContainsValue(string group, string name)
+        public bool ContainsGroupValue(string group, string name)
         {
             group = group ?? string.Empty;
             Dictionary<string, object> g;
             return groups.TryGetValue(group, out g) && g.ContainsKey(name);
+        }
+
+        public bool CanGetValue(string name)
+        {
+            return ContainsGroupValue(null, name)
+                || DefaultValueSource != null && DefaultValueSource.CanGetValue(name);
+        }
+
+        public bool CanGetGroupValue(string group, string name)
+        {
+            return ContainsGroupValue(group, name)
+                || GroupedDefaultValueSource != null && GroupedDefaultValueSource.CanGetGroupValue(group, name);
         }
 
         public void SetValue(string name, string value) { SetValue(null, name, value); }
@@ -129,49 +145,81 @@ namespace Mastersign.Bench
                 }
             }
             found = false;
+            if (groupName == string.Empty)
+            {
+                if (DefaultValueSource != null)
+                    return DefaultValueSource.GetValue(propertyName);
+            }
+            else
+            {
+                if (GroupedDefaultValueSource != null)
+                    return GroupedDefaultValueSource.GetGroupValue(groupName, propertyName);
+            }
             return def;
         }
 
-        public object GetRawValue(string name, object def = null) { return GetRawValue(null, name, def); }
+        public object GetRawValue(string name) { return GetRawGroupValue(null, name); }
 
-        public object GetRawValue(string group, string name, object def = null)
+        public object GetRawGroupValue(string group, string name)
         {
             bool found;
-            return InternalGetValue(group, name, out found, def);
+            return InternalGetValue(group, name, out found, null);
         }
 
-        public object GetValue(string name, object def = null) { return GetValue(null, name, def); }
+        public object GetValue(string name) { return GetGroupValue(null, name, null); }
 
-        public object GetValue(string group, string name, object def = null)
+        public object GetValue(string name, object def) { return GetGroupValue(null, name, def); }
+
+        public object GetGroupValue(string group, string name) { return GetGroupValue(group, name, null); }
+
+        public object GetGroupValue(string group, string name, object def)
         {
-            var value = GetRawValue(group, name, def);
+            bool found;
+            var value = InternalGetValue(group, name, out found, def);
             if (value is string) value = ResolveValue(group, name, (string)value);
             if (value is string[]) value = ResolveListValue(group, name, (string[])value);
             return value;
         }
 
-        public string GetStringValue(string name, string def = "") { return GetStringValue(null, name, def); }
+        public string GetStringValue(string name) { return GetStringGroupValue(null, name, null); }
 
-        public string GetStringValue(string group, string name, string def = "")
+        public string GetStringValue(string name, string def) { return GetStringGroupValue(null, name, def); }
+
+        public string GetStringGroupValue(string group, string name) { return GetStringGroupValue(group, name, null); }
+
+        public string GetStringGroupValue(string group, string name, string def)
         {
             bool found;
             var value = InternalGetValue(group, name, out found, def) as string;
-            return found ? ResolveValue(group, name, value) : value;
+            return (found ? ResolveValue(group, name, value) : value) ?? string.Empty;
         }
 
-        public string[] GetStringListValue(string name, string[] def = null) { return GetStringListValue(null, name, def); }
+        public string[] GetStringListValue(string name) { return GetStringListGroupValue(null, name, null); }
 
-        public string[] GetStringListValue(string group, string name, string[] def = null)
+        public string[] GetStringListValue(string name, string[] def) { return GetStringListGroupValue(null, name, def); }
+
+        public string[] GetStringListGroupValue(string group, string name) { return GetStringListGroupValue(group, name, null); }
+
+        public string[] GetStringListGroupValue(string group, string name, string[] def)
         {
             bool found;
             var value = InternalGetValue(group, name, out found, def);
             if (value is string) value = new string[] { (string)value };
-            return found ? ResolveListValue(group, name, value as string[]) : def ?? new string[0];
+            return (found ? ResolveListValue(group, name, value as string[]) : def) ?? new string[0];
         }
 
-        public bool GetBooleanValue(string name, bool def = false) { return GetBooleanValue(null, name, def); }
+        public bool GetBooleanValue(string name) { return GetBooleanGroupValue(null, name); }
 
-        public bool GetBooleanValue(string group, string name, bool def = false)
+        public bool GetBooleanValue(string name, bool def) { return GetBooleanGroupValue(null, name, def); }
+
+        public bool GetBooleanGroupValue(string group, string name)
+        {
+            bool found;
+            var value = InternalGetValue(group, name, out found, null);
+            return value is bool ? (bool)value : false;
+        }
+
+        public bool GetBooleanGroupValue(string group, string name, bool def)
         {
             bool found;
             var value = InternalGetValue(group, name, out found, def);
