@@ -4,24 +4,18 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    interface IPropertySource
+    public interface IPropertySource
     {
-        IEnumerable<string> Groups();
-
-        string GetGroupCategory(string group);
-
-        IEnumerable<string> GroupsByCategory(string category);
-
-        IEnumerable<string> PropertyNames(string group = null);
+        IEnumerable<string> PropertyNames();
 
         object GetValue(string name, object def);
 
-        object GetValue(string group, string name, object def);
+        string GetStringValue(string name, string def = "");
 
-        bool ContainsGroup(string group);
+        bool GetBooleanValue(string name, bool def = false);
+
+        string[] GetStringListValue(string name, string[] def = null);
 
         bool ContainsValue(string name);
-
-        bool ContainsValue(string group, string name);
     }
 }

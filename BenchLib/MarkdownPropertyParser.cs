@@ -97,7 +97,7 @@ namespace Mastersign.Bench
 
         public Regex GroupEndCue { get; set; }
 
-        public IPropertyTarget Target { get; set; }
+        public IGroupedPropertyTarget Target { get; set; }
 
         public MarkdownPropertyParser()
         {
@@ -108,7 +108,7 @@ namespace Mastersign.Bench
             GroupEndCue = DefaultGroupEndCue;
         }
 
-        public MarkdownPropertyParser(IPropertyTarget target)
+        public MarkdownPropertyParser(IGroupedPropertyTarget target)
             : this()
         {
             Target = target;

@@ -4,8 +4,8 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public interface IPropertyTarget
+    public interface IValueResolver
     {
-        void SetValue(string name, object value);
+        string ResolveValue(string group, string name, string value);
     }
 }

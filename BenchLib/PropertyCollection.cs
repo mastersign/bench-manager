@@ -5,31 +5,12 @@ using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
-    public class PropertyCollection : IPropertyTarget, IPropertySource
+    public class PropertyCollection : IPropertyTarget, IGroupedPropertyTarget, IPropertySource, IGroupedPropertySource
     {
-        private static readonly Regex DefaultVariablePattern = new Regex("\\$(?<name>[\\S]+?)\\$");
-        private static readonly Regex DefaultGroupVariablePattern = new Regex("\\$(?<group>[\\S]+?):(?<name>[\\S]+?)\\$");
-
-        private List<string> groupNames = new List<string>(); // ordered list for group names
-        private Dictionary<string, string> groupCategories = new Dictionary<string, string>();
-        private Dictionary<string, List<string>> groupKeys = new Dictionary<string, List<string>>(); // ordered lists for property names
-        private Dictionary<string, Dictionary<string, object>> groups = new Dictionary<string, Dictionary<string, object>>();
-
-        /// <remarks>
-        /// The regular expression needs a named group with name <c>name</c>'.
-        /// </remarks>
-        public Regex VariablePattern { get; set; }
-
-        /// <remarks>
-        /// The regular expression needs two named groups with names <c>group</c> and <c>name</c>.
-        /// </remarks>
-        public Regex GroupVariablePattern { get; set; }
-
-        public PropertyCollection()
-        {
-            VariablePattern = DefaultVariablePattern;
-            GroupVariablePattern = DefaultGroupVariablePattern;
-        }
+        private readonly List<string> groupNames = new List<string>(); // ordered list for group names
+        private readonly Dictionary<string, string> groupCategories = new Dictionary<string, string>();
+        private readonly Dictionary<string, List<string>> groupKeys = new Dictionary<string, List<string>>(); // ordered lists for property names
+        private readonly Dictionary<string, Dictionary<string, object>> groups = new Dictionary<string, Dictionary<string, object>>();
 
         public void Clear()
         {
@@ -164,8 +145,8 @@ namespace Mastersign.Bench
         public object GetValue(string group, string name, object def = null)
         {
             var value = GetRawValue(group, name, def);
-            if (value is string) value = ResolveValue((string)value);
-            if (value is string[]) value = ResolveListValue((string[])value);
+            if (value is string) value = ResolveValue(group, name, (string)value);
+            if (value is string[]) value = ResolveListValue(group, name, (string[])value);
             return value;
         }
 
@@ -175,7 +156,7 @@ namespace Mastersign.Bench
         {
             bool found;
             var value = InternalGetValue(group, name, out found, def) as string;
-            return found ? ResolveValue(value) : value;
+            return found ? ResolveValue(group, name, value) : value;
         }
 
         public string[] GetStringListValue(string name, string[] def = null) { return GetStringListValue(null, name, def); }
@@ -185,7 +166,7 @@ namespace Mastersign.Bench
             bool found;
             var value = InternalGetValue(group, name, out found, def);
             if (value is string) value = new string[] { (string)value };
-            return found ? ResolveListValue(value as string[]) : def ?? new string[0];
+            return found ? ResolveListValue(group, name, value as string[]) : def ?? new string[0];
         }
 
         public bool GetBooleanValue(string name, bool def = false) { return GetBooleanValue(null, name, def); }
@@ -197,36 +178,18 @@ namespace Mastersign.Bench
             return value is bool ? (bool)value : def;
         }
 
-        private string ResolveValue(string value)
+        protected virtual string ResolveValue(string group, string name, string value)
         {
-            if (value == null) return null;
-            if (GroupVariablePattern != null)
-            {
-                value = GroupVariablePattern.Replace(value, m =>
-                {
-                    var group = m.Groups["group"].Value;
-                    var name = m.Groups["name"].Value;
-                    return GetStringValue(group, name, string.Format("#{0}:{1}#", group, name));
-                });
-            }
-            if (VariablePattern != null)
-            {
-                value = VariablePattern.Replace(value, m =>
-                {
-                    var name = m.Groups["name"].Value;
-                    return GetStringValue(name, string.Format("#{0}#", name));
-                });
-            }
             return value;
         }
 
-        private string[] ResolveListValue(string[] value)
+        private string[] ResolveListValue(string group, string name, string[] value)
         {
             if (value == null) return null;
             var result = new string[value.Length];
             for (int i = 0; i < value.Length; i++)
             {
-                result[i] = ResolveValue(value[i]);
+                result[i] = ResolveValue(group, name, value[i]);
             }
             return result;
         }
@@ -250,23 +213,29 @@ namespace Mastersign.Bench
             }
         }
 
-        public IEnumerable<string> PropertyNames(string group = null)
+        public IEnumerable<string> PropertyNames()
+        {
+            List<string> keys;
+            return groupKeys.TryGetValue(string.Empty, out keys) ? keys : (IEnumerable<string>)new string[0];
+        }
+
+        public IEnumerable<string> PropertyNames(string group)
         {
             group = group ?? string.Empty;
             List<string> keys;
             return groupKeys.TryGetValue(group, out keys) ? keys : (IEnumerable<string>)new string[0];
         }
 
-        private string FormatValue(object val)
+        private string FormatValue(string group, string name, object val)
         {
             if (val is string)
             {
-                val = ResolveValue((string)val);
+                val = ResolveValue(group, name, (string)val);
                 return string.Format("'{0}'", val);
             }
             if (val is string[])
             {
-                var strings = ResolveListValue((string[])val);
+                var strings = ResolveListValue(group, name, (string[])val);
                 for (int i = 0; i < strings.Length; i++)
                 {
                     strings[i] = string.Format("'{0}'", strings[i]);
@@ -301,7 +270,7 @@ namespace Mastersign.Bench
                 foreach (var k in groupKeys[gk])
                 {
                     if (gk.Length > 0) sb.Append("  ");
-                    sb.AppendLine(string.Format("- {0} = {1}", k, FormatValue(group[k])));
+                    sb.AppendLine(string.Format("- {0} = {1}", k, FormatValue(gk, k, group[k])));
                 }
             }
             return sb.ToString();
