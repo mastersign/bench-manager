@@ -8,6 +8,15 @@ namespace Mastersign.Bench
     {
         public IGroupedPropertySource AppIndex { get; set; }
 
+        public AppIndexDefaultValueSource()
+        {
+        }
+
+        public AppIndexDefaultValueSource(IGroupedPropertySource appIndex)
+        {
+            AppIndex = appIndex;
+        }
+
         public object GetGroupValue(string group, string name)
         {
             throw new NotImplementedException();
