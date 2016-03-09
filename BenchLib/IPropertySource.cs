@@ -8,12 +8,6 @@ namespace Mastersign.Bench
     {
         object GetValue(string name);
 
-        string GetStringValue(string name);
-
-        string[] GetStringListValue(string name);
-
-        bool GetBooleanValue(string name);
-
         bool CanGetValue(string name);
     }
 }

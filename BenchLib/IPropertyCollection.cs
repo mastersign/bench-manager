@@ -10,12 +10,6 @@ namespace Mastersign.Bench
 
         object GetValue(string name, object def);
 
-        string GetStringValue(string name, string def);
-
-        string[] GetStringListValue(string name, string[] def);
-
-        bool GetBooleanValue(string name, bool def);
-
         bool ContainsValue(string name);
     }
 }

@@ -17,14 +17,14 @@ namespace Mastersign.Bench
         private static readonly string HtmlCommentEnd = "-->";
         private static readonly Regex MdListExp = new Regex("^[\\*\\+-]\\s+(?<key>[a-zA-Z][a-zA-Z0-9]*?)\\s*:\\s*(?<value>.*?)\\s*$");
 
-        private static readonly Regex ListValueExp = new Regex("^`.*?`(?:\\s*,\\s*`.*?`)*$");
+        private static readonly Regex ListValueExp = new Regex("^`.*?`(?:\\s*,\\s*`.*?`)+$");
         private static readonly Regex BooleanValueExp = new Regex("^true|false$", RegexOptions.IgnoreCase);
         private static readonly Regex TrueValueExp = new Regex("^true$", RegexOptions.IgnoreCase);
 
-        private static readonly Regex DefaultGroupBeginCue = new Regex("^[\\*\\+-]\\s+ID:\\s*`(?<group>\\S+?)`$");
+        private static readonly Regex DefaultGroupBeginCue = new Regex("^###\\s+(?<category>.+?)\\s*(?:\\{.*?\\})?\\s*(?:###)?$");
         private static readonly Regex DefaultGroupEndCue = new Regex("^\\s*$");
 
-        private static readonly Regex DefaultCategoryCue = new Regex("^##\\s+(?<category>.+)\\s*(?:\\{.*?\\})?\\s*(?:##)?$");
+        private static readonly Regex DefaultCategoryCue = new Regex("^##\\s+(?<category>.+?)\\s*(?:\\{.*?\\})?\\s*(?:##)?$");
 
         private static bool IsYamlHeaderStart(int lineNo, string line)
         {

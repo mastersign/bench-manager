@@ -8,12 +8,6 @@ namespace Mastersign.Bench
     {
         object GetGroupValue(string group, string name);
 
-        string GetStringGroupValue(string group, string name);
-
-        string[] GetStringListGroupValue(string group, string name);
-
-        bool GetBooleanGroupValue(string group, string name);
-
         bool CanGetGroupValue(string group, string name);
     }
 }

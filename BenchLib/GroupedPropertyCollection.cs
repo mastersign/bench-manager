@@ -140,20 +140,26 @@ namespace Mastersign.Bench
                     if (value != null)
                     {
                         found = true;
-                        return value;
+                        return ResolveGroupValue(groupName, propertyName, value);
                     }
                 }
             }
             found = false;
             if (groupName == string.Empty)
             {
-                if (DefaultValueSource != null)
+                if (DefaultValueSource != null &&
+                    DefaultValueSource.CanGetValue(propertyName))
+                {
                     return DefaultValueSource.GetValue(propertyName);
+                }
             }
             else
             {
-                if (GroupedDefaultValueSource != null)
+                if (GroupedDefaultValueSource != null &&
+                    GroupedDefaultValueSource.CanGetGroupValue(groupName, propertyName))
+                {
                     return GroupedDefaultValueSource.GetGroupValue(groupName, propertyName);
+                }
             }
             return def;
         }
@@ -175,10 +181,7 @@ namespace Mastersign.Bench
         public object GetGroupValue(string group, string name, object def)
         {
             bool found;
-            var value = InternalGetValue(group, name, out found, def);
-            if (value is string) value = ResolveValue(group, name, (string)value);
-            if (value is string[]) value = ResolveListValue(group, name, (string[])value);
-            return value;
+            return InternalGetValue(group, name, out found, def);
         }
 
         public string GetStringValue(string name) { return GetStringGroupValue(null, name, null); }
@@ -190,8 +193,7 @@ namespace Mastersign.Bench
         public string GetStringGroupValue(string group, string name, string def)
         {
             bool found;
-            var value = InternalGetValue(group, name, out found, def) as string;
-            return (found ? ResolveValue(group, name, value) : value) ?? string.Empty;
+            return InternalGetValue(group, name, out found, def) as string;
         }
 
         public string[] GetStringListValue(string name) { return GetStringListGroupValue(null, name, null); }
@@ -205,19 +207,14 @@ namespace Mastersign.Bench
             bool found;
             var value = InternalGetValue(group, name, out found, def);
             if (value is string) value = new string[] { (string)value };
-            return (found ? ResolveListValue(group, name, value as string[]) : def) ?? new string[0];
+            return value as string[];
         }
 
         public bool GetBooleanValue(string name) { return GetBooleanGroupValue(null, name); }
 
         public bool GetBooleanValue(string name, bool def) { return GetBooleanGroupValue(null, name, def); }
 
-        public bool GetBooleanGroupValue(string group, string name)
-        {
-            bool found;
-            var value = InternalGetValue(group, name, out found, null);
-            return value is bool ? (bool)value : false;
-        }
+        public bool GetBooleanGroupValue(string group, string name) { return GetBooleanGroupValue(group, name, false); }
 
         public bool GetBooleanGroupValue(string group, string name, bool def)
         {
@@ -226,20 +223,9 @@ namespace Mastersign.Bench
             return value is bool ? (bool)value : def;
         }
 
-        protected virtual string ResolveValue(string group, string name, string value)
+        protected virtual object ResolveGroupValue(string group, string name, object value)
         {
             return value;
-        }
-
-        private string[] ResolveListValue(string group, string name, string[] value)
-        {
-            if (value == null) return null;
-            var result = new string[value.Length];
-            for (int i = 0; i < value.Length; i++)
-            {
-                result[i] = ResolveValue(group, name, value[i]);
-            }
-            return result;
         }
 
         public IEnumerable<string> Groups()
@@ -276,23 +262,23 @@ namespace Mastersign.Bench
 
         private string FormatValue(string group, string name, object val)
         {
+            val = ResolveGroupValue(group, name, val);
             if (val is string)
             {
-                val = ResolveValue(group, name, (string)val);
-                return string.Format("'{0}'", val);
+                return string.Format("`{0}`", val);
             }
             if (val is string[])
             {
-                var strings = ResolveListValue(group, name, (string[])val);
+                var strings = (string[])val;
                 for (int i = 0; i < strings.Length; i++)
                 {
-                    strings[i] = string.Format("'{0}'", strings[i]);
+                    strings[i] = string.Format("`{0}`", strings[i]);
                 }
                 return string.Join(", ", strings);
             }
             if (val is bool)
             {
-                return (bool)val ? "True" : "False";
+                return (bool)val ? "`true`" : "`false`";
             }
             return "UNKNOWN";
         }
@@ -300,6 +286,7 @@ namespace Mastersign.Bench
         public override string ToString()
         {
             var sb = new StringBuilder();
+            string lastCategory = null;
             foreach (var gk in groupNames)
             {
                 if (gk.Length > 0)
@@ -307,21 +294,28 @@ namespace Mastersign.Bench
                     var c = GetGroupCategory(gk);
                     if (c != null)
                     {
-                        sb.AppendLine(string.Format("# Group '{0}' [{1}]", gk, c));
+                        if (c != lastCategory)
+                        {
+                            lastCategory = c;
+                            sb.AppendLine();
+                            sb.AppendLine("## " + c);
+                        }
+                        sb.AppendLine();
+                        sb.AppendLine("### " + gk);
                     }
                     else
                     {
-                        sb.AppendLine(string.Format("# Group '{0}'", gk));
+                        sb.AppendLine();
+                        sb.AppendLine("### " + gk);
                     }
                 }
                 var group = groups[gk];
                 foreach (var k in groupKeys[gk])
                 {
-                    if (gk.Length > 0) sb.Append("  ");
-                    sb.AppendLine(string.Format("- {0} = {1}", k, FormatValue(gk, k, group[k])));
+                    sb.AppendLine(string.Format("* {0}: {1}", k, FormatValue(gk, k, group[k])));
                 }
             }
-            return sb.ToString();
+            return sb.ToString().TrimStart();
         }
     }
 }

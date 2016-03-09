@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
-    public class VariableResolver : IValueResolver
+    public class VariableResolver : IGroupedValueResolver
     {
         private static readonly Regex DefaultVariablePattern = new Regex("\\$(?<name>.+?)\\$");
 
@@ -22,19 +22,20 @@ namespace Mastersign.Bench
         }
 
         public VariableResolver(IPropertyCollection valueSource)
+            : this()
         {
             ValueSource = valueSource;
         }
 
-        public string ResolveValue(string group, string name, string value)
+        public object ResolveGroupValue(string group, string name, object value)
         {
             if (value == null) return null;
-            if (ValueSource != null && VariablePattern != null)
+            if (value is string && ValueSource != null && VariablePattern != null)
             {
-                value = VariablePattern.Replace(value, m =>
+                value = VariablePattern.Replace((string)value, m =>
                 {
                     var n = m.Groups["name"].Value;
-                    return ValueSource.GetStringValue(n, string.Format("#{0}#", n));
+                    return (ValueSource.GetValue(n) as string) ?? string.Format("#{0}#", n);
                 });
             }
             return value;

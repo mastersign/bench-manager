@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
-    public class PathResolver : IValueResolver
+    public class PathResolver : IGroupedValueResolver
     {
         private static readonly Regex DefaultNamePattern = new Regex("(?:File|Dir)$");
 
@@ -25,14 +25,14 @@ namespace Mastersign.Bench
             BasePath = basePath;
         }
 
-        public string ResolveValue(string group, string name, string value)
+        public object ResolveGroupValue(string group, string name, object value)
         {
             if (value == null) return null;
-            if (NamePattern == null || NamePattern.IsMatch(name))
+            if (value is string && (NamePattern == null || NamePattern.IsMatch(name)))
             {
-                if (!Path.IsPathRooted(value))
+                if (!Path.IsPathRooted((string)value))
                 {
-                    value = Path.Combine(BasePath, value);
+                    value = Path.Combine(BasePath, (string)value);
                 }
             }
             return value;

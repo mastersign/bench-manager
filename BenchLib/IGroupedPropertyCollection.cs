@@ -15,12 +15,6 @@ namespace Mastersign.Bench
         IEnumerable<string> PropertyNames(string group);
 
         object GetGroupValue(string group, string name, object def);
-
-        string GetStringGroupValue(string group, string name, string def);
-
-        string[] GetStringListGroupValue(string group, string name, string[] def);
-
-        bool GetBooleanGroupValue(string group, string name, bool def);
         
         bool ContainsGroup(string group);
 

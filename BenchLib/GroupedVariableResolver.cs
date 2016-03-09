@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
-    public class GroupedVariableResolver : IValueResolver
+    public class GroupedVariableResolver : IGroupedValueResolver
     {
-        private static readonly Regex DefaultGroupVariablePattern = new Regex("\\$(?<group>.+?):(?<name>.+?)\\$");
+        private static readonly Regex DefaultGroupVariablePattern = new Regex("\\$(?<group>.*?):(?<name>.+?)\\$");
 
         /// <remarks>
         /// The regular expression needs two named groups with names <c>group</c> and <c>name</c>.
@@ -22,20 +22,22 @@ namespace Mastersign.Bench
         }
 
         public GroupedVariableResolver(IGroupedPropertyCollection valueSource)
+            : this()
         {
             ValueSource = valueSource;
         }
 
-        public string ResolveValue(string group, string name, string value)
+        public object ResolveGroupValue(string group, string name, object value)
         {
             if (value == null) return null;
-            if (ValueSource != null && GroupVariablePattern != null)
+            if (value is string && ValueSource != null && GroupVariablePattern != null)
             {
-                value = GroupVariablePattern.Replace(value, m =>
+                value = GroupVariablePattern.Replace((string)value, m =>
                 {
                     var g = m.Groups["group"].Value;
+                    if (string.IsNullOrEmpty(g)) { g = group; }
                     var n = m.Groups["name"].Value;
-                    return ValueSource.GetStringGroupValue(g, n, string.Format("#{0}:{1}#", g, n));
+                    return (ValueSource.GetGroupValue(g, n) as string) ?? string.Format("#{0}:{1}#", g, n);
                 });
             }
             return value;
