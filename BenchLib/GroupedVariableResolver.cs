@@ -30,6 +30,10 @@ namespace Mastersign.Bench
         public object ResolveGroupValue(string group, string name, object value)
         {
             if (value == null) return null;
+            if (value is string[])
+            {
+                return Array.ConvertAll((string[])value, v => (string)ResolveGroupValue(group, name, v));
+            }
             if (value is string && ValueSource != null && GroupVariablePattern != null)
             {
                 value = GroupVariablePattern.Replace((string)value, m =>

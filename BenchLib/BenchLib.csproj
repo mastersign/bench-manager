@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppIndexDefaultValueSource.cs" />
+    <Compile Include="AppIndexValueResolver.cs" />
     <Compile Include="BenchConfiguration.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IPropertySource.cs" />
@@ -45,7 +46,7 @@
     <Compile Include="IGroupedPropertyTarget.cs" />
     <Compile Include="IPropertyCollection.cs" />
     <Compile Include="IPropertyTarget.cs" />
-    <Compile Include="IValueResolver.cs" />
+    <Compile Include="IGroupedValueResolver.cs" />
     <Compile Include="MarkdownPropertyParser.cs" />
     <Compile Include="PathResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

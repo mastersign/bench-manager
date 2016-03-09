@@ -14,15 +14,18 @@ namespace Mastersign.Bench
 
         public Regex NamePattern { get; set; }
 
+        public GroupBasePathSource GroupBasePathSource { get; set; }
+
         public PathResolver()
-            : this(Environment.CurrentDirectory)
+            : this(Environment.CurrentDirectory, null)
         {
         }
 
-        public PathResolver(string basePath)
+        public PathResolver(string basePath, GroupBasePathSource groupBasePathSource)
         {
             NamePattern = DefaultNamePattern;
             BasePath = basePath;
+            GroupBasePathSource = groupBasePathSource;
         }
 
         public object ResolveGroupValue(string group, string name, object value)
@@ -33,10 +36,19 @@ namespace Mastersign.Bench
                 var path = (string)value;
                 if (!Path.IsPathRooted(path))
                 {
-                    value = Path.Combine(BasePath, path);
+                    if (!string.IsNullOrEmpty(group) && GroupBasePathSource != null)
+                    {
+                        value = Path.Combine(GroupBasePathSource(group), path);
+                    }
+                    else
+                    {
+                        value = Path.Combine(BasePath, path);
+                    }
                 }
             }
             return value;
         }
     }
+
+    public delegate string GroupBasePathSource(string group);
 }

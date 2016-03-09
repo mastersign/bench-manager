@@ -260,30 +260,40 @@ namespace Mastersign.Bench
             return groupKeys.TryGetValue(group, out keys) ? keys : (IEnumerable<string>)new string[0];
         }
 
-        private string FormatValue(string group, string name, object val)
+        private string FormatValue(string group, string name, object val, bool resolve = true)
         {
-            val = ResolveGroupValue(group, name, val);
+            if (resolve)
+            {
+                val = ResolveGroupValue(group, name, val);
+            }
+            if (val == null)
+            {
+                return "null";
+            }
             if (val is string)
             {
                 return string.Format("`{0}`", val);
             }
-            if (val is string[])
+            if (val.GetType().IsArray)
             {
-                var strings = (string[])val;
-                for (int i = 0; i < strings.Length; i++)
+                var a = (Array)val;
+                var f = new string[a.Length];
+                for (int i = 0; i < a.Length; i++)
                 {
-                    strings[i] = string.Format("`{0}`", strings[i]);
+                    f[i] = FormatValue(group, name, a.GetValue(i), false);
                 }
-                return string.Join(", ", strings);
+                return string.Join(", ", f);
             }
             if (val is bool)
             {
                 return (bool)val ? "`true`" : "`false`";
             }
-            return "UNKNOWN";
+            return "Object(" + val.ToString() + ")";
         }
 
-        public override string ToString()
+        public override string ToString() { return ToString(true); }
+
+        public string ToString(bool resolve)
         {
             var sb = new StringBuilder();
             string lastCategory = null;
@@ -312,7 +322,7 @@ namespace Mastersign.Bench
                 var group = groups[gk];
                 foreach (var k in groupKeys[gk])
                 {
-                    sb.AppendLine(string.Format("* {0}: {1}", k, FormatValue(gk, k, group[k])));
+                    sb.AppendLine(string.Format("* {0}: {1}", k, FormatValue(gk, k, group[k], resolve)));
                 }
             }
             return sb.ToString().TrimStart();

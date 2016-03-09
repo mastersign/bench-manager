@@ -14,12 +14,13 @@ namespace Mastersign.Bench
         private const string CustomConfigFileKey = "CustomConfigFile";
         private const string AppIndexFileKey = "AppIndexFile";
         private const string CustomAppIndexFileKey = "CustomAppIndexFile";
+        private const string LibDirKey = "LibDir";
 
         public BenchConfiguration(string benchRootDir)
         {
             this.AddResolver(new GroupedVariableResolver(this));
             this.AddResolver(new VariableResolver(this));
-            this.AddResolver(new PathResolver(benchRootDir));
+            this.AddResolver(new PathResolver(benchRootDir, GetAppBasePath));
 
             var parser = new MarkdownPropertyParser
             {
@@ -74,7 +75,13 @@ namespace Mastersign.Bench
                 }
             }
 
+            this.AddResolver(new AppIndexValueResolver(this));
             this.GroupedDefaultValueSource = new AppIndexDefaultValueSource(this);
+        }
+
+        private string GetAppBasePath(string app)
+        {
+            return GetStringValue(LibDirKey);
         }
     }
 }
