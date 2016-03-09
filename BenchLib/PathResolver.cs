@@ -30,9 +30,10 @@ namespace Mastersign.Bench
             if (value == null) return null;
             if (value is string && (NamePattern == null || NamePattern.IsMatch(name)))
             {
-                if (!Path.IsPathRooted((string)value))
+                var path = (string)value;
+                if (!Path.IsPathRooted(path))
                 {
-                    value = Path.Combine(BasePath, (string)value);
+                    value = Path.Combine(BasePath, path);
                 }
             }
             return value;
