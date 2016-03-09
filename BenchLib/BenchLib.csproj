@@ -37,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppIndexDefaultValueSource.cs" />
+    <Compile Include="BenchConfiguration.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IPropertySource.cs" />
     <Compile Include="IGroupedPropertySource.cs" />
