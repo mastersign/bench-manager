@@ -21,9 +21,14 @@ namespace Mastersign.Bench
         public const string CustomConfigDir = "CustomConfigDir";
         public const string CustomConfigFile = "CustomConfigFile";
         public const string CustomConfigTemplate = "CustomConfigTemplate";
+
         public const string AppIndexFile = "AppIndexFile";
         public const string CustomAppIndexFile = "CustomAppIndexFile";
         public const string CustomAppIndexTemplateFile = "CustomAppIndexTemplateFile";
+        public const string AppActivationFile = "AppActivationFile";
+        public const string AppActivationTemplateFile = "AppActivationTemplateFile";
+        public const string AppDeactivationFile = "AppDeactivationFile";
+        public const string AppDeactivationTemplateFile = "AppDeactivationTemplateFile";
 
         public const string TempDir = "TempDir";
         public const string DownloadDir = "DownloadDir";
@@ -52,6 +57,8 @@ namespace Mastersign.Bench
         public const string EditorApp = "EditorApp";
 
         // Common App Properties
+
+        public const string AppActivated = "Activated";
 
         public const string AppTyp = "Typ";
         public const string AppVersion = "Version";

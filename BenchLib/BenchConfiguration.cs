@@ -10,6 +10,9 @@ namespace Mastersign.Bench
     public class BenchConfiguration : ResolvingPropertyCollection
     {
         private const string ConfigFile = @"res\config.md";
+        private const string DefaultAppCategory = "Required";
+
+        private readonly AppIndexFacade appIndexFacade;
 
         public string BenchRootDir { get; private set; }
 
@@ -75,6 +78,44 @@ namespace Mastersign.Bench
 
             AddResolver(new AppIndexValueResolver(this));
             GroupedDefaultValueSource = new AppIndexDefaultValueSource(this);
+            appIndexFacade = new AppIndexFacade(this);
+
+            AutomaticActivation();
+        }
+
+        private void AutomaticActivation()
+        {
+            // activate required apps
+
+            foreach (var app in Apps.ByCategory(DefaultAppCategory))
+            {
+                Debug.WriteLine(string.Format("Activating required app '{0}'", app.ID));
+                app.Activate();
+            }
+
+            // activate manually activated apps
+
+            var activationFile = new ActivationFile(GetStringValue(PropertyKeys.AppActivationFile));
+            foreach (var appName in activationFile)
+            {
+                if (Apps.Exists(appName))
+                {
+                    Debug.WriteLine(string.Format("Activating app '{0}'", appName));
+                    Apps[appName].Activate();
+                }
+            }
+
+            // deactivate manually deactivated apps
+
+            var deactivationFile = new ActivationFile(GetStringValue(PropertyKeys.AppDeactivationFile));
+            foreach (var appName in deactivationFile)
+            {
+                if (Apps.Exists(appName))
+                {
+                    Debug.WriteLine(string.Format("Deactivating app '{0}'", appName));
+                    Apps[appName].Activate();
+                }
+            }
         }
 
         private bool IsPathProperty(string app, string property)
@@ -106,5 +147,7 @@ namespace Mastersign.Bench
                 return GetStringGroupValue(app, PropertyKeys.AppDir);
             }
         }
+
+        public AppIndexFacade Apps { get { return appIndexFacade; } }
     }
 }

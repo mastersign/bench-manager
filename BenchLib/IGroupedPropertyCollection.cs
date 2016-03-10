@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public interface IGroupedPropertyCollection : IGroupedPropertySource
+    public interface IGroupedPropertyCollection : IGroupedPropertySource, IGroupedPropertyTarget
     {
         IEnumerable<string> Groups();
 
@@ -15,7 +15,7 @@ namespace Mastersign.Bench
         IEnumerable<string> PropertyNames(string group);
 
         object GetGroupValue(string group, string name, object def);
-        
+
         bool ContainsGroup(string group);
 
         bool ContainsGroupValue(string group, string name);

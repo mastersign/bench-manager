@@ -13,6 +13,15 @@ namespace Mastersign.Bench
             this.resolvers.AddRange(resolvers);
         }
 
+        protected override object ResolveValue(string name, object value)
+        {
+            foreach (var r in resolvers)
+            {
+                value = r.ResolveGroupValue(string.Empty, name, value);
+            }
+            return value;
+        }
+
         protected override object ResolveGroupValue(string group, string name, object value)
         {
             foreach (var r in resolvers)

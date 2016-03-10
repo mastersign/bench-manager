@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public interface IPropertyCollection : IPropertySource
+    public interface IPropertyCollection : IPropertySource, IPropertyTarget
     {
         IEnumerable<string> PropertyNames();
 

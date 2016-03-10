@@ -150,7 +150,8 @@ namespace Mastersign.Bench
                 if (DefaultValueSource != null &&
                     DefaultValueSource.CanGetValue(propertyName))
                 {
-                    return DefaultValueSource.GetValue(propertyName);
+                    return ResolveValue(propertyName,
+                        DefaultValueSource.GetValue(propertyName));
                 }
             }
             else
@@ -158,7 +159,8 @@ namespace Mastersign.Bench
                 if (GroupedDefaultValueSource != null &&
                     GroupedDefaultValueSource.CanGetGroupValue(groupName, propertyName))
                 {
-                    return GroupedDefaultValueSource.GetGroupValue(groupName, propertyName);
+                    return ResolveGroupValue(groupName, propertyName,
+                        GroupedDefaultValueSource.GetGroupValue(groupName, propertyName));
                 }
             }
             return def;
@@ -221,6 +223,11 @@ namespace Mastersign.Bench
             bool found;
             var value = InternalGetValue(group, name, out found, def);
             return value is bool ? (bool)value : def;
+        }
+
+        protected virtual object ResolveValue(string name, object value)
+        {
+            return value;
         }
 
         protected virtual object ResolveGroupValue(string group, string name, object value)
