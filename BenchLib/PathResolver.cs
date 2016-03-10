@@ -8,47 +8,36 @@ namespace Mastersign.Bench
 {
     public class PathResolver : IGroupedValueResolver
     {
-        private static readonly Regex DefaultNamePattern = new Regex("(?:File|Dir)$");
+        public PropertyCriteria Selector { get; set; }
 
-        public string BasePath { get; set; }
-
-        public Regex NamePattern { get; set; }
-
-        public GroupBasePathSource GroupBasePathSource { get; set; }
+        public BasePathSource BasePathSource { get; set; }
 
         public PathResolver()
-            : this(Environment.CurrentDirectory, null)
         {
         }
 
-        public PathResolver(string basePath, GroupBasePathSource groupBasePathSource)
+        public PathResolver(PropertyCriteria selector, BasePathSource basePathSource)
+            : this()
         {
-            NamePattern = DefaultNamePattern;
-            BasePath = basePath;
-            GroupBasePathSource = groupBasePathSource;
+            Selector = selector;
+            BasePathSource = basePathSource;
         }
 
         public object ResolveGroupValue(string group, string name, object value)
         {
             if (value == null) return null;
-            if (value is string && (NamePattern == null || NamePattern.IsMatch(name)))
+            if (value is string && (Selector == null || Selector(group, name)))
             {
                 var path = (string)value;
-                if (!Path.IsPathRooted(path))
+                if (!Path.IsPathRooted(path) && BasePathSource != null)
                 {
-                    if (!string.IsNullOrEmpty(group) && GroupBasePathSource != null)
-                    {
-                        value = Path.Combine(GroupBasePathSource(group), path);
-                    }
-                    else
-                    {
-                        value = Path.Combine(BasePath, path);
-                    }
+                    value = Path.Combine(BasePathSource(group, name), path);
                 }
             }
             return value;
         }
     }
 
-    public delegate string GroupBasePathSource(string group);
+    public delegate bool PropertyCriteria(string group, string name);
+    public delegate string BasePathSource(string group, string name);
 }

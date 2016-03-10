@@ -36,8 +36,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppArchiveTyps.cs" />
     <Compile Include="AppIndexDefaultValueSource.cs" />
     <Compile Include="AppIndexValueResolver.cs" />
+    <Compile Include="AppKeys.cs" />
+    <Compile Include="AppTyps.cs" />
     <Compile Include="BenchConfiguration.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IPropertySource.cs" />
@@ -51,6 +54,7 @@
     <Compile Include="PathResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GroupedPropertyCollection.cs" />
+    <Compile Include="PropertyKeys.cs" />
     <Compile Include="ResolvingPropertyCollection.cs" />
     <Compile Include="VariableResolver.cs" />
   </ItemGroup>

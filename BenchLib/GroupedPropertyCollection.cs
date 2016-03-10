@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
@@ -207,7 +207,7 @@ namespace Mastersign.Bench
             bool found;
             var value = InternalGetValue(group, name, out found, def);
             if (value is string) value = new string[] { (string)value };
-            return value as string[];
+            return (value as string[]) ?? new string[0];
         }
 
         public bool GetBooleanValue(string name) { return GetBooleanGroupValue(null, name); }
@@ -270,6 +270,10 @@ namespace Mastersign.Bench
             {
                 return "null";
             }
+            if (val is bool)
+            {
+                return (bool)val ? "`true`" : "`false`";
+            }
             if (val is string)
             {
                 return string.Format("`{0}`", val);
@@ -282,13 +286,19 @@ namespace Mastersign.Bench
                 {
                     f[i] = FormatValue(group, name, a.GetValue(i), false);
                 }
-                return string.Join(", ", f);
+                return "List( " + string.Join(", ", f) + " )";
             }
-            if (val is bool)
+            if (val is IDictionary)
             {
-                return (bool)val ? "`true`" : "`false`";
+                var d = (IDictionary)val;
+                var l = new List<string>(d.Count);
+                foreach (var k in d.Keys)
+                {
+                    l.Add(string.Format("`{0}: {1}`", k, d[k]));
+                }
+                return "Dict( " + string.Join(", ", l.ToArray()) + " )";
             }
-            return "Object(" + val.ToString() + ")";
+            return "Object( " + val.ToString() + " )";
         }
 
         public override string ToString() { return ToString(true); }

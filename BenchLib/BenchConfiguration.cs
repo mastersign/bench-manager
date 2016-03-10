@@ -11,16 +11,14 @@ namespace Mastersign.Bench
     {
         private const string ConfigFile = @"res\config.md";
 
-        private const string CustomConfigFileKey = "CustomConfigFile";
-        private const string AppIndexFileKey = "AppIndexFile";
-        private const string CustomAppIndexFileKey = "CustomAppIndexFile";
-        private const string LibDirKey = "LibDir";
+        public string BenchRootDir { get; private set; }
 
         public BenchConfiguration(string benchRootDir)
         {
-            this.AddResolver(new GroupedVariableResolver(this));
-            this.AddResolver(new VariableResolver(this));
-            this.AddResolver(new PathResolver(benchRootDir, GetAppBasePath));
+            BenchRootDir = benchRootDir;
+            AddResolver(new GroupedVariableResolver(this));
+            AddResolver(new VariableResolver(this));
+            AddResolver(new PathResolver(IsPathProperty, GetBaseForPathProperty));
 
             var parser = new MarkdownPropertyParser
             {
@@ -28,20 +26,20 @@ namespace Mastersign.Bench
                 GroupBeginCue = new Regex("^[\\*\\+-]\\s+ID:\\s*`(?<group>\\S+?)`$"),
                 GroupEndCue = new Regex("^\\s*$"),
             };
-            
+
             var configFile = Path.Combine(benchRootDir, ConfigFile);
             Debug.WriteLine("Looking for default configuration: " + configFile);
             if (!File.Exists(configFile))
             {
                 throw new FileNotFoundException("The default configuration for Bench was not found.", configFile);
             }
-            using (var configStream = File.OpenRead(configFile)) 
+            using (var configStream = File.OpenRead(configFile))
             {
                 Debug.WriteLine("Reading default configuration ...");
                 parser.Parse(configStream);
             }
 
-            var customConfigFile = GetStringValue(CustomConfigFileKey);
+            var customConfigFile = GetStringValue(PropertyKeys.CustomConfigFile);
             Debug.WriteLine("Looking for custom config file: " + customConfigFile);
             if (File.Exists(customConfigFile))
             {
@@ -52,7 +50,7 @@ namespace Mastersign.Bench
                 }
             }
 
-            var appIndexFile = GetStringValue(AppIndexFileKey);
+            var appIndexFile = GetStringValue(PropertyKeys.AppIndexFile);
             Debug.WriteLine("Looking for application index: " + appIndexFile);
             if (!File.Exists(appIndexFile))
             {
@@ -64,7 +62,7 @@ namespace Mastersign.Bench
                 parser.Parse(appIndexStream);
             }
 
-            var customAppIndexFile = GetStringValue(CustomAppIndexFileKey);
+            var customAppIndexFile = GetStringValue(PropertyKeys.CustomAppIndexFile);
             Debug.WriteLine("Looking for custom application index: " + customConfigFile);
             if (File.Exists(customAppIndexFile))
             {
@@ -75,13 +73,38 @@ namespace Mastersign.Bench
                 }
             }
 
-            this.AddResolver(new AppIndexValueResolver(this));
-            this.GroupedDefaultValueSource = new AppIndexDefaultValueSource(this);
+            AddResolver(new AppIndexValueResolver(this));
+            GroupedDefaultValueSource = new AppIndexDefaultValueSource(this);
         }
 
-        private string GetAppBasePath(string app)
+        private bool IsPathProperty(string app, string property)
         {
-            return GetStringValue(LibDirKey);
+            if (string.IsNullOrEmpty(app))
+            {
+                return property.EndsWith("File")
+                    || property.EndsWith("Dir");
+            }
+            return property == PropertyKeys.AppDir
+                || property == PropertyKeys.AppPath
+                || property == PropertyKeys.AppExe
+                || property == PropertyKeys.AppAdornedExecutables
+                || property == PropertyKeys.AppLauncherIcon;
+        }
+
+        private string GetBaseForPathProperty(string app, string property)
+        {
+            if (string.IsNullOrEmpty(app))
+            {
+                return BenchRootDir;
+            }
+            else if (property == PropertyKeys.AppDir)
+            {
+                return GetStringValue(PropertyKeys.LibDir);
+            }
+            else
+            {
+                return GetStringGroupValue(app, PropertyKeys.AppDir);
+            }
         }
     }
 }
