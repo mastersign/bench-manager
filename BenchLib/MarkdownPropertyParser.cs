@@ -16,10 +16,18 @@ namespace Mastersign.Bench
         private static readonly string HtmlCommentStart = "<!--";
         private static readonly string HtmlCommentEnd = "-->";
         private static readonly Regex MdListExp = new Regex("^[\\*\\+-]\\s+(?<key>[a-zA-Z][a-zA-Z0-9]*?)\\s*:\\s*(?<value>.*?)\\s*$");
+        private static readonly string MdListFormat = "* {0}: {1}";
 
-        private static readonly Regex ListValueExp = new Regex("^`.*?`(?:\\s*,\\s*`.*?`)+$");
         private static readonly Regex BooleanValueExp = new Regex("^true|false$", RegexOptions.IgnoreCase);
         private static readonly Regex TrueValueExp = new Regex("^true$", RegexOptions.IgnoreCase);
+        private static readonly Regex ListValueExp = new Regex("^`.*?`(?:\\s*,\\s*`.*?`)+$");
+        private static readonly char[] ListSeparator = { ',' };
+        private static readonly string ListSeparatorStr = ", ";
+        private static readonly Regex ListStartExp = new Regex("^[\\*\\+-]\\s+(?<key>[a-zA-Z][a-zA-Z0-9]*?)\\s*:\\s*$");
+        private static readonly Regex ListElementPairExp = new Regex("^(?:\t|  +)[\\*\\+-]\\s+(?<key>.*?)\\s*:\\s*(?<value>.*?)\\s*$");
+        private static readonly string ListElementPairFormat = "`{0}: {1}`";
+        private static readonly Regex ListElementExp = new Regex("^(?:\t|  +)[\\*\\+-]\\s+(?<value>.*?)\\s*$");
+        private static readonly string ListElementFormat = "`{0}`";
 
         private static readonly Regex DefaultGroupBeginCue = new Regex("^###\\s+(?<category>.+?)\\s*(?:\\{.*?\\})?\\s*(?:###)?$");
         private static readonly Regex DefaultGroupEndCue = new Regex("^\\s*$");
@@ -79,6 +87,51 @@ namespace Mastersign.Bench
             }
         }
 
+        private static bool IsListStart(string line, ref string key)
+        {
+            var m = ListStartExp.Match(line);
+            if (m.Success)
+            {
+                key = m.Groups["key"].Value;
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsListElement(string line, IList<string> elements)
+        {
+            var m = ListElementPairExp.Match(line);
+            if (m.Success)
+            {
+                var key = RemoveQuotes(m.Groups["key"].Value);
+                var value = RemoveQuotes(m.Groups["value"].Value);
+                elements.Add(string.Format(ListElementPairFormat, key, value));
+                return true;
+            }
+            m = ListElementExp.Match(line);
+            if (m.Success)
+            {
+                var value = RemoveQuotes(m.Groups["value"].Value);
+                elements.Add(string.Format(ListElementFormat, value));
+                return true;
+            }
+            return false;
+        }
+
+        private static string RemoveQuotes(string value)
+        {
+            value = value.Trim();
+            if (value.StartsWith("`") && value.EndsWith("`") ||
+                value.StartsWith("<") && value.EndsWith(">"))
+            {
+                return value.Substring(1, value.Length - 2);
+            }
+            else
+            {
+                return value;
+            }
+        }
+
         #endregion
 
         public Regex ActivationCue { get; set; }
@@ -127,6 +180,9 @@ namespace Mastersign.Bench
         private string CodePreamble;
         private string CurrentCategory;
         private string CurrentGroup;
+        private string ListKey;
+        private List<string> ListItems = new List<string>();
+
         private MdContext Context;
 
         public void Parse(Stream source)
@@ -183,8 +239,21 @@ namespace Mastersign.Bench
                         Context = MdContext.CodeBlock;
                     else if (IsDeactivationCue(line))
                         Context = MdContext.Inactive;
+                    else if (IsListStart(line, ref ListKey))
+                        Context = MdContext.List;
                     else
                         ProcessTextLine(line);
+                    break;
+                case MdContext.List:
+                    if (!IsListElement(line, ListItems))
+                    {
+                        var listValue = string.Join(ListSeparatorStr, ListItems.ToArray());
+                        ProcessTextLine(string.Format(MdListFormat, ListKey, listValue));
+                        ListKey = null;
+                        ListItems.Clear();
+                        Context = MdContext.Text;
+                        ProcessLine(line);
+                    }
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -241,7 +310,7 @@ namespace Mastersign.Bench
                 var value = m.Groups["value"].Value;
                 if (ListValueExp.IsMatch(value))
                 {
-                    var values = value.Split(',');
+                    var values = value.Split(ListSeparator, StringSplitOptions.RemoveEmptyEntries);
                     for (int i = 0; i < values.Length; i++)
                     {
                         values[i] = RemoveQuotes(values[i]);
@@ -263,27 +332,14 @@ namespace Mastersign.Bench
             }
         }
 
-        private static string RemoveQuotes(string value)
-        {
-            value = value.Trim();
-            if (value.StartsWith("`") && value.EndsWith("`") ||
-                value.StartsWith("<") && value.EndsWith(">"))
-            {
-                return value.Substring(1, value.Length - 2);
-            }
-            else
-            {
-                return value;
-            }
-        }
-
         private enum MdContext
         {
             Inactive,
             YamlHeader,
             Text,
             CodeBlock,
-            HtmlComment
+            HtmlComment,
+            List
         }
     }
 }
