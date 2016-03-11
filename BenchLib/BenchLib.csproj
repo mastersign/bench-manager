@@ -46,6 +46,7 @@
     <Compile Include="AppKeys.cs" />
     <Compile Include="AppTyps.cs" />
     <Compile Include="BenchConfiguration.cs" />
+    <Compile Include="BenchEnvironment.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="IPropertySource.cs" />
