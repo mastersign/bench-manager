@@ -82,11 +82,13 @@ namespace Mastersign.Bench
             get { return Value(PropertyKeys.AppDownloadCookies) as Cookie[]; }
         }
 
-        public string ResourceName { get { return StringValue(PropertyKeys.AppResourceName); } }
+        public string ResourceFileName { get { return StringValue(PropertyKeys.AppResourceName); } }
 
         public string ResourceArchiveName { get { return StringValue(PropertyKeys.AppArchiveName); } }
 
         public string ResourceArchivePath { get { return StringValue(PropertyKeys.AppArchivePath); } }
+
+        public string ResourceArchiveTyp { get { return StringValue(PropertyKeys.AppArchiveTyp); } }
 
         public bool Force
         {
