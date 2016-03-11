@@ -8,6 +8,6 @@ namespace Mastersign.Bench
     {
         void SetGroupCategory(string group, string category);
 
-        void SetValue(string group, string name, object value);
+        void SetGroupValue(string group, string name, object value);
     }
 }

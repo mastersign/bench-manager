@@ -172,7 +172,7 @@ namespace Mastersign.Bench
             var target = Target;
             if (target != null)
             {
-                target.SetValue(CurrentGroup, name, value);
+                target.SetGroupValue(CurrentGroup, name, value);
             }
         }
 

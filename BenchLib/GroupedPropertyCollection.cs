@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public class GroupedPropertyCollection : IPropertyTarget, IGroupedPropertyTarget, IPropertyCollection, IGroupedPropertyCollection
+    public class GroupedPropertyCollection : IConfiguration
     {
         private readonly List<string> groupNames = new List<string>(); // ordered list for group names
         private readonly Dictionary<string, string> groupCategories = new Dictionary<string, string>();
@@ -77,7 +77,7 @@ namespace Mastersign.Bench
 
         public void SetValue(string name, string[] value) { SetValue(null, name, value); }
 
-        public void SetValue(string name, object value) { SetValue(null, name, value); }
+        public void SetValue(string name, object value) { SetGroupValue(null, name, value); }
 
         public void SetValue(string group, string name, string value) { InternalSetValue(group, name, value); }
 
@@ -85,7 +85,7 @@ namespace Mastersign.Bench
 
         public void SetValue(string group, string name, string[] value) { InternalSetValue(group, name, value); }
 
-        public void SetValue(string group, string name, object value)
+        public void SetGroupValue(string group, string name, object value)
         {
             if (!IsValueSupported(value)) throw new ArgumentException();
             InternalSetValue(group, name, value);

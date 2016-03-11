@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Mastersign.Bench
 {
-    public class AppIndexFacade
+    public class AppIndexFacade : IEnumerable<AppFacade>
     {
-        private readonly IGroupedPropertyCollection AppIndex;
+        private readonly IConfiguration AppIndex;
 
-        public AppIndexFacade(IGroupedPropertyCollection appIndex)
+        public AppIndexFacade(IConfiguration appIndex)
         {
             AppIndex = appIndex;
         }
@@ -49,6 +50,19 @@ namespace Mastersign.Bench
                 }
                 return result.ToArray();
             }
+        }
+
+        public IEnumerator<AppFacade> GetEnumerator()
+        {
+            foreach(var appName in AppIndex.Groups())
+            {
+                yield return new AppFacade(AppIndex, appName);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

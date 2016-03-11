@@ -9,6 +9,8 @@ namespace Mastersign.Bench
 {
     public class BenchConfiguration : ResolvingPropertyCollection
     {
+        private const string AutoDir = @"auto";
+        private const string ScriptsDir = @"auto\lib";
         private const string ConfigFile = @"res\config.md";
         private const string DefaultAppCategory = "Required";
 
@@ -80,7 +82,24 @@ namespace Mastersign.Bench
             GroupedDefaultValueSource = new AppIndexDefaultValueSource(this);
             appIndexFacade = new AppIndexFacade(this);
 
+            AutomaticConfiguration();
             AutomaticActivation();
+        }
+
+        private void AutomaticConfiguration()
+        {
+            foreach(var app in Apps)
+            {
+                app.SetupAutoConfiguration();
+            }
+            SetValue(PropertyKeys.BenchRoot, BenchRootDir);
+            SetValue(PropertyKeys.BenchDrive, Path.GetPathRoot(BenchRootDir));
+            SetValue(PropertyKeys.BenchAuto, Path.Combine(BenchRootDir, AutoDir));
+            SetValue(PropertyKeys.BenchScripts, Path.Combine(BenchRootDir, ScriptsDir));
+
+            var versionFile = GetValue(PropertyKeys.VersionFile) as string;
+            var version = File.Exists(versionFile) ? File.ReadAllText(versionFile, Encoding.UTF8) : "0.0.0";
+            SetValue(PropertyKeys.Version, version);
         }
 
         private void AutomaticActivation()

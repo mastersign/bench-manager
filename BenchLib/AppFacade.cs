@@ -7,11 +7,11 @@ namespace Mastersign.Bench
 {
     public class AppFacade
     {
-        private readonly IGroupedPropertyCollection AppIndex;
+        private readonly IConfiguration AppIndex;
 
         private readonly string AppName;
 
-        public AppFacade(IGroupedPropertyCollection source, string appName)
+        public AppFacade(IConfiguration source, string appName)
         {
             AppIndex = source;
             AppName = appName;
@@ -39,6 +39,11 @@ namespace Mastersign.Bench
             return (value as string[]) ?? new string[0];
         }
 
+        private void UpdateValue(string property, object value)
+        {
+            AppIndex.SetGroupValue(AppName, property, value);
+        }
+
         public string ID { get { return AppName; } }
 
         public string Category { get { return AppIndex.GetGroupCategory(AppName); } }
@@ -47,7 +52,21 @@ namespace Mastersign.Bench
 
         public string Version { get { return StringValue(PropertyKeys.AppVersion); } }
 
-        public string[] Dependencies { get { return ListValue(PropertyKeys.AppDependencies); } }
+        public string[] Dependencies
+        {
+            get { return ListValue(PropertyKeys.AppDependencies); }
+            set { UpdateValue(PropertyKeys.AppDependencies, value); }
+        }
+
+        public void AddDependency(string app)
+        {
+            Dependencies = AddToSet(Dependencies, app);
+        }
+
+        public void RemoveDependency(string app)
+        {
+            Dependencies = RemoveFromSet(Dependencies, app);
+        }
 
         public bool IsActive { get { return BoolValue(PropertyKeys.AppActivated); } }
 
@@ -69,13 +88,21 @@ namespace Mastersign.Bench
 
         public string ResourceArchivePath { get { return StringValue(PropertyKeys.AppArchivePath); } }
 
-        public bool Force { get { return BoolValue(PropertyKeys.AppForce); } }
+        public bool Force
+        {
+            get { return BoolValue(PropertyKeys.AppForce); }
+            set { UpdateValue(PropertyKeys.AppForce, value); }
+        }
 
         public string PackageName { get { return StringValue(PropertyKeys.AppPackageName); } }
 
         public string Dir { get { return StringValue(PropertyKeys.AppDir); } }
 
-        public string[] Path { get { return ListValue(PropertyKeys.AppPath); } }
+        public string[] Path
+        {
+            get { return ListValue(PropertyKeys.AppPath); }
+            set { UpdateValue(PropertyKeys.AppPath, value); }
+        }
 
         public string Exe { get { return StringValue(PropertyKeys.AppExe); } }
 
@@ -86,7 +113,21 @@ namespace Mastersign.Bench
             get { return Value(PropertyKeys.AppEnvironment) as Dictionary<string, string>; }
         }
 
-        public string[] AdornedExecutables { get { return ListValue(PropertyKeys.AppAdornedExecutables); } }
+        public string[] AdornedExecutables
+        {
+            get { return ListValue(PropertyKeys.AppAdornedExecutables); }
+            set { UpdateValue(PropertyKeys.AppAdornedExecutables, value); }
+        }
+
+        public void AddAdornedExecutable(string path)
+        {
+            AdornedExecutables = AddToSet(AdornedExecutables, path);
+        }
+
+        public void RemoveAdornedExecutable(string path)
+        {
+            AdornedExecutables = RemoveFromSet(AdornedExecutables, path);
+        }
 
         public string[] RegistryKeys { get { return ListValue(PropertyKeys.AppRegistryKeys); } }
 
@@ -104,7 +145,7 @@ namespace Mastersign.Bench
         {
             get
             {
-                switch(Typ)
+                switch (Typ)
                 {
                     case AppTyps.NodePackage:
                         var npmDir = AppIndex.GetGroupValue(AppKeys.Npm, PropertyKeys.AppDir) as string;
@@ -132,7 +173,7 @@ namespace Mastersign.Bench
 
         public void Activate()
         {
-            AppIndex.SetValue(AppName, PropertyKeys.AppActivated, true);
+            AppIndex.SetGroupValue(AppName, PropertyKeys.AppActivated, true);
             foreach (var depName in Dependencies)
             {
                 var depApp = new AppFacade(AppIndex, depName);
@@ -145,7 +186,85 @@ namespace Mastersign.Bench
 
         public void Deactivate()
         {
-            AppIndex.SetValue(AppName, PropertyKeys.AppActivated, false);
+            AppIndex.SetGroupValue(AppName, PropertyKeys.AppActivated, false);
+        }
+
+        public void SetupAutoConfiguration()
+        {
+            SetupAutoDependencies();
+            SetupAdornmentForRegistryIsolation();
+            SetupAdornmentPath();
+        }
+
+        private void SetupAutoDependencies()
+        {
+            switch (Typ)
+            {
+                case AppTyps.NodePackage:
+                    AddDependency(AppKeys.Npm);
+                    break;
+                case AppTyps.Python2Package:
+                    AddDependency(AppKeys.Python2);
+                    break;
+                case AppTyps.Python3Package:
+                    AddDependency(AppKeys.Python3);
+                    break;
+            }
+        }
+
+        private void SetupAdornmentForRegistryIsolation()
+        {
+            if (RegistryKeys.Length > 0 && AdornedExecutables.Length == 0)
+            {
+                AddAdornedExecutable(Exe);
+            }
+        }
+
+        private void SetupAdornmentPath()
+        {
+            if (AdornedExecutables.Length > 0)
+            {
+                var proxyDir = System.IO.Path.Combine(
+                    AppIndex.GetValue(PropertyKeys.AppAdornmentBaseDir) as string,
+                    AppName.ToLowerInvariant());
+                Path = AppendToList(Path, proxyDir);
+            }
+        }
+
+        private static string[] AppendToList(string[] list, string value)
+        {
+            var result = new string[list.Length + 1];
+            Array.Copy(list, result, list.Length);
+            result[list.Length] = value;
+            return result;
+        }
+
+        private static string[] AddToSet(string[] list, string value)
+        {
+            var result = new List<string>(list);
+            if (!result.Contains(value))
+            {
+                result.Add(value);
+                return result.ToArray();
+            }
+            else
+            {
+                return list;
+            }
+        }
+
+        private static string[] RemoveFromSet(string[] list, string value)
+        {
+            var result = new List<string>(list);
+            if (result.Contains(value))
+            {
+                result.Remove(value);
+                return result.ToArray();
+            }
+            else
+            {
+                return list;
+            }
         }
     }
 }
