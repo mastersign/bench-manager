@@ -266,5 +266,10 @@ namespace Mastersign.Bench
                 return list;
             }
         }
+
+        public override string ToString()
+        {
+            return string.Format("App[{0}] {1}", Typ, ID);
+        }
     }
 }

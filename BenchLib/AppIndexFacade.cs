@@ -28,7 +28,7 @@ namespace Mastersign.Bench
         {
             var appNames = AppIndex.GroupsByCategory(category);
             var result = new List<AppFacade>();
-            foreach(var appName in appNames)
+            foreach (var appName in appNames)
             {
                 result.Add(new AppFacade(AppIndex, appName));
             }
@@ -40,7 +40,7 @@ namespace Mastersign.Bench
             get
             {
                 var result = new List<AppFacade>();
-                foreach(var appName in AppIndex.Groups())
+                foreach (var appName in AppIndex.Groups())
                 {
                     var isActive = (bool)(AppIndex.GetGroupValue(appName, PropertyKeys.AppActivated) ?? false);
                     if (isActive)
@@ -54,7 +54,7 @@ namespace Mastersign.Bench
 
         public IEnumerator<AppFacade> GetEnumerator()
         {
-            foreach(var appName in AppIndex.Groups())
+            foreach (var appName in AppIndex.Groups())
             {
                 yield return new AppFacade(AppIndex, appName);
             }
@@ -63,6 +63,46 @@ namespace Mastersign.Bench
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public string[] EnvironmentPath
+        {
+            get
+            {
+                var result = new List<string>();
+                foreach (var app in ActiveApps)
+                {
+                    foreach (var p in app.Path)
+                    {
+                        if (!result.Contains(p))
+                        {
+                            result.Add(p);
+                        }
+                    }
+                }
+                return result.ToArray();
+            }
+        }
+
+        public IDictionary<string, string> Environment
+        {
+            get
+            {
+                var result = new Dictionary<string, string>();
+                var apps = ActiveApps;
+                foreach (var app in apps)
+                {
+                    var e = app.Environment;
+                    if (e != null)
+                    {
+                        foreach (var k in e.Keys)
+                        {
+                            result[k] = e[k];
+                        }
+                    }
+                }
+                return result;
+            }
         }
     }
 }
