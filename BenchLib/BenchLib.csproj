@@ -47,11 +47,13 @@
     <Compile Include="AppTyps.cs" />
     <Compile Include="BenchConfiguration.cs" />
     <Compile Include="BenchEnvironment.cs" />
+    <Compile Include="BenchProxyInfo.cs" />
     <Compile Include="BenchTasks.cs" />
     <Compile Include="BenchUserInfo.cs" />
     <Compile Include="ConsoleUI.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IConfiguration.cs" />
+    <Compile Include="IConfigurationPart.cs" />
     <Compile Include="IPropertySource.cs" />
     <Compile Include="IGroupedPropertySource.cs" />
     <Compile Include="IGroupedPropertyCollection.cs" />
@@ -59,6 +61,7 @@
     <Compile Include="IPropertyCollection.cs" />
     <Compile Include="IPropertyTarget.cs" />
     <Compile Include="IGroupedValueResolver.cs" />
+    <Compile Include="MarkdownHelper.cs" />
     <Compile Include="MarkdownPropertyParser.cs" />
     <Compile Include="PathResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public class BenchUserInfo
+    public class BenchUserInfo : IConfigurationPart
     {
         public string Name { get; set; }
 
@@ -16,6 +16,17 @@ namespace Mastersign.Bench
         {
             Name = name;
             Email = email;
+        }
+
+        public void Transfer(IDictionary<string, string> dict)
+        {
+            dict[PropertyKeys.UserName] = Name;
+            dict[PropertyKeys.UserEmail] = Email;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Name='{0}', Email='{1}'", Name, Email);
         }
     }
 }

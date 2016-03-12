@@ -26,8 +26,15 @@ namespace Mastersign.Bench
             {
                 var customConfigTemplateFile = cfg.GetStringValue(PropertyKeys.CustomConfigTemplateFile);
                 File.Copy(customConfigTemplateFile, customConfigFile, false);
+
                 setupStore.UserInfo = ui.ReadUserInfo("Please enter the name and email of your developer identity.");
-                AddUserInfoToCustomConfiguration(customConfigFile, setupStore.UserInfo);
+                setupStore.ProxyInfo = BenchProxyInfo.SystemDefault;
+
+                var updates = new Dictionary<string, string>();
+                setupStore.UserInfo.Transfer(updates);
+                setupStore.ProxyInfo.Transfer(updates);
+                MarkdownHelper.UpdateFile(customConfigFile, updates);
+
                 ui.EditTextFile("Adapt the custom configuration to your preferences.",
                     customConfigFile);
 
@@ -89,18 +96,6 @@ namespace Mastersign.Bench
             {
                 Debug.WriteLine("Creating directory: " + path);
                 Directory.CreateDirectory(path);
-            }
-        }
-
-        private static void AddUserInfoToCustomConfiguration(string file, BenchUserInfo userInfo)
-        {
-            using (var w = new StreamWriter(file, true, Encoding.UTF8))
-            {
-                w.WriteLine();
-                w.WriteLine("The developer identity:");
-                w.WriteLine();
-                w.WriteLine("* UserName: " + userInfo.Name);
-                w.WriteLine("* UserEmail: `" + userInfo.Email + "`");
             }
         }
     }

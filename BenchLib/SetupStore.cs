@@ -9,6 +9,8 @@ namespace Mastersign.Bench
     {
         public BenchUserInfo UserInfo { get; set; }
 
+        public BenchProxyInfo ProxyInfo { get; set; }
+
         public SecureString SshPrivateKeyPassword { get; set; }
     }
 }
