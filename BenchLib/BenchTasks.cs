@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Security;
 using System.Text;
 
 namespace Mastersign.Bench
@@ -100,9 +99,4 @@ namespace Mastersign.Bench
         }
     }
 
-    public delegate BenchUserInfo UserInfoSource(string prompt);
-
-    public delegate SecureString PasswordSource(string prompt);
-
-    public delegate void TextFileEditor(string prompt, string filePath);
 }

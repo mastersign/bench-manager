@@ -37,7 +37,4 @@ namespace Mastersign.Bench
             return value;
         }
     }
-
-    public delegate bool PropertyCriteria(string group, string name);
-    public delegate string BasePathSource(string group, string name);
 }
