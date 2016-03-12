@@ -20,7 +20,7 @@ namespace Mastersign.Bench
 
         public const string CustomConfigDir = "CustomConfigDir";
         public const string CustomConfigFile = "CustomConfigFile";
-        public const string CustomConfigTemplate = "CustomConfigTemplate";
+        public const string CustomConfigTemplateFile = "CustomConfigTemplateFile";
 
         public const string AppIndexFile = "AppIndexFile";
         public const string CustomAppIndexFile = "CustomAppIndexFile";

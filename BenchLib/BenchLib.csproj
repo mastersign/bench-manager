@@ -47,6 +47,9 @@
     <Compile Include="AppTyps.cs" />
     <Compile Include="BenchConfiguration.cs" />
     <Compile Include="BenchEnvironment.cs" />
+    <Compile Include="BenchTasks.cs" />
+    <Compile Include="BenchUserInfo.cs" />
+    <Compile Include="ConsoleUI.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="IPropertySource.cs" />
@@ -62,6 +65,8 @@
     <Compile Include="GroupedPropertyCollection.cs" />
     <Compile Include="PropertyKeys.cs" />
     <Compile Include="ResolvingPropertyCollection.cs" />
+    <Compile Include="SetupStore.cs" />
+    <Compile Include="IUserInterface.cs" />
     <Compile Include="VariableResolver.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

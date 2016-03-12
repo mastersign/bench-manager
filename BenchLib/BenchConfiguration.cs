@@ -19,6 +19,11 @@ namespace Mastersign.Bench
         public string BenchRootDir { get; private set; }
 
         public BenchConfiguration(string benchRootDir)
+            : this(benchRootDir, true, true)
+        {
+        }
+
+        public BenchConfiguration(string benchRootDir, bool loadAppIndex, bool loadCustomConfiguration)
         {
             BenchRootDir = benchRootDir;
             AddResolver(new GroupedVariableResolver(this));
@@ -44,37 +49,46 @@ namespace Mastersign.Bench
                 parser.Parse(configStream);
             }
 
-            var customConfigFile = GetStringValue(PropertyKeys.CustomConfigFile);
-            Debug.WriteLine("Looking for custom config file: " + customConfigFile);
-            if (File.Exists(customConfigFile))
+            if (loadCustomConfiguration)
             {
-                using (var customConfigStream = File.OpenRead(customConfigFile))
+                var customConfigFile = GetStringValue(PropertyKeys.CustomConfigFile);
+                Debug.WriteLine("Looking for custom config file: " + customConfigFile);
+                if (File.Exists(customConfigFile))
                 {
-                    Debug.WriteLine("Reading custom configuration ...");
-                    parser.Parse(customConfigStream);
+                    using (var customConfigStream = File.OpenRead(customConfigFile))
+                    {
+                        Debug.WriteLine("Reading custom configuration ...");
+                        parser.Parse(customConfigStream);
+                    }
                 }
             }
 
-            var appIndexFile = GetStringValue(PropertyKeys.AppIndexFile);
-            Debug.WriteLine("Looking for application index: " + appIndexFile);
-            if (!File.Exists(appIndexFile))
+            if (loadAppIndex)
             {
-                throw new FileNotFoundException("The default app index for Bench was not found.", appIndexFile);
-            }
-            using (var appIndexStream = File.OpenRead(appIndexFile))
-            {
-                Debug.WriteLine("Reading default application index ...");
-                parser.Parse(appIndexStream);
-            }
-
-            var customAppIndexFile = GetStringValue(PropertyKeys.CustomAppIndexFile);
-            Debug.WriteLine("Looking for custom application index: " + customConfigFile);
-            if (File.Exists(customAppIndexFile))
-            {
-                using (var customAppIndexStream = File.OpenRead(customAppIndexFile))
+                var appIndexFile = GetStringValue(PropertyKeys.AppIndexFile);
+                Debug.WriteLine("Looking for application index: " + appIndexFile);
+                if (!File.Exists(appIndexFile))
                 {
-                    Debug.WriteLine("Reading custom application index ...");
-                    parser.Parse(customAppIndexStream);
+                    throw new FileNotFoundException("The default app index for Bench was not found.", appIndexFile);
+                }
+                using (var appIndexStream = File.OpenRead(appIndexFile))
+                {
+                    Debug.WriteLine("Reading default application index ...");
+                    parser.Parse(appIndexStream);
+                }
+
+                if (loadCustomConfiguration)
+                {
+                    var customAppIndexFile = GetStringValue(PropertyKeys.CustomAppIndexFile);
+                    Debug.WriteLine("Looking for custom application index: " + customAppIndexFile);
+                    if (File.Exists(customAppIndexFile))
+                    {
+                        using (var customAppIndexStream = File.OpenRead(customAppIndexFile))
+                        {
+                            Debug.WriteLine("Reading custom application index ...");
+                            parser.Parse(customAppIndexStream);
+                        }
+                    }
                 }
             }
 
@@ -88,7 +102,7 @@ namespace Mastersign.Bench
 
         private void AutomaticConfiguration()
         {
-            foreach(var app in Apps)
+            foreach (var app in Apps)
             {
                 app.SetupAutoConfiguration();
             }
