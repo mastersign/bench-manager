@@ -52,6 +52,7 @@
     <Compile Include="BenchUserInfo.cs" />
     <Compile Include="ConsoleUI.cs" />
     <Compile Include="Delegates.cs" />
+    <Compile Include="Downloader.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IConfiguration.cs" />
     <Compile Include="IConfigurationPart.cs" />
