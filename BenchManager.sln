@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchDashboard", "BenchDash
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchLib", "BenchLib\BenchLib.csproj", "{3FF60D62-D733-40E8-B759-848FAE5FEA93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchLib.Test", "BenchLib.Test\BenchLib.Test.csproj", "{B3109E41-23AA-4B9A-B701-4D2463B1EF1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3FF60D62-D733-40E8-B759-848FAE5FEA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FF60D62-D733-40E8-B759-848FAE5FEA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FF60D62-D733-40E8-B759-848FAE5FEA93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3109E41-23AA-4B9A-B701-4D2463B1EF1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3109E41-23AA-4B9A-B701-4D2463B1EF1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3109E41-23AA-4B9A-B701-4D2463B1EF1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3109E41-23AA-4B9A-B701-4D2463B1EF1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
