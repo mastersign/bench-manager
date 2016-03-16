@@ -18,7 +18,6 @@ namespace Mastersign.Bench
         private static readonly Regex MdListExp = new Regex("^[\\*\\+-]\\s+(?<key>[a-zA-Z][a-zA-Z0-9]*?)\\s*:\\s*(?<value>.*?)\\s*$");
         private static readonly string MdListFormat = "* {0}: {1}";
 
-        private static readonly Regex BooleanValueExp = new Regex("^true|false$", RegexOptions.IgnoreCase);
         private static readonly Regex TrueValueExp = new Regex("^true$", RegexOptions.IgnoreCase);
         private static readonly Regex ListValueExp = new Regex("^`.*?`(?:\\s*,\\s*`.*?`)+$");
         private static readonly char[] ListSeparator = { ',' };
@@ -320,14 +319,7 @@ namespace Mastersign.Bench
                 else
                 {
                     value = RemoveQuotes(value);
-                    if (BooleanValueExp.IsMatch(value))
-                    {
-                        OnPropertyValue(key, TrueValueExp.IsMatch(value));
-                    }
-                    else
-                    {
-                        OnPropertyValue(key, value);
-                    }
+                    OnPropertyValue(key, value);
                 }
             }
         }

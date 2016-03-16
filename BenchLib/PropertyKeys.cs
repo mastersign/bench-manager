@@ -53,6 +53,7 @@ namespace Mastersign.Bench
         public const string HttpProxy = "HttpProxy";
         public const string HttpsProxy = "HttpsProxy";
         public const string DownloadAttempts = "DownloadAttempts";
+        public const string ParallelDownloads = "ParallelDownloads";
 
         public const string EditorApp = "EditorApp";
 

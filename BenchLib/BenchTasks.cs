@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Mastersign.Bench
 {
@@ -87,6 +88,64 @@ namespace Mastersign.Bench
             }
 
             return new BenchConfiguration(benchRootDir, true, true);
+        }
+
+        private static IUrlResolver EclipseDownloadLinkResolver = new HtmlLinkUrlResolver(
+            new UrlPattern(
+                new Regex(@"^www\.eclipse\.org$"),
+                new Regex(@"^/downloads/download\.php"),
+                new Dictionary<string, Regex> { { "file", null } }),
+            new UrlPattern(
+                null,
+                new Regex(@"download\.php$"),
+                new Dictionary<string, Regex> {
+                    { "file", null },
+                    { "mirror_id", new Regex(@"^\d+$") }
+                }));
+
+        private static IUrlResolver EclipseMirrorResolver = new SurroundedHtmlLinkUrlResolver(
+            new UrlPattern(
+                new Regex(@"^www\.eclipse\.org$"),
+                new Regex(@"^/downloads/download\.php"),
+                new Dictionary<string, Regex>
+                {
+                    {"file", null },
+                    {"mirror_id", new Regex(@"^\d+$") }
+                }),
+                new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
+
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader)
+        {
+            var targetDir = config.GetStringValue(PropertyKeys.DownloadDir);
+            AsureDir(targetDir);
+
+            downloader.UrlResolver.Clear();
+            downloader.UrlResolver.Add(EclipseMirrorResolver);
+            downloader.UrlResolver.Add(EclipseDownloadLinkResolver);
+
+            foreach (var app in config.Apps.ActiveApps)
+            {
+                if (app.Typ != AppTyps.Default) continue;
+
+                var targetFile = app.ResourceFileName ?? app.ResourceArchiveName;
+                if (targetFile == null)
+                {
+                    Debug.WriteLine("Skipped app " + app.ID + " because of missing resource name.");
+                    continue;
+                }
+                var targetPath = Path.Combine(targetDir, targetFile);
+                if (File.Exists(targetPath))
+                {
+                    Debug.WriteLine("Skipped app " + app.ID + " because resource already exists.");
+                    continue;
+                }
+
+                var task = new DownloadTask(app.ID, new Uri(app.Url), targetPath);
+                task.Headers = app.DownloadHeaders;
+                task.Cookies = app.DownloadCookies;
+
+                downloader.Enqueue(task);
+            }
         }
 
         private static void AsureDir(string path)

@@ -24,12 +24,17 @@ namespace Mastersign.Bench
 
         private string StringValue(string property)
         {
-            return Value(property) as string;
+            return AppIndex.GetStringGroupValue(AppName, property);
         }
 
         private bool BoolValue(string property)
         {
-            return (bool)(Value(property) ?? false);
+            return AppIndex.GetBooleanGroupValue(AppName, property);
+        }
+
+        private int IntValue(string property)
+        {
+            return AppIndex.GetInt32GroupValue(AppName, property);
         }
 
         private string[] ListValue(string property)
@@ -74,12 +79,12 @@ namespace Mastersign.Bench
 
         public IDictionary<string, string> DownloadHeaders
         {
-            get { return Value(PropertyKeys.AppDownloadHeaders) as Dictionary<string, string>; }
+            get { return Value(PropertyKeys.AppDownloadHeaders) as IDictionary<string, string>; }
         }
 
-        public Cookie[] DownloadCookies
+        public IDictionary<string, string> DownloadCookies
         {
-            get { return Value(PropertyKeys.AppDownloadCookies) as Cookie[]; }
+            get { return Value(PropertyKeys.AppDownloadCookies) as IDictionary<string, string>; }
         }
 
         public string ResourceFileName { get { return StringValue(PropertyKeys.AppResourceName); } }
@@ -112,7 +117,7 @@ namespace Mastersign.Bench
 
         public IDictionary<string, string> Environment
         {
-            get { return Value(PropertyKeys.AppEnvironment) as Dictionary<string, string>; }
+            get { return Value(PropertyKeys.AppEnvironment) as IDictionary<string, string>; }
         }
 
         public string[] AdornedExecutables
@@ -150,19 +155,19 @@ namespace Mastersign.Bench
                 switch (Typ)
                 {
                     case AppTyps.NodePackage:
-                        var npmDir = AppIndex.GetGroupValue(AppKeys.Npm, PropertyKeys.AppDir) as string;
+                        var npmDir = AppIndex.GetStringGroupValue(AppKeys.Npm, PropertyKeys.AppDir);
                         var npmPackageDir = System.IO.Path.Combine(
                             System.IO.Path.Combine(npmDir, "node_modules"),
                             PackageName);
                         return System.IO.Directory.Exists(npmPackageDir);
                     case AppTyps.Python2Package:
-                        var python2Dir = AppIndex.GetGroupValue(AppKeys.Python2, PropertyKeys.AppDir) as string;
+                        var python2Dir = AppIndex.GetStringGroupValue(AppKeys.Python2, PropertyKeys.AppDir);
                         var pip2PackageDir = System.IO.Path.Combine(
                             System.IO.Path.Combine(python2Dir, "lib"),
                             System.IO.Path.Combine("site-packages", PackageName));
                         return System.IO.Directory.Exists(pip2PackageDir);
                     case AppTyps.Python3Package:
-                        var python3Dir = AppIndex.GetGroupValue(AppKeys.Python3, PropertyKeys.AppDir) as string;
+                        var python3Dir = AppIndex.GetStringGroupValue(AppKeys.Python3, PropertyKeys.AppDir);
                         var pip3PackageDir = System.IO.Path.Combine(
                             System.IO.Path.Combine(python3Dir, "lib"),
                             System.IO.Path.Combine("site-packages", PackageName));
@@ -227,7 +232,7 @@ namespace Mastersign.Bench
             if (AdornedExecutables.Length > 0)
             {
                 var proxyDir = System.IO.Path.Combine(
-                    AppIndex.GetValue(PropertyKeys.AppAdornmentBaseDir) as string,
+                    AppIndex.GetStringValue(PropertyKeys.AppAdornmentBaseDir),
                     AppName.ToLowerInvariant());
                 Path = AppendToList(Path, proxyDir);
             }

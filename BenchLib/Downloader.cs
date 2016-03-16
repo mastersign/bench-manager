@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -12,16 +14,16 @@ namespace Mastersign.Bench
 
         private readonly object queueLock = new object();
 
-        private readonly Queue<DownloadTask> queue;
+        private readonly Queue<DownloadTask> queue = new Queue<DownloadTask>();
 
-        private readonly WebClient[] activeWebClients;
+        private readonly WebClient[] webClients;
         private readonly AutoResetEvent[] downloadEvents;
         private volatile int runningDownloads = 0;
 
         public int ActiveDownloads { get { return runningDownloads; } }
 
         private readonly Semaphore availableTasks;
-        
+
         public event EventHandler<DownloadEventArgs> DownloadStarted;
 
         public event EventHandler<DownloadProgressEventArgs> DownloadProgress;
@@ -29,6 +31,10 @@ namespace Mastersign.Bench
         public event EventHandler<DownloadEndEventArgs> DownloadEnded;
 
         public WebProxy Proxy { get; set; }
+
+        public int DownloadAttempts { get; set; }
+
+        public ICollection<IUrlResolver> UrlResolver { get; private set; }
 
         public Downloader()
             : this(1)
@@ -42,8 +48,10 @@ namespace Mastersign.Bench
                 throw new ArgumentOutOfRangeException("parallelDownloads",
                     "The number of parallel downloads must be at least 1 and less than 10000.");
             }
+            Debug.WriteLine("Initializing downloader for " + parallelDownloads + " parallel downloads.");
+            UrlResolver = new List<IUrlResolver>();
             ParallelDownloads = parallelDownloads;
-            activeWebClients = new WebClient[parallelDownloads];
+            webClients = new WebClient[parallelDownloads];
             downloadEvents = new AutoResetEvent[parallelDownloads];
             for (int i = 0; i < parallelDownloads; i++)
             {
@@ -51,14 +59,21 @@ namespace Mastersign.Bench
             }
             availableTasks = new Semaphore(0, int.MaxValue);
 
+            Debug.WriteLine("Starting worker threads...");
             for (int i = 0; i < parallelDownloads; i++)
             {
-                new Thread(() => Worker(i)).Start();
+                var no = i;
+                var t = new Thread(() => Worker(no));
+                t.Name = string.Format("DownloadWorker_{0:00}", no);
+                t.Priority = ThreadPriority.BelowNormal;
+                t.Start();
             }
+            DownloadAttempts = 1;
         }
 
         private void OnDownloadStarted(DownloadTask task)
         {
+            Debug.WriteLine("Raising event DownloadStarted for " + task.Id + ", Url=" + task.Url);
             var handler = DownloadStarted;
             if (handler != null)
             {
@@ -77,6 +92,7 @@ namespace Mastersign.Bench
 
         private void OnDownloadEnded(DownloadTask task, string errorMessage = null)
         {
+            Debug.WriteLine("Raising event DownloadEnded for " + task.Id + ", Error=" + errorMessage ?? "None");
             var handler = DownloadEnded;
             if (handler != null)
             {
@@ -86,6 +102,7 @@ namespace Mastersign.Bench
 
         public void Enqueue(DownloadTask task)
         {
+            Debug.WriteLine("Queuing " + task.Id + ", TargetFile=" + task.TargetFile + ", URL=" + task.Url);
             lock (queueLock)
             {
                 if (IsDisposed) { throw new ObjectDisposedException(GetType().Name); }
@@ -96,8 +113,9 @@ namespace Mastersign.Bench
 
         private void Worker(int no)
         {
+            Debug.WriteLine("Starting worker " + no + "...");
             DownloadTask task = null;
-            var wc = new WebClient { Proxy = Proxy };
+            var wc = webClients[no] = new WebClient { Proxy = Proxy };
             wc.DownloadProgressChanged += (o, e) =>
             {
                 task.DownloadedBytes = e.BytesReceived;
@@ -105,17 +123,49 @@ namespace Mastersign.Bench
             };
             wc.DownloadFileCompleted += (o, e) =>
             {
-                if (e.Cancelled)
+                if (e.Cancelled == false && e.Error == null)
                 {
-                    OnDownloadEnded(task, "Cancelled");
-                }
-                else if (e.Error != null)
-                {
-                    OnDownloadEnded(task, e.Error.Message);
+                    task.ErrorMessage = null;
+                    task.Success = true;
+                    task.HasEnded = true;
+                    OnDownloadEnded(task);
                 }
                 else
                 {
-                    OnDownloadEnded(task);
+                    if (File.Exists(task.TargetFile))
+                    {
+                        try
+                        {
+                            File.Delete(task.TargetFile);
+                        }
+                        catch (IOException ioe)
+                        {
+                            Debug.WriteLine("Failed to delete file after failed download: " + ioe.Message);
+                        }
+                    }
+                    if (e.Cancelled || IsDisposed)
+                    {
+                        task.ErrorMessage = "Cancelled";
+                        task.Success = false;
+                        task.HasEnded = true;
+                        OnDownloadEnded(task, task.ErrorMessage);
+                    }
+                    else if (e.Error != null)
+                    {
+                        task.ErrorMessage = FormatErrorMessage(e);
+                        task.Success = false;
+                        task.FailedAttempts = task.FailedAttempts + 1;
+                        if (task.FailedAttempts >= DownloadAttempts)
+                        {
+                            task.HasEnded = true;
+                            OnDownloadEnded(task, task.ErrorMessage);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Queuing " + task.Id + " for retry.");
+                            Enqueue(task);
+                        }
+                    }
                 }
                 runningDownloads--;
                 downloadEvents[no].Set();
@@ -123,11 +173,13 @@ namespace Mastersign.Bench
 
             while (true)
             {
+                Debug.WriteLine("Worker " + no + " waiting for task...");
                 availableTasks.WaitOne();
 
-                // dispose synchronization resources if canceled
+                // Dispose synchronization resources if canceled
                 if (IsDisposed)
                 {
+                    Debug.WriteLine("Worker " + no + " ending.");
                     downloadEvents[no].Close();
                     downloadEvents[no] = null;
                     break;
@@ -139,14 +191,120 @@ namespace Mastersign.Bench
                     task = queue.Dequeue();
                 }
                 runningDownloads++;
+                Debug.WriteLine("Worker " + no + " beginning with " + task.Id);
 
-                // Start download
-                OnDownloadStarted(task);
-                wc.DownloadFileAsync(task.Url, task.TargetFile);
+                // Prepare web client
+                wc.Headers.Clear();
+                if (task.Headers != null)
+                {
+                    foreach (var k in task.Headers.Keys)
+                    {
+                        wc.Headers.Add(k, task.Headers[k]);
+                    }
+                }
+                if (task.Cookies != null && task.Cookies.Count > 0)
+                {
+                    List<string> cookieStrings = new List<string>();
+                    foreach (var k in task.Cookies.Keys)
+                    {
+                        cookieStrings.Add(string.Format("{0}={1}", k, task.Cookies[k]));
+                    }
+                    wc.Headers.Add(HttpRequestHeader.Cookie, string.Join(";", cookieStrings.ToArray()));
+                }
+
+                // Notify listener
+                if (task.FailedAttempts == 0)
+                {
+                    OnDownloadStarted(task);
+                }
+
+                // Resolve Url
+                ResolveUrl(task, wc);
+
+                if (task.UrlResolutionFailed)
+                {
+                    task.ErrorMessage = "Resolution of the URL failed.";
+                    task.Success = false;
+                    task.HasEnded = true;
+                    OnDownloadEnded(task, task.ErrorMessage);
+                    downloadEvents[no].Set();
+                }
+                else
+                {
+                    // Start download
+                    wc.DownloadFileAsync(task.ResolvedUrl ?? task.Url, task.TargetFile);
+                }
 
                 // Wait for end
                 downloadEvents[no].WaitOne();
             }
+        }
+
+        private void ResolveUrl(DownloadTask task, WebClient wc)
+        {
+            bool foundResolver;
+            var resolvedUrl = ResolveUrl(task.Url, out foundResolver, wc);
+            if (foundResolver)
+            {
+                if (resolvedUrl != null)
+                {
+                    task.ResolvedUrl = resolvedUrl;
+                }
+                else
+                {
+                    task.UrlResolutionFailed = true;
+                }
+            }
+        }
+
+        private Uri ResolveUrl(Uri url, out bool match, WebClient wc, List<Uri> visited = null)
+        {
+            IUrlResolver resolver = null;
+            match = false;
+            foreach (var r in UrlResolver)
+            {
+                if (r.Matches(url))
+                {
+                    resolver = r;
+                    match = true;
+                    break;
+                }
+            }
+            if (resolver == null) return url;
+            Debug.WriteLine("Found resolver for: " + url);
+            if (visited != null && visited.Contains(url))
+            {
+                Debug.WriteLine("Loop detected. Canceling URL resolution.");
+                return null;
+            }
+
+            var url2 = resolver.Resolve(url, wc);
+            Debug.WriteLine("URL resolved to: " + url2);
+            if (url2 == null) return null;
+            bool subMatched;
+            if (visited == null)
+            {
+                visited = new List<Uri>();
+            }
+            visited.Add(url);
+            return ResolveUrl(url2, out subMatched, wc, visited);
+        }
+
+        private static string FormatErrorMessage(System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            var errorMessage = e.Error.Message;
+            if (e.Error.InnerException != null)
+            {
+                if (e.Error is WebException)
+                {
+                    errorMessage = e.Error.InnerException.Message;
+                }
+                else
+                {
+                    errorMessage += " " + e.Error.InnerException.Message;
+                }
+            }
+            return errorMessage;
         }
 
         public bool IsDisposed { get; private set; }
@@ -156,74 +314,17 @@ namespace Mastersign.Bench
             if (IsDisposed) return;
             IsDisposed = true;
 
+            Debug.WriteLine("Disposing downloader...");
+
             queue.Clear();
+
+            for (int i = 0; i < ParallelDownloads; i++)
+            {
+                webClients[i].CancelAsync();
+            }
 
             // allow worker to end
             availableTasks.Release(ParallelDownloads);
-        }
-    }
-
-    public class DownloadEventArgs : EventArgs
-    {
-        public DownloadTask Task { get; private set; }
-
-        public DownloadEventArgs(DownloadTask task)
-        {
-            Task = task;
-        }
-    }
-
-    public class DownloadProgressEventArgs : DownloadEventArgs
-    {
-        public long LoadedBytes { get; private set; }
-
-        public long TotalBytes { get; private set; }
-
-        public int Percentage { get; private set; }
-
-        public DownloadProgressEventArgs(DownloadTask task, long loadedBytes, long totalBytes, int percentage)
-            : base(task)
-        {
-            LoadedBytes = loadedBytes;
-            TotalBytes = totalBytes;
-            Percentage = percentage;
-        }
-    }
-
-    public class DownloadEndEventArgs : DownloadEventArgs
-    {
-        public string ErrorMessage { get; private set; }
-
-        public bool HasFailed { get { return ErrorMessage != null; } }
-
-        public DownloadEndEventArgs(DownloadTask task, string errorMessage = null)
-            : base(task)
-        {
-            ErrorMessage = errorMessage;
-        }
-    }
-
-    public class DownloadTask
-    {
-        public string Id { get; private set; }
-
-        public Uri Url { get; private set; }
-
-        public string TargetFile { get; private set; }
-
-        public long DownloadedBytes { get; set; }
-
-        public bool HasEnded { get; set; }
-
-        public bool Success { get; set; }
-
-        public string ErrorMessage { get; set; }
-
-        public DownloadTask(string id, Uri url, string targetFile)
-        {
-            Id = id;
-            Url = url;
-            TargetFile = targetFile;
         }
     }
 }

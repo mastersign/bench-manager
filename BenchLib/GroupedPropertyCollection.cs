@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace Mastersign.Bench
@@ -22,14 +23,6 @@ namespace Mastersign.Bench
             groupCategories.Clear();
             groupKeys.Clear();
             groups.Clear();
-        }
-
-        private static bool IsValueSupported(object value)
-        {
-            return value == null
-                || value is string
-                || value is string[]
-                || value is bool;
         }
 
         public void SetGroupCategory(string group, string category)
@@ -71,23 +64,26 @@ namespace Mastersign.Bench
                 || GroupedDefaultValueSource != null && GroupedDefaultValueSource.CanGetGroupValue(group, name);
         }
 
-        public void SetValue(string name, string value) { SetValue(null, name, value); }
+        public void SetValue(string name, string value) { SetGroupValue(null, name, value); }
 
-        public void SetValue(string name, bool value) { SetValue(null, name, value); }
+        public void SetValue(string name, string[] value) { SetGroupValue(null, name, value); }
 
-        public void SetValue(string name, string[] value) { SetValue(null, name, value); }
+        public void SetValue(string name, bool value) { SetGroupValue(null, name, value.ToString(CultureInfo.InvariantCulture)); }
+
+        public void SetValue(string name, int value) { SetGroupValue(null, name, value.ToString(CultureInfo.InvariantCulture)); }
 
         public void SetValue(string name, object value) { SetGroupValue(null, name, value); }
 
-        public void SetValue(string group, string name, string value) { InternalSetValue(group, name, value); }
+        public void SetGroupValue(string group, string name, string value) { InternalSetValue(group, name, value); }
 
-        public void SetValue(string group, string name, bool value) { InternalSetValue(group, name, value); }
+        public void SetGroupValue(string group, string name, string[] value) { InternalSetValue(group, name, value); }
 
-        public void SetValue(string group, string name, string[] value) { InternalSetValue(group, name, value); }
+        public void SetGroupValue(string group, string name, bool value) { InternalSetValue(group, name, value.ToString(CultureInfo.InvariantCulture)); }
+
+        public void SetGroupValue(string group, string name, int value) { InternalSetValue(group, name, value.ToString(CultureInfo.InvariantCulture)); }
 
         public void SetGroupValue(string group, string name, object value)
         {
-            if (!IsValueSupported(value)) throw new ArgumentException();
             InternalSetValue(group, name, value);
         }
 
@@ -222,7 +218,36 @@ namespace Mastersign.Bench
         {
             bool found;
             var value = InternalGetValue(group, name, out found, def);
-            return value is bool ? (bool)value : def;
+            if (value is string)
+            {
+                bool result;
+                if (Boolean.TryParse((string)value, out result))
+                {
+                    return result;
+                }
+            }
+            return def;
+        }
+
+        public int GetInt32Value(string name) { return GetInt32GroupValue(null, name); }
+
+        public int GetInt32Value(string name, int def) { return GetInt32GroupValue(null, name, def); }
+
+        public int GetInt32GroupValue(string group, string name) { return GetInt32GroupValue(group, name, 0); }
+
+        public int GetInt32GroupValue(string group, string name, int def)
+        {
+            bool found;
+            var value = InternalGetValue(group, name, out found, def);
+            if (value is string)
+            {
+                int result;
+                if (Int32.TryParse((string)value, NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+                {
+                    return result;
+                }
+            }
+            return def;
         }
 
         protected virtual object ResolveValue(string name, object value)
