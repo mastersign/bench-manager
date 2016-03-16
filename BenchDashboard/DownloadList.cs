@@ -16,7 +16,7 @@ namespace Mastersign.Bench.Dashboard
             InitializeComponent();
         }
 
-        private readonly Dictionary<DownloadTask, DownloadControl> downloadControls 
+        private readonly Dictionary<DownloadTask, DownloadControl> downloadControls
             = new Dictionary<DownloadTask, DownloadControl>();
 
         private Downloader downloader;
@@ -28,6 +28,9 @@ namespace Mastersign.Bench.Dashboard
             {
                 if (downloader != null)
                 {
+                    downloader.DownloadStarted -= DownloadStartedHandler;
+                    downloader.DownloadProgress -= DownloadProgressHandler;
+                    downloader.DownloadEnded -= DownloadEndedHandler;
                     downloadControls.Clear();
                     Controls.Clear();
                 }
@@ -45,33 +48,66 @@ namespace Mastersign.Bench.Dashboard
         {
             if (InvokeRequired)
             {
-                BeginInvoke((EventHandler<DownloadEventArgs>)DownloadStartedHandler, sender, e);
+                Invoke((EventHandler<DownloadEventArgs>)DownloadStartedHandler, sender, e);
                 return;
             }
             var control = new DownloadControl();
+            control.Visible = false;
+            control.Left = ClientRectangle.Left;
+            control.Width = ClientSize.Width;
+            control.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
             control.FileName = Path.GetFileName(e.Task.TargetFile);
             downloadControls.Add(e.Task, control);
-            flowLayout.Controls.Add(control);
+            Controls.Add(control);
+            UpdateLayout();
         }
 
         private void DownloadProgressHandler(object sender, DownloadProgressEventArgs e)
         {
             if (InvokeRequired)
             {
-                BeginInvoke((EventHandler<DownloadProgressEventArgs>)DownloadProgressHandler, sender, e);
+                Invoke((EventHandler<DownloadProgressEventArgs>)DownloadProgressHandler, sender, e);
                 return;
             }
-            throw new NotImplementedException();
+            var t = e.Task;
+            DownloadControl c;
+            if (downloadControls.TryGetValue(t, out c))
+            {
+                c.LoadedBytes = e.LoadedBytes;
+                c.Percentage = e.Percentage;
+            }
         }
 
         private void DownloadEndedHandler(object sender, DownloadEndEventArgs e)
         {
             if (InvokeRequired)
             {
-                BeginInvoke((EventHandler<DownloadEndEventArgs>)DownloadEndedHandler, sender, e);
+                Invoke((EventHandler<DownloadEndEventArgs>)DownloadEndedHandler, sender, e);
                 return;
             }
-            throw new NotImplementedException();
+            if (!e.HasFailed)
+            {
+                Controls.Remove(downloadControls[e.Task]);
+                downloadControls.Remove(e.Task);
+                UpdateLayout();
+            }
+            else
+            {
+                downloadControls[e.Task].ErrorMessage = e.ErrorMessage;
+            }
+        }
+
+        private void UpdateLayout()
+        {
+            SuspendLayout();
+            var p = ClientRectangle.Top;
+            foreach (Control c in Controls)
+            {
+                c.Top = p;
+                c.Visible = true;
+                p += c.Height;
+            }
+            ResumeLayout();
         }
     }
 }

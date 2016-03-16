@@ -38,9 +38,22 @@ namespace Mastersign.Bench.Dashboard
             set
             {
                 progressBar.Value = value;
-                progressBar.Style = progressBar.Value > 0 
-                    ? ProgressBarStyle.Continuous 
+                progressBar.Style = progressBar.Value > 0
+                    ? ProgressBarStyle.Continuous
                     : ProgressBarStyle.Marquee;
+            }
+        }
+
+        private string errorMessage;
+        public string ErrorMessage
+        {
+            get { return errorMessage; }
+            set
+            {
+                errorMessage = value;
+                lblError.Text = errorMessage;
+                progressBar.Visible = errorMessage == null;
+                lblError.Visible = errorMessage != null;
             }
         }
     }
