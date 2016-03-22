@@ -10,7 +10,7 @@ namespace Mastersign.Bench.Dashboard
 
         public IUserInterface UI { get; private set; }
 
-        public BenchConfiguration Configuration { get; private set; }
+        public BenchConfiguration Config { get; private set; }
 
         public Downloader Downloader { get; private set; }
 
@@ -18,13 +18,13 @@ namespace Mastersign.Bench.Dashboard
         {
             UI = new WinFormsUserInterface();
             SetupStore = new SetupStore();
-            Configuration = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
-            Downloader = BenchTasks.InitializeDownloader(Configuration);
+            Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
+            Downloader = BenchTasks.InitializeDownloader(Config);
         }
 
         public void DownloadAppResources()
         {
-            BenchTasks.DownloadAppResources(Configuration, Downloader);
+            BenchTasks.DownloadAppResources(Config, Downloader);
         }
 
         public bool IsDisposed { get; private set; }
