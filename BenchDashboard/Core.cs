@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
@@ -30,6 +31,23 @@ namespace Mastersign.Bench.Dashboard
         public void DownloadAppResources()
         {
             BenchTasks.DownloadAppResources(Config, Downloader);
+        }
+
+        public Process LaunchApp(string id, params string[] args)
+        {
+            try
+            {
+                return BenchTasks.LaunchApp(Config, Env, id, args);
+            }
+            catch (FileNotFoundException e)
+            {
+                MessageBox.Show("The executable of the app could not be found."
+                     + Environment.NewLine + Environment.NewLine
+                     + e.FileName,
+                     "Launching App Failed",
+                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return null;
+            }
         }
 
         public bool IsDisposed { get; private set; }
