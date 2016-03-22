@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using System.Windows.Forms;
 
 namespace Mastersign.Bench.Dashboard
 {
@@ -35,6 +37,16 @@ namespace Mastersign.Bench.Dashboard
             IsDisposed = true;
 
             Downloader.Dispose();
+        }
+
+        [Conditional("DEBUG")]
+        public void DisplayError(string message, Exception e)
+        {
+            MessageBox.Show(message 
+                + Environment.NewLine + Environment.NewLine 
+                + e.ToString(),
+                "Catched unexpected exception...",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
