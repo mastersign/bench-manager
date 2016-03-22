@@ -11,4 +11,6 @@ namespace Mastersign.Bench
     public delegate SecureString PasswordSource(string prompt);
 
     public delegate void TextFileEditor(string prompt, string filePath);
+
+    public delegate void DictionaryEntryHandler(string key, string value);
 }

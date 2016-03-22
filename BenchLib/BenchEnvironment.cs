@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 
@@ -16,37 +17,37 @@ namespace Mastersign.Bench
             Config = config;
         }
 
-        public void Load()
+        public void Load(DictionaryEntryHandler set)
         {
             if (Config.GetBooleanValue(PropertyKeys.UseProxy))
             {
-                Environment.SetEnvironmentVariable("HTTP_PROXY",
+                set("HTTP_PROXY",
                   Config.GetStringValue(PropertyKeys.HttpProxy).TrimEnd('/'));
-                Environment.SetEnvironmentVariable("HTTPS_PROXY",
+                set("HTTPS_PROXY",
                   Config.GetStringValue(PropertyKeys.HttpsProxy).TrimEnd('/'));
             }
             if (Config.GetBooleanValue(PropertyKeys.OverrideHome))
             {
                 var home = Config.GetStringValue(PropertyKeys.HomeDir);
-                Environment.SetEnvironmentVariable("USERPROFILE", home);
-                Environment.SetEnvironmentVariable("HOME", home);
-                Environment.SetEnvironmentVariable("HOMEDRIVE", GetDrivePart(home));
-                Environment.SetEnvironmentVariable("HOMEPATH", GetPathPart(home));
-                Environment.SetEnvironmentVariable("APPDATA",
+                set("USERPROFILE", home);
+                set("HOME", home);
+                set("HOMEDRIVE", GetDrivePart(home));
+                set("HOMEPATH", GetPathPart(home));
+                set("APPDATA",
                     Config.GetStringValue(PropertyKeys.AppDataDir));
-                Environment.SetEnvironmentVariable("LOCALAPPDATA",
+                set("LOCALAPPDATA",
                     Config.GetStringValue(PropertyKeys.LocalAppDataDir));
             }
             if (Config.GetBooleanValue(PropertyKeys.OverrideTemp))
             {
                 var temp = Config.GetStringValue(PropertyKeys.TempDir);
-                Environment.SetEnvironmentVariable("TEMP", temp);
-                Environment.SetEnvironmentVariable("TMP", temp);
+                set("TEMP", temp);
+                set("TMP", temp);
             }
             var env = Config.Apps.Environment;
             foreach (var k in env.Keys)
             {
-                Environment.SetEnvironmentVariable(k, env[k]);
+                set(k, env[k]);
             }
 
             var paths = new List<string>(Config.Apps.EnvironmentPath);
@@ -60,7 +61,22 @@ namespace Mastersign.Bench
             {
                 paths.Add(PathBackup);
             }
-            Environment.SetEnvironmentVariable("PATH", PathList(paths.ToArray()));
+            set("PATH", PathList(paths.ToArray()));
+        }
+
+        public void Load()
+        {
+            Load((k, v) => Environment.SetEnvironmentVariable(k, v));
+        }
+
+        public void Load(IDictionary<string, string> dict)
+        {
+            Load((k, v) => dict[k] = v);
+        }
+
+        public void Load(StringDictionary dict)
+        {
+            Load((k, v) => dict[k] = v);
         }
 
         public void WriteEnvironmentFile()
