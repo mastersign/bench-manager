@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -88,6 +89,21 @@ namespace Mastersign.Bench
             }
 
             return new BenchConfiguration(benchRootDir, true, true);
+        }
+
+        public static Downloader InitializeDownloader(BenchConfiguration config)
+        {
+            var parallelDownloads = config.GetInt32Value(PropertyKeys.ParallelDownloads, 1);
+            var downloadAttempts = config.GetInt32Value(PropertyKeys.DownloadAttempts, 1);
+            var useProxy = config.GetBooleanValue(PropertyKeys.UseProxy);
+            var httpProxy = config.GetStringValue(PropertyKeys.HttpProxy);
+            var downloader = new Downloader(parallelDownloads);
+            downloader.DownloadAttempts = downloadAttempts;
+            if (useProxy)
+            {
+                downloader.Proxy = new WebProxy(httpProxy, true);
+            }
+            return downloader;
         }
 
         private static IUrlResolver EclipseDownloadLinkResolver = new HtmlLinkUrlResolver(
