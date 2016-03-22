@@ -164,6 +164,77 @@ namespace Mastersign.Bench
             }
         }
 
+        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, params string[] args)
+        {
+            var p = new Process();
+            var app = config.Apps[appId];
+            var exe = app.LauncherExecutable;
+
+            if (string.IsNullOrEmpty(exe))
+            {
+                throw new ArgumentException("The launcher executable is not set.");
+            }
+            if (!File.Exists(exe))
+            {
+                throw new FileNotFoundException("The launcher executable could not be found.", app.LauncherExecutable);
+            }
+
+            var si = new ProcessStartInfo(exe, ProcessArguments(app.LauncherArguments, args));
+            si.UseShellExecute = false;
+            si.WorkingDirectory = config.GetStringValue(PropertyKeys.HomeDir);
+            env.Load(si.EnvironmentVariables);
+            p.StartInfo = si;
+
+            p.Start();
+            return p;
+        }
+
+        private static string ProcessArguments(string[] launcherArguments, string[] args)
+        {
+            var result = new List<string>();
+            for (int i = 0; i < launcherArguments.Length; i++)
+            {
+                var arg = SubstituteArgument(launcherArguments[i], args);
+                if (arg == "%*")
+                {
+                    result.AddRange(args);
+                }
+                else
+                {
+                    result.Add(arg);
+                }
+            }
+            return FormatArguments(result.ToArray());
+        }
+
+        private static string FormatArguments(params string[] args)
+        {
+            var list = new string[args.Length];
+            for (int i = 0; i < args.Length; i++)
+            {
+                list[i] = EscapeArgument(args[i]);
+            }
+            return string.Join(" ", list);
+        }
+
+        private static string SubstituteArgument(string arg, string[] args)
+        {
+            arg = Environment.ExpandEnvironmentVariables(arg);
+            for (int i = 0; i < 10; i++)
+            {
+                var v = args.Length > i ? args[i] : "";
+                arg = arg.Replace("%" + i, v);
+            }
+            return arg;
+        }
+
+        private static string EscapeArgument(string arg)
+        {
+            var s = Regex.Replace(arg.Trim('"'), @"(\\*)" + "\"", @"$1$1\" + "\"");
+            s = "\"" + Regex.Replace(s, @"(\\+)$", @"$1$1") + "\"";
+            return s;
+        }
+
         private static void AsureDir(string path)
         {
             if (!Directory.Exists(path))
