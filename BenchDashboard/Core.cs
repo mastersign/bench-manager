@@ -14,6 +14,8 @@ namespace Mastersign.Bench.Dashboard
 
         public BenchConfiguration Config { get; private set; }
 
+        public BenchEnvironment Env { get; private set; }
+
         public Downloader Downloader { get; private set; }
 
         public Core(string benchRoot)
@@ -21,6 +23,7 @@ namespace Mastersign.Bench.Dashboard
             UI = new WinFormsUserInterface();
             SetupStore = new SetupStore();
             Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
+            Env = new BenchEnvironment(Config);
             Downloader = BenchTasks.InitializeDownloader(Config);
         }
 
