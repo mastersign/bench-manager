@@ -18,7 +18,17 @@ namespace Mastersign.Bench.Dashboard
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            Core = new Core(GetBenchRoot(args));
+            var rootPath = GetBenchRoot(args);
+            if (rootPath == null)
+            {
+                MessageBox.Show(
+                    "Initialization failed. Could not determine the root path of Bench. Use the -root switch to provide the Bench root path.",
+                    "Bench Dashboard", 
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return 1;
+            }
+            Core = new Core(rootPath);
 
             Application.Run(new MainForm(Core));
 
@@ -35,9 +45,10 @@ namespace Mastersign.Bench.Dashboard
                     return args[i + 1];
                 }
             }
-            var codeBase = new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath;
-            var rootPath = Path.Combine(Path.Combine(Path.GetDirectoryName(codeBase), ".."), "..");
-            return Path.GetFullPath(rootPath);
+            var assemblyName = Assembly.GetExecutingAssembly().GetName();
+            var codeBase = new Uri(assemblyName.CodeBase).LocalPath;
+            var rootPath = Path.GetFullPath(Path.Combine(Path.Combine(Path.GetDirectoryName(codeBase), ".."), ".."));
+            return File.Exists(Path.Combine(rootPath, @"res\apps.md")) ? rootPath : null;
         }
 
         public static Core Core { get; private set; }
