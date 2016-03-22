@@ -19,6 +19,8 @@ namespace Mastersign.Bench.Dashboard
             InitializeComponent();
             downloadList.Downloader = core.Downloader;
             lblInfo.Text = "Root: " + core.Config.GetStringValue("BenchRoot");
+            appLauncherList.Core = core;
+            appLauncherList.AppIndex = core.Config.Apps;
         }
 
         private void btnDownload_Click(object sender, EventArgs e)

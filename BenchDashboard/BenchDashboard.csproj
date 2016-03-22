@@ -44,6 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppLauncherControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AppLauncherControl.Designer.cs">
+      <DependentUpon>AppLauncherControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Core.cs" />
     <Compile Include="DownloadControl.cs">
       <SubType>UserControl</SubType>
@@ -78,6 +84,9 @@
       <DependentUpon>UserInfoDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="WinFormsUserInterface.cs" />
+    <EmbeddedResource Include="AppLauncherControl.resx">
+      <DependentUpon>AppLauncherControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="DownloadControl.resx">
       <DependentUpon>DownloadControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -121,6 +130,9 @@
       <Project>{3ff60d62-d733-40e8-b759-848fae5fea93}</Project>
       <Name>BenchLib</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\missing_app.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
