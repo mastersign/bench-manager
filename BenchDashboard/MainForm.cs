@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Net;
 using System.Text;
 using System.Windows.Forms;
 
@@ -38,8 +39,14 @@ namespace Mastersign.Bench.Dashboard
                 {
                     var parallelDownloads = Configuration.GetInt32Value(PropertyKeys.ParallelDownloads, 1);
                     var downloadAttempts = Configuration.GetInt32Value(PropertyKeys.DownloadAttempts, 1);
+                    var useProxy = Configuration.GetBooleanValue(PropertyKeys.UseProxy);
+                    var httpProxy = Configuration.GetStringValue(PropertyKeys.HttpProxy);
                     downloader = new Downloader(parallelDownloads);
                     downloader.DownloadAttempts = downloadAttempts;
+                    if (useProxy)
+                    {
+                        downloader.Proxy = new WebProxy(httpProxy, true);
+                    }
                     downloadList.Downloader = downloader;
                 }
                 return downloader;
