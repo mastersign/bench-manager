@@ -53,14 +53,19 @@ namespace Mastersign.Bench
             return pwd;
         }
 
-        public void EditTextFile(string prompt, string file)
+        public void EditTextFile(string path)
+        {
+            var p = Process.Start(
+            Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "notepad.exe"),
+                path);
+            p.WaitForExit();
+        }
+
+        public void EditTextFile(string path, string prompt)
         {
             Console.WriteLine(prompt);
             Console.WriteLine("Close the text editor to proceed ...");
-            var p = Process.Start(
-                Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "notepad.exe"),
-                file);
-            p.WaitForExit();
+            EditTextFile(path);
         }
     }
 }

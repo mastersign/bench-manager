@@ -19,15 +19,20 @@ namespace Mastersign.Bench.Dashboard
             return PasswordDialog.GetPassword(prompt);
         }
 
-        public void EditTextFile(string prompt, string file)
+        public void EditTextFile(string path)
         {
-            MessageBox.Show(prompt 
-                + Environment.NewLine + Environment.NewLine
-                + "Close the editor to continue.");
             var p = Process.Start(
                 Path.Combine(Environment.GetEnvironmentVariable("SystemRoot"), "notepad.exe"),
-                file);
+                path);
             p.WaitForExit();
+        }
+
+        public void EditTextFile(string path, string prompt)
+        {
+            MessageBox.Show(prompt
+                + Environment.NewLine + Environment.NewLine
+                + "Close the editor to continue.");
+            EditTextFile(path);
         }
     }
 }

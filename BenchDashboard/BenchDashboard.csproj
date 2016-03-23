@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{78AF83B5-A8F0-40D1-841A-E23947624869}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mastersign.Bench.Dashboard</RootNamespace>
     <AssemblyName>BenchDashboard</AssemblyName>
@@ -77,6 +77,12 @@
     <Compile Include="PasswordDialog.Designer.cs">
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="SetupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SetupForm.Designer.cs">
+      <DependentUpon>SetupForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UserInfoDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -112,6 +118,9 @@
     <EmbeddedResource Include="PasswordDialog.resx">
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SetupForm.resx">
+      <DependentUpon>SetupForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UserInfoDialog.resx">
       <DependentUpon>UserInfoDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -136,6 +145,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\missing_app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\apps.png" />
+    <Content Include="Resources\bench.ico" />
+    <None Include="Resources\missing_app_16.png" />
+    <None Include="Resources\config.png" />
+    <None Include="Resources\exclude.png" />
+    <None Include="Resources\include.png" />
+    <Content Include="Resources\setup.ico" />
+    <None Include="Resources\setup_16.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

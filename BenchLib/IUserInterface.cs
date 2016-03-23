@@ -11,6 +11,8 @@ namespace Mastersign.Bench
 
         SecureString ReadPassword(string prompt);
 
-        void EditTextFile(string prompt, string file);
+        void EditTextFile(string file);
+
+        void EditTextFile(string file, string prompt);
     }
 }

@@ -36,6 +36,7 @@
             // 
             // listView
             // 
+            this.listView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.listView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView.LargeImageList = this.icons32;
             this.listView.Location = new System.Drawing.Point(0, 0);

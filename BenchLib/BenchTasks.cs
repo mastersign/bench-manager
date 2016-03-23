@@ -36,8 +36,8 @@ namespace Mastersign.Bench
                 setupStore.ProxyInfo.Transfer(updates);
                 MarkdownHelper.UpdateFile(customConfigFile, updates);
 
-                ui.EditTextFile("Adapt the custom configuration to your preferences.",
-                    customConfigFile);
+                ui.EditTextFile(customConfigFile,
+                    "Adapt the custom configuration to your preferences.");
 
                 cfg = new BenchConfiguration(benchRootDir, false, true);
             }
@@ -79,7 +79,7 @@ namespace Mastersign.Bench
             {
                 var activationTemplateFile = cfg.GetStringValue(PropertyKeys.AppActivationTemplateFile);
                 File.Copy(activationTemplateFile, activationFile, false);
-                ui.EditTextFile("Activate some of the included apps.", activationFile);
+                ui.EditTextFile(activationFile, "Activate some of the included apps.");
             }
             var deactivationFile = cfg.GetStringValue(PropertyKeys.AppDeactivationFile);
             if (!File.Exists(deactivationFile))
@@ -164,9 +164,8 @@ namespace Mastersign.Bench
             }
         }
 
-        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, params string[] args)
+        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)
         {
-            var p = new Process();
             var app = config.Apps[appId];
             var exe = app.LauncherExecutable;
 
@@ -174,17 +173,28 @@ namespace Mastersign.Bench
             {
                 throw new ArgumentException("The launcher executable is not set.");
             }
+            return StartProcess(env, config.GetStringValue(PropertyKeys.HomeDir),
+                exe, ProcessArguments(app.LauncherArguments, args));
+        }
+
+        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string[] args)
+        {
+            return StartProcess(env, cwd, exe, FormatArguments(args));
+        }
+
+        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
+        {
+            var p = new Process();
             if (!File.Exists(exe))
             {
-                throw new FileNotFoundException("The launcher executable could not be found.", app.LauncherExecutable);
+                throw new FileNotFoundException("The executable could not be found.", exe);
             }
 
-            var si = new ProcessStartInfo(exe, ProcessArguments(app.LauncherArguments, args));
+            var si = new ProcessStartInfo(exe, arguments);
             si.UseShellExecute = false;
-            si.WorkingDirectory = config.GetStringValue(PropertyKeys.HomeDir);
+            si.WorkingDirectory = cwd;
             env.Load(si.EnvironmentVariables);
             p.StartInfo = si;
-
             p.Start();
             return p;
         }

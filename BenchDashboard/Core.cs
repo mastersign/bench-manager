@@ -21,6 +21,7 @@ namespace Mastersign.Bench.Dashboard
 
         public Core(string benchRoot)
         {
+            Console.WriteLine("Initializing UI Core for Bench...");
             UI = new WinFormsUserInterface();
             SetupStore = new SetupStore();
             Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
@@ -50,6 +51,36 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
+        public Process StartProcess(string exe, params string[] args)
+        {
+            return BenchTasks.StartProcess(Env, Config.BenchRootDir, exe, args);
+        }
+
+        public void ShowPathInExplorer(string path)
+        {
+            Process.Start(path);
+        }
+
+        public string CmdPath
+        {
+            get
+            {
+                return Path.Combine(
+                    Environment.GetEnvironmentVariable("SystemRoot"),
+                    @"System32\cmd.exe");
+            }
+        }
+
+        public string PowerShellPath
+        {
+            get
+            {
+                return Path.Combine(
+                    Environment.GetEnvironmentVariable("SystemRoot"),
+                    @"System32\WindowsPowerShell\v1.0\powershell.exe");
+            }
+        }
+
         public bool IsDisposed { get; private set; }
 
         public void Dispose()
@@ -63,8 +94,8 @@ namespace Mastersign.Bench.Dashboard
         [Conditional("DEBUG")]
         public void DisplayError(string message, Exception e)
         {
-            MessageBox.Show(message 
-                + Environment.NewLine + Environment.NewLine 
+            MessageBox.Show(message
+                + Environment.NewLine + Environment.NewLine
                 + e.ToString(),
                 "Catched unexpected exception...",
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
