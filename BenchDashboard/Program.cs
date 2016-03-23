@@ -22,8 +22,10 @@ namespace Mastersign.Bench.Dashboard
             if (rootPath == null)
             {
                 MessageBox.Show(
-                    "Initialization failed. Could not determine the root path of Bench. Use the -root switch to provide the Bench root path.",
-                    "Bench Dashboard", 
+                    "Initialization failed. Could not determine the root path of Bench."
+                    + Environment.NewLine
+                    + "Use the -root switch to provide the Bench root path.",
+                    "Bench", 
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
                 return 1;
