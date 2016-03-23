@@ -83,6 +83,9 @@
     <Compile Include="UserInfoDialog.Designer.cs">
       <DependentUpon>UserInfoDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Vendor\IconExtractor\IconExtractor.cs" />
+    <Compile Include="Vendor\IconExtractor\IconUtil.cs" />
+    <Compile Include="Vendor\IconExtractor\NativeMethods.cs" />
     <Compile Include="WinFormsUserInterface.cs" />
     <EmbeddedResource Include="AppLauncherControl.resx">
       <DependentUpon>AppLauncherControl.cs</DependentUpon>
