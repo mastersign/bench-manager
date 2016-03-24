@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Mastersign.Bench.Dashboard.Properties;
 using TsudaKageyu;
 
 namespace Mastersign.Bench.Dashboard
@@ -42,34 +43,30 @@ namespace Mastersign.Bench.Dashboard
         {
             new Thread(() =>
             {
-                Bitmap cmdImg = null;
-                try
-                {
-                    var extractor = new IconExtractor(core.CmdPath);
-                    var icon = extractor.GetIcon(0);
-                    cmdImg = new Icon(icon, new Size(16, 16)).ToBitmap();
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Failed to load icon for CMD: " + e);
-                }
-                Bitmap psImg = null;
-                try
-                {
-                    var extractor = new IconExtractor(core.PowerShellPath);
-                    var icon = extractor.GetIcon(0);
-                    psImg = new Icon(icon, new Size(16, 16)).ToBitmap();
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Failed to load icon for PowerShell: " + e);
-                }
+                var cmdImg = ExtractIcon(core.CmdPath, "CMD");
+                var psImg = ExtractIcon(core.PowerShellPath, "PowerShell");
                 BeginInvoke((ThreadStart)(() =>
                 {
-                    if (cmdImg != null) btnShellCmd.Image = cmdImg;
-                    if (psImg != null) btnShellPowerShell.Image = psImg;
+                    btnShellCmd.Image = cmdImg ?? Resources.missing_app_16;
+                    btnShellPowerShell.Image = psImg ?? Resources.missing_app_16;
                 }));
             }).Start();
+        }
+
+        private static Bitmap ExtractIcon(string path, string name)
+        {
+            if (!File.Exists(path)) return null;
+            try
+            {
+                var extractor = new IconExtractor(path);
+                var icon = extractor.GetIcon(0);
+                return new Icon(icon, new Size(16, 16)).ToBitmap();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Failed to load icon for " + name + ": " + e);
+                return null;
+            }
         }
 
         private void RootPathClickHandler(object sender, EventArgs e)
@@ -85,6 +82,24 @@ namespace Mastersign.Bench.Dashboard
         private void ShellPowerShellHandler(object sender, EventArgs e)
         {
             core.StartProcess(core.PowerShellPath);
+        }
+
+        private void ShellBashHandler(object sender, EventArgs e)
+        {
+            var bashPath = core.BashPath;
+            if (File.Exists(bashPath))
+            {
+                core.StartProcess(core.BashPath);
+            }
+            else
+            {
+                MessageBox.Show(
+                    "The executable of Bash was not found in the Git distribution."
+                    + Environment.NewLine + Environment.NewLine
+                    + bashPath,
+                    "Running Bash...",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void SetupHandler(object sender, EventArgs e)

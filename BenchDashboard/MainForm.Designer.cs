@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.tsslRootPathLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -35,9 +36,11 @@
             this.tsslAppCountLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslAppCount = new System.Windows.Forms.ToolStripStatusLabel();
             this.panelTop = new System.Windows.Forms.Panel();
+            this.btnShellBash = new System.Windows.Forms.Button();
             this.btnShellPowerShell = new System.Windows.Forms.Button();
             this.btnShellCmd = new System.Windows.Forms.Button();
             this.btnSetup = new System.Windows.Forms.Button();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.appLauncherList = new Mastersign.Bench.Dashboard.AppLauncherControl();
             this.statusStrip.SuspendLayout();
             this.panelTop.SuspendLayout();
@@ -50,9 +53,9 @@
             this.tsslRootPath,
             this.tsslAppCountLabel,
             this.tsslAppCount});
-            this.statusStrip.Location = new System.Drawing.Point(0, 361);
+            this.statusStrip.Location = new System.Drawing.Point(0, 339);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(416, 22);
+            this.statusStrip.Size = new System.Drawing.Size(400, 22);
             this.statusStrip.TabIndex = 4;
             this.statusStrip.Text = "statusStrip1";
             // 
@@ -84,52 +87,59 @@
             // 
             // panelTop
             // 
+            this.panelTop.Controls.Add(this.btnShellBash);
             this.panelTop.Controls.Add(this.btnShellPowerShell);
             this.panelTop.Controls.Add(this.btnShellCmd);
             this.panelTop.Controls.Add(this.btnSetup);
             this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panelTop.Location = new System.Drawing.Point(0, 0);
             this.panelTop.Name = "panelTop";
-            this.panelTop.Size = new System.Drawing.Size(416, 29);
+            this.panelTop.Size = new System.Drawing.Size(400, 29);
             this.panelTop.TabIndex = 5;
+            // 
+            // btnShellBash
+            // 
+            this.btnShellBash.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.bash_16;
+            this.btnShellBash.Location = new System.Drawing.Point(64, 2);
+            this.btnShellBash.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
+            this.btnShellBash.Name = "btnShellBash";
+            this.btnShellBash.Size = new System.Drawing.Size(29, 25);
+            this.btnShellBash.TabIndex = 3;
+            this.toolTip.SetToolTip(this.btnShellBash, "Git Bash");
+            this.btnShellBash.Click += new System.EventHandler(this.ShellBashHandler);
             // 
             // btnShellPowerShell
             // 
             this.btnShellPowerShell.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.missing_app_16;
-            this.btnShellPowerShell.Location = new System.Drawing.Point(73, 3);
-            this.btnShellPowerShell.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
+            this.btnShellPowerShell.Location = new System.Drawing.Point(33, 2);
+            this.btnShellPowerShell.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.btnShellPowerShell.Name = "btnShellPowerShell";
-            this.btnShellPowerShell.Size = new System.Drawing.Size(97, 23);
+            this.btnShellPowerShell.Size = new System.Drawing.Size(29, 25);
             this.btnShellPowerShell.TabIndex = 2;
-            this.btnShellPowerShell.Text = "PowerShell";
-            this.btnShellPowerShell.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnShellPowerShell.UseVisualStyleBackColor = true;
+            this.toolTip.SetToolTip(this.btnShellPowerShell, "Windows PowerShell");
             this.btnShellPowerShell.Click += new System.EventHandler(this.ShellPowerShellHandler);
             // 
             // btnShellCmd
             // 
             this.btnShellCmd.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.missing_app_16;
-            this.btnShellCmd.Location = new System.Drawing.Point(3, 3);
-            this.btnShellCmd.Margin = new System.Windows.Forms.Padding(3, 3, 0, 3);
+            this.btnShellCmd.Location = new System.Drawing.Point(2, 2);
+            this.btnShellCmd.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.btnShellCmd.Name = "btnShellCmd";
-            this.btnShellCmd.Size = new System.Drawing.Size(67, 23);
+            this.btnShellCmd.Size = new System.Drawing.Size(29, 25);
             this.btnShellCmd.TabIndex = 1;
-            this.btnShellCmd.Text = "CMD";
-            this.btnShellCmd.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnShellCmd.UseVisualStyleBackColor = true;
+            this.toolTip.SetToolTip(this.btnShellCmd, "Windows Command Prompt");
             this.btnShellCmd.Click += new System.EventHandler(this.ShellCmdHandler);
             // 
             // btnSetup
             // 
             this.btnSetup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSetup.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.setup_16;
-            this.btnSetup.Location = new System.Drawing.Point(338, 3);
+            this.btnSetup.Location = new System.Drawing.Point(369, 2);
+            this.btnSetup.Margin = new System.Windows.Forms.Padding(2);
             this.btnSetup.Name = "btnSetup";
-            this.btnSetup.Size = new System.Drawing.Size(75, 23);
+            this.btnSetup.Size = new System.Drawing.Size(29, 25);
             this.btnSetup.TabIndex = 0;
-            this.btnSetup.Text = "Setup";
-            this.btnSetup.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnSetup.UseVisualStyleBackColor = true;
+            this.toolTip.SetToolTip(this.btnSetup, "Bench Setup and Configuration");
             this.btnSetup.Click += new System.EventHandler(this.SetupHandler);
             // 
             // appLauncherList
@@ -139,20 +149,21 @@
             this.appLauncherList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.appLauncherList.Location = new System.Drawing.Point(0, 29);
             this.appLauncherList.Name = "appLauncherList";
-            this.appLauncherList.Size = new System.Drawing.Size(416, 332);
+            this.appLauncherList.Size = new System.Drawing.Size(400, 310);
             this.appLauncherList.TabIndex = 3;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(416, 383);
+            this.ClientSize = new System.Drawing.Size(400, 361);
             this.Controls.Add(this.appLauncherList);
             this.Controls.Add(this.panelTop);
             this.Controls.Add(this.statusStrip);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(216, 128);
             this.Name = "MainForm";
             this.Text = "Bench";
             this.statusStrip.ResumeLayout(false);
@@ -175,6 +186,8 @@
         private System.Windows.Forms.Button btnSetup;
         private System.Windows.Forms.Button btnShellCmd;
         private System.Windows.Forms.Button btnShellPowerShell;
+        private System.Windows.Forms.Button btnShellBash;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }
 

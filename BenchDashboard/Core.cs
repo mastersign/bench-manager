@@ -81,6 +81,16 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
+        public string BashPath
+        {
+            get
+            {
+                return Path.Combine(
+                    Config.GetStringGroupValue(AppKeys.Git, PropertyKeys.AppDir),
+                    @"bin\bash.exe");
+            }
+        }
+
         public bool IsDisposed { get; private set; }
 
         public void Dispose()

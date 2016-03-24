@@ -45,6 +45,7 @@
             this.listView.SmallImageList = this.icons16;
             this.listView.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.listView.TabIndex = 0;
+            this.listView.TileSize = new System.Drawing.Size(180, 36);
             this.listView.UseCompatibleStateImageBehavior = false;
             this.listView.View = System.Windows.Forms.View.Tile;
             this.listView.DoubleClick += new System.EventHandler(this.listView_DoubleClick);
