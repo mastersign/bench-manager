@@ -50,6 +50,7 @@ namespace Mastersign.Bench
         public const string ProjectArchiveFormat = "ProjectArchiveFormat";
 
         public const string UseProxy = "UseProxy";
+        public const string ProxyBypass = "ProxyBypass";
         public const string HttpProxy = "HttpProxy";
         public const string HttpsProxy = "HttpsProxy";
         public const string DownloadAttempts = "DownloadAttempts";

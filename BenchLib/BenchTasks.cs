@@ -97,11 +97,14 @@ namespace Mastersign.Bench
             var downloadAttempts = config.GetInt32Value(PropertyKeys.DownloadAttempts, 1);
             var useProxy = config.GetBooleanValue(PropertyKeys.UseProxy);
             var httpProxy = config.GetStringValue(PropertyKeys.HttpProxy);
+            var httpsProxy = config.GetStringValue(PropertyKeys.HttpsProxy);
+            var proxyBypass = config.GetStringListValue(PropertyKeys.ProxyBypass);
             var downloader = new Downloader(parallelDownloads);
             downloader.DownloadAttempts = downloadAttempts;
             if (useProxy)
             {
-                downloader.Proxy = new WebProxy(httpProxy, true);
+                downloader.HttpProxy = new WebProxy(httpProxy, true, proxyBypass);
+                downloader.HttpsProxy = new WebProxy(httpsProxy, true, proxyBypass);
             }
             return downloader;
         }

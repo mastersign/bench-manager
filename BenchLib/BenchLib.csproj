@@ -56,6 +56,7 @@
     <Compile Include="DownloadEventArgs.cs" />
     <Compile Include="DownloadTask.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
+    <Compile Include="SchemeDispatchProxy.cs" />
     <Compile Include="SurroundedHtmlLinkUrlResolver.cs" />
     <Compile Include="UrlPattern.cs" />
     <Compile Include="HtmlLinkUrlResolver.cs" />

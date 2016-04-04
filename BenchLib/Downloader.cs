@@ -30,7 +30,9 @@ namespace Mastersign.Bench
 
         public event EventHandler<DownloadEndEventArgs> DownloadEnded;
 
-        public WebProxy Proxy { get; set; }
+        public WebProxy HttpProxy { get; set; }
+
+        public WebProxy HttpsProxy { get; set; }
 
         public int DownloadAttempts { get; set; }
 
@@ -115,7 +117,14 @@ namespace Mastersign.Bench
         {
             Debug.WriteLine("Starting worker " + no + "...");
             DownloadTask task = null;
-            var wc = webClients[no] = new WebClient { Proxy = Proxy };
+            var wc = webClients[no] = new WebClient
+            {
+                Proxy = new SchemeDispatchProxy(new Dictionary<string, IWebProxy> 
+                    {
+                        {"http", HttpProxy},
+                        {"https", HttpsProxy}
+                    })
+            };
             wc.DownloadProgressChanged += (o, e) =>
             {
                 task.DownloadedBytes = e.BytesReceived;
