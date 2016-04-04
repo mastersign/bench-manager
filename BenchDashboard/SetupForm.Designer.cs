@@ -30,9 +30,9 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SetupForm));
             this.splitterBottom = new System.Windows.Forms.Splitter();
-            this.menuStrip = new System.Windows.Forms.MenuStrip();
+            this.menuStrip = new Mastersign.Bench.Dashboard.ImmediateMenuStrip();
             this.tsmSetup = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiDownload = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDownloadAllResources = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditCustomConfig = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,18 +70,18 @@
             // tsmSetup
             // 
             this.tsmSetup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiDownload,
+            this.tsmiDownloadAllResources,
             this.tsmiSetup});
             this.tsmSetup.Name = "tsmSetup";
             this.tsmSetup.Size = new System.Drawing.Size(49, 20);
             this.tsmSetup.Text = "&Setup";
             // 
-            // tsmiDownload
+            // tsmiDownloadAllResources
             // 
-            this.tsmiDownload.Name = "tsmiDownload";
-            this.tsmiDownload.Size = new System.Drawing.Size(184, 22);
-            this.tsmiDownload.Text = "Download Resources";
-            this.tsmiDownload.Click += new System.EventHandler(this.DownloadAllHandler);
+            this.tsmiDownloadAllResources.Name = "tsmiDownloadAllResources";
+            this.tsmiDownloadAllResources.Size = new System.Drawing.Size(184, 22);
+            this.tsmiDownloadAllResources.Text = "Do&wnload Resources";
+            this.tsmiDownloadAllResources.Click += new System.EventHandler(this.DownloadAllHandler);
             // 
             // tsmiSetup
             // 
@@ -181,9 +181,9 @@
         #endregion
 
         private System.Windows.Forms.Splitter splitterBottom;
-        private System.Windows.Forms.MenuStrip menuStrip;
+        private ImmediateMenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem tsmSetup;
-        private System.Windows.Forms.ToolStripMenuItem tsmiDownload;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDownloadAllResources;
         private System.Windows.Forms.ToolStripMenuItem tsmiSetup;
         private System.Windows.Forms.ToolStripMenuItem tsmEdit;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditCustomConfig;
