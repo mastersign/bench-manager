@@ -133,29 +133,58 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader, AppTaskCallback cb, IEnumerable<AppFacade> apps)
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            ICollection<AppFacade> apps)
         {
             var targetDir = config.GetStringValue(PropertyKeys.DownloadDir);
             AsureDir(targetDir);
 
             var tasks = new List<DownloadTask>();
+            var finished = 0;
+            var errorCnt = 0;
 
-            EventHandler finishedHandler = null;
-            finishedHandler = (EventHandler)((o, e) =>
+            EventHandler<DownloadEndEventArgs> downloadEndedHandler = (o, e) =>
             {
-                downloader.WorkFinished -= finishedHandler;
+                finished++;
+                if (e.HasFailed) errorCnt++;
+                if (progressCb != null)
+                {
+                    progressCb(e.HasFailed ? e.ErrorMessage : "Finished download for " + e.Task.Id,
+                       errorCnt > 0, (float)finished / tasks.Count);
+                }
+            };
+
+            EventHandler workFinishedHandler = null;
+            workFinishedHandler = (EventHandler)((o, e) =>
+            {
+                downloader.DownloadEnded -= downloadEndedHandler;
+                downloader.WorkFinished -= workFinishedHandler;
                 var errors = new List<AppTaskError>();
                 foreach (var t in tasks)
                 {
                     if (!t.Success) errors.Add(new AppTaskError(t.Id, t.ErrorMessage));
                 }
-                cb(errors.Count == 0, errors);
+                if (progressCb != null)
+                {
+                    progressCb("Finished downloads", errors.Count > 0, 1.0f);
+                }
+                if (endCb != null)
+                {
+                    endCb(errors.Count == 0, errors);
+                }
             });
-            downloader.WorkFinished += finishedHandler;
+            downloader.DownloadEnded += downloadEndedHandler;
+            downloader.WorkFinished += workFinishedHandler;
 
             downloader.UrlResolver.Clear();
             downloader.UrlResolver.Add(EclipseMirrorResolver);
             downloader.UrlResolver.Add(EclipseDownloadLinkResolver);
+
+            if (progressCb != null)
+            {
+                progressCb("Starting downloads...", false, 0);
+            }
 
             foreach (var app in apps)
             {
@@ -184,51 +213,108 @@ namespace Mastersign.Bench
 
             if (tasks.Count == 0)
             {
-                downloader.WorkFinished -= finishedHandler;
-                cb(true, null);
+                downloader.DownloadEnded -= downloadEndedHandler;
+                downloader.WorkFinished -= workFinishedHandler;
+                if (progressCb != null)
+                {
+                    progressCb("Nothing to download", false, 1.0f);
+                }
+                if (endCb != null)
+                {
+                    endCb(true, null);
+                }
             }
         }
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader, AppTaskCallback cb)
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader,
+            ProgressCallback progressCb, AppTaskCallback endCb)
         {
-            DownloadAppResources(config, downloader, cb, config.Apps.ActiveApps);
+            DownloadAppResources(config, downloader, progressCb, endCb, config.Apps.ActiveApps);
         }
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader, AppTaskCallback cb, string appId)
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            string appId)
         {
-            DownloadAppResources(config, downloader, cb, new[] { config.Apps[appId] });
+            DownloadAppResources(config, downloader, progressCb, endCb, new[] { config.Apps[appId] });
         }
 
-        public static void DeleteAppResources(BenchConfiguration config, IEnumerable<AppFacade> apps)
+        public static void DeleteAppResources(BenchConfiguration config,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            ICollection<AppFacade> apps)
         {
             var downloadDir = config.GetStringValue(PropertyKeys.DownloadDir);
 
-            foreach (var app in apps)
+            if (progressCb != null)
             {
-                if (app.Typ != AppTyps.Default) continue;
-
-                var resourceFile = app.ResourceFileName ?? app.ResourceArchiveName;
-                if (resourceFile == null)
-                {
-                    Debug.WriteLine("Skipped app " + app.ID + " because of missing resource name.");
-                    continue;
-                }
-                var resourcePath = Path.Combine(downloadDir, resourceFile);
-                if (File.Exists(resourcePath))
-                {
-                    File.Delete(resourcePath);
-                }
+                progressCb("Deleting app resources", false, 0);
             }
+
+            AsyncManager.StartTask(() =>
+            {
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+                foreach (var app in apps)
+                {
+                    cnt++;
+                    if (app.Typ != AppTyps.Default) continue;
+
+                    try
+                    {
+                        var resourceFile = app.ResourceFileName ?? app.ResourceArchiveName;
+                        if (resourceFile == null)
+                        {
+                            Debug.WriteLine("Skipped app " + app.ID + " because of missing resource name.");
+                            continue;
+                        }
+                        var resourcePath = Path.Combine(downloadDir, resourceFile);
+                        if (File.Exists(resourcePath))
+                        {
+                            File.Delete(resourcePath);
+                        }
+                        if (progressCb != null)
+                        {
+                            progressCb("Deleted app resources for " + app.ID, errors.Count > 0, (float)cnt / apps.Count);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        errors.Add(new AppTaskError(app.ID, e.Message));
+                        if (progressCb != null)
+                        {
+                            progressCb(e.Message, true, (float)cnt / apps.Count);
+                        }
+                    }
+                }
+                if (progressCb != null)
+                {
+                    progressCb("Finished deleting app resources", errors.Count > 0, 1.0f);
+                }
+                if (endCb != null)
+                {
+                    endCb(errors.Count == 0, errors);
+                }
+            });
         }
 
-        public static void DeleteAppResources(BenchConfiguration config)
+        public static void DeleteAppResources(BenchConfiguration config, 
+            ProgressCallback progressCb, AppTaskCallback endCb)
         {
-            DeleteAppResources(config, config.Apps);
+            DeleteAppResources(config, progressCb, endCb, new List<AppFacade>(config.Apps));
         }
 
-        public static void DeleteAppResources(BenchConfiguration config, string appId)
+        public static void DeleteAppResources(BenchConfiguration config, 
+            ProgressCallback progressCb, AppTaskCallback endCb, 
+            string appId)
         {
-            DeleteAppResources(config, new[] { config.Apps[appId] });
+            DeleteAppResources(config, progressCb, endCb, new[] { config.Apps[appId] });
+        }
+
+        public static void InstallApps(BenchConfiguration config, 
+            ProgressCallback progressCb, AppTaskCallback endC,
+            ICollection<AppFacade> apps)
+        {
+
         }
 
         public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)

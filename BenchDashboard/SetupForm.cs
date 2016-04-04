@@ -27,6 +27,11 @@ namespace Mastersign.Bench.Dashboard
             IsDownloadListVisible = false;
         }
 
+        private void UpdateProgressBar(float progress)
+        {
+            progressBar.Value = progressBar.Minimum + (int)((progressBar.Maximum - progressBar.Minimum) * progress);
+        }
+
         private void DownloaderIsWorkingChangedHandler(object sender, EventArgs e)
         {
             if (InvokeRequired)
@@ -48,10 +53,15 @@ namespace Mastersign.Bench.Dashboard
             set
             {
                 SuspendLayout();
-                downloadList.Visible = value;
                 splitterBottom.Visible = value;
+                downloadList.Visible = value;
                 ResumeLayout();
             }
+        }
+
+        private void AlwaysShowDownloadsCheckedChanged(object sender, EventArgs e)
+        {
+            UpdateDownloadListVisibility();
         }
 
         private void EditTextFile(string name, string path)
@@ -94,14 +104,27 @@ namespace Mastersign.Bench.Dashboard
                 core.Config.GetStringValue(PropertyKeys.AppDeactivationFile));
         }
 
-        private void DownloadAllHandler(object sender, EventArgs e)
+        private void ProgressInfoHandler(string info, bool error, float progress)
         {
-            core.DownloadAppResources();
+            if (InvokeRequired)
+            {
+                BeginInvoke((ProgressCallback)ProgressInfoHandler, info, error, progress);
+                return;
+            }
+            lblInfo.Text = info;
+            UpdateProgressBar(progress);
         }
 
-        private void AlwaysShowDownloadsCheckedChanged(object sender, EventArgs e)
+        private void DownloadAllHandler(object sender, EventArgs e)
         {
-            UpdateDownloadListVisibility();
+            lblTask.Text = "Download app resources";
+            core.DownloadAppResources(ProgressInfoHandler);
+        }
+
+        private void DeleteAllResourcesHandler(object sender, EventArgs e)
+        {
+            lblTask.Text = "Delete app resources";
+            core.DeleteAppResources(ProgressInfoHandler);
         }
     }
 }

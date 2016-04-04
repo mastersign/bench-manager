@@ -33,6 +33,7 @@
             this.menuStrip = new Mastersign.Bench.Dashboard.ImmediateMenuStrip();
             this.tsmSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDownloadAllResources = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDeleteAllResources = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiSetup = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditCustomConfig = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,8 +42,16 @@
             this.tsmiEditDeactivationList = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmView = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
+            this.panelStatus = new System.Windows.Forms.Panel();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.lblProgressLabel = new System.Windows.Forms.Label();
+            this.lblInfo = new System.Windows.Forms.Label();
+            this.lblInfoLabel = new System.Windows.Forms.Label();
+            this.lblTask = new System.Windows.Forms.Label();
+            this.lblTaskLabel = new System.Windows.Forms.Label();
             this.downloadList = new Mastersign.Bench.Dashboard.DownloadList();
             this.menuStrip.SuspendLayout();
+            this.panelStatus.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitterBottom
@@ -71,6 +80,7 @@
             // 
             this.tsmSetup.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiDownloadAllResources,
+            this.tsmiDeleteAllResources,
             this.tsmiSetup});
             this.tsmSetup.Name = "tsmSetup";
             this.tsmSetup.Size = new System.Drawing.Size(49, 20);
@@ -83,11 +93,18 @@
             this.tsmiDownloadAllResources.Text = "Do&wnload Resources";
             this.tsmiDownloadAllResources.Click += new System.EventHandler(this.DownloadAllHandler);
             // 
+            // tsmiDeleteAllResources
+            // 
+            this.tsmiDeleteAllResources.Name = "tsmiDeleteAllResources";
+            this.tsmiDeleteAllResources.Size = new System.Drawing.Size(184, 22);
+            this.tsmiDeleteAllResources.Text = "&Delete Resources";
+            this.tsmiDeleteAllResources.Click += new System.EventHandler(this.DeleteAllResourcesHandler);
+            // 
             // tsmiSetup
             // 
             this.tsmiSetup.Name = "tsmiSetup";
             this.tsmiSetup.Size = new System.Drawing.Size(184, 22);
-            this.tsmiSetup.Text = "Install Apps";
+            this.tsmiSetup.Text = "&Install Apps";
             // 
             // tsmEdit
             // 
@@ -148,6 +165,83 @@
             this.tsmiAlwaysShowDownloads.Text = "&Always Show Downloads";
             this.tsmiAlwaysShowDownloads.CheckedChanged += new System.EventHandler(this.AlwaysShowDownloadsCheckedChanged);
             // 
+            // panelStatus
+            // 
+            this.panelStatus.BackColor = System.Drawing.SystemColors.Window;
+            this.panelStatus.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panelStatus.Controls.Add(this.progressBar);
+            this.panelStatus.Controls.Add(this.lblProgressLabel);
+            this.panelStatus.Controls.Add(this.lblInfo);
+            this.panelStatus.Controls.Add(this.lblInfoLabel);
+            this.panelStatus.Controls.Add(this.lblTask);
+            this.panelStatus.Controls.Add(this.lblTaskLabel);
+            this.panelStatus.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panelStatus.Location = new System.Drawing.Point(0, 24);
+            this.panelStatus.Name = "panelStatus";
+            this.panelStatus.Size = new System.Drawing.Size(472, 74);
+            this.panelStatus.TabIndex = 7;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressBar.Location = new System.Drawing.Point(72, 50);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(384, 13);
+            this.progressBar.TabIndex = 5;
+            // 
+            // lblProgressLabel
+            // 
+            this.lblProgressLabel.AutoSize = true;
+            this.lblProgressLabel.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
+            this.lblProgressLabel.Location = new System.Drawing.Point(12, 50);
+            this.lblProgressLabel.Margin = new System.Windows.Forms.Padding(3, 8, 3, 0);
+            this.lblProgressLabel.Name = "lblProgressLabel";
+            this.lblProgressLabel.Size = new System.Drawing.Size(54, 13);
+            this.lblProgressLabel.TabIndex = 4;
+            this.lblProgressLabel.Text = "Progress:";
+            // 
+            // lblInfo
+            // 
+            this.lblInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblInfo.Location = new System.Drawing.Point(69, 29);
+            this.lblInfo.Name = "lblInfo";
+            this.lblInfo.Size = new System.Drawing.Size(387, 13);
+            this.lblInfo.TabIndex = 3;
+            // 
+            // lblInfoLabel
+            // 
+            this.lblInfoLabel.AutoSize = true;
+            this.lblInfoLabel.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
+            this.lblInfoLabel.Location = new System.Drawing.Point(12, 29);
+            this.lblInfoLabel.Margin = new System.Windows.Forms.Padding(3, 8, 3, 0);
+            this.lblInfoLabel.Name = "lblInfoLabel";
+            this.lblInfoLabel.Size = new System.Drawing.Size(31, 13);
+            this.lblInfoLabel.TabIndex = 2;
+            this.lblInfoLabel.Text = "Info:";
+            // 
+            // lblTask
+            // 
+            this.lblTask.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTask.Location = new System.Drawing.Point(69, 8);
+            this.lblTask.Name = "lblTask";
+            this.lblTask.Size = new System.Drawing.Size(387, 13);
+            this.lblTask.TabIndex = 1;
+            this.lblTask.Text = "none";
+            // 
+            // lblTaskLabel
+            // 
+            this.lblTaskLabel.AutoSize = true;
+            this.lblTaskLabel.ForeColor = System.Drawing.SystemColors.InactiveCaptionText;
+            this.lblTaskLabel.Location = new System.Drawing.Point(12, 8);
+            this.lblTaskLabel.Margin = new System.Windows.Forms.Padding(3, 8, 3, 0);
+            this.lblTaskLabel.Name = "lblTaskLabel";
+            this.lblTaskLabel.Size = new System.Drawing.Size(32, 13);
+            this.lblTaskLabel.TabIndex = 0;
+            this.lblTaskLabel.Text = "Task:";
+            // 
             // downloadList
             // 
             this.downloadList.AutoScroll = true;
@@ -165,14 +259,18 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(472, 401);
+            this.Controls.Add(this.panelStatus);
             this.Controls.Add(this.splitterBottom);
             this.Controls.Add(this.downloadList);
             this.Controls.Add(this.menuStrip);
+            this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "SetupForm";
             this.Text = "Bench - Setup";
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
+            this.panelStatus.ResumeLayout(false);
+            this.panelStatus.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -193,5 +291,13 @@
         private DownloadList downloadList;
         private System.Windows.Forms.ToolStripMenuItem tsmView;
         private System.Windows.Forms.ToolStripMenuItem tsmiAlwaysShowDownloads;
+        private System.Windows.Forms.Panel panelStatus;
+        private System.Windows.Forms.Label lblTask;
+        private System.Windows.Forms.Label lblTaskLabel;
+        private System.Windows.Forms.Label lblInfo;
+        private System.Windows.Forms.Label lblInfoLabel;
+        private System.Windows.Forms.Label lblProgressLabel;
+        private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDeleteAllResources;
     }
 }

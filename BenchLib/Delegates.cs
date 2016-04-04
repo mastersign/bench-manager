@@ -16,4 +16,6 @@ namespace Mastersign.Bench
     public delegate void DictionaryEntryHandler(string key, string value);
 
     public delegate void AppTaskCallback(bool success, ICollection<AppTaskError> errors);
+
+    public delegate void ProgressCallback(string info, bool errors, float progress);
 }

@@ -28,9 +28,9 @@ namespace Mastersign.Bench.Dashboard
             Downloader = BenchTasks.InitializeDownloader(Config);
         }
 
-        public void DownloadAppResources()
+        public void DownloadAppResources(ProgressCallback progressCb)
         {
-            BenchTasks.DownloadAppResources(Config, Downloader,
+            BenchTasks.DownloadAppResources(Config, Downloader, progressCb,
                 (success, errors) =>
                 {
                     if (success)
@@ -39,22 +39,46 @@ namespace Mastersign.Bench.Dashboard
                     }
                     else
                     {
-                        var errorLines = new List<string>();
-                        foreach (var err in errors)
-                        {
-                            if (errorLines.Count == 10)
-                            {
-                                errorLines.Add("...");
-                                break;
-                            }
-                            errorLines.Add(err.ToString());
-                        }
-                        UI.ShowWarning("Download App Resources",
-                            "Downloading the resources for the following apps failed: "
+                        UI.ShowWarning("Downloading App Resources",
+                            "Downloading resources for the following apps failed: "
                             + Environment.NewLine + Environment.NewLine
-                            + string.Join(Environment.NewLine, errorLines.ToArray()));
+                            + BuildCombinedErrorMessage(errors, 10));
                     }
                 });
+        }
+
+        public void DeleteAppResources(ProgressCallback progressCb)
+        {
+            BenchTasks.DeleteAppResources(Config, progressCb,
+                (success, errors) =>
+                {
+                    if (success)
+                    {
+                        UI.ShowInfo("Deleting App Resources", "Finished.");
+                    }
+                    else
+                    {
+                        UI.ShowWarning("Deleting App Resources",
+                            "Deleting resources for the following apps failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                });
+        }
+
+        private static string BuildCombinedErrorMessage(IEnumerable<AppTaskError> errors, int maxLines)
+        {
+            var errorLines = new List<string>(maxLines);
+            foreach (var err in errors)
+            {
+                if (errorLines.Count >= maxLines - 1)
+                {
+                    errorLines.Add("...");
+                    break;
+                }
+                errorLines.Add(err.ToString());
+            }
+            return string.Join(Environment.NewLine, errorLines.ToArray());
         }
 
         public Process LaunchApp(string id, params string[] args)
