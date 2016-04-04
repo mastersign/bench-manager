@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Text;
 
@@ -18,6 +19,7 @@ namespace Mastersign.Bench
 
         public bool IsBypassed(Uri host)
         {
+            Debug.WriteLine("Check bypass for " + host);
             var def = true;
             IWebProxy proxy;
             return proxyTable.TryGetValue(host.Scheme.ToLowerInvariant(), out proxy)
@@ -27,6 +29,7 @@ namespace Mastersign.Bench
 
         public Uri GetProxy(Uri destination)
         {
+            Debug.WriteLine("Get proxy for " + destination);
             var def = destination;
             IWebProxy proxy;
             return proxyTable.TryGetValue(destination.Scheme.ToLowerInvariant(), out proxy)
