@@ -9,6 +9,24 @@ namespace Mastersign.Bench.Dashboard
 {
     class WinFormsUserInterface : IUserInterface
     {
+        public void ShowInfo(string topic, string message)
+        {
+            MessageBox.Show(message, topic,
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public void ShowWarning(string topic, string message)
+        {
+            MessageBox.Show(message, topic,
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        public void ShowError(string topic, string message)
+        {
+            MessageBox.Show(message, topic,
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
         public BenchUserInfo ReadUserInfo(string prompt)
         {
             return UserInfoDialog.GetUserInfo(prompt);

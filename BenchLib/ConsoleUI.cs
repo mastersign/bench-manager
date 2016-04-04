@@ -9,6 +9,21 @@ namespace Mastersign.Bench
 {
     public class ConsoleUserInterface : IUserInterface
     {
+        public void ShowInfo(string topic, string message)
+        {
+            Console.WriteLine("[INFO] " + topic + ": " + message);
+        }
+
+        public void ShowWarning(string topic, string message)
+        {
+            Console.WriteLine("[WARNING] " + topic + ": " + message);
+        }
+
+        public void ShowError(string topic, string message)
+        {
+            Console.WriteLine("[ERROR] " + topic + ": " + message);
+        }
+
         public BenchUserInfo ReadUserInfo(string prompt)
         {
             var userInfo = new BenchUserInfo();

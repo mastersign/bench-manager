@@ -14,5 +14,11 @@ namespace Mastersign.Bench
         void EditTextFile(string file);
 
         void EditTextFile(string file, string prompt);
+
+        void ShowInfo(string topic, string message);
+
+        void ShowWarning(string topic, string message);
+
+        void ShowError(string topic, string message);
     }
 }
