@@ -1,4 +1,5 @@
-﻿using System.Security;
+﻿using System.Collections.Generic;
+using System.Security;
 
 namespace Mastersign.Bench
 {
@@ -13,4 +14,6 @@ namespace Mastersign.Bench
     public delegate void TextFileEditor(string prompt, string filePath);
 
     public delegate void DictionaryEntryHandler(string key, string value);
+
+    public delegate void AppTaskCallback(bool success, ICollection<AppTaskError> errors);
 }

@@ -133,16 +133,31 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader)
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader, AppTaskCallback cb, IEnumerable<AppFacade> apps)
         {
             var targetDir = config.GetStringValue(PropertyKeys.DownloadDir);
             AsureDir(targetDir);
+
+            var tasks = new List<DownloadTask>();
+
+            EventHandler finishedHandler = null;
+            finishedHandler = (EventHandler)((o, e) =>
+            {
+                downloader.WorkFinished -= finishedHandler;
+                var errors = new List<AppTaskError>();
+                foreach (var t in tasks)
+                {
+                    if (!t.Success) errors.Add(new AppTaskError(t.Id, t.ErrorMessage));
+                }
+                cb(errors.Count == 0, errors);
+            });
+            downloader.WorkFinished += finishedHandler;
 
             downloader.UrlResolver.Clear();
             downloader.UrlResolver.Add(EclipseMirrorResolver);
             downloader.UrlResolver.Add(EclipseDownloadLinkResolver);
 
-            foreach (var app in config.Apps.ActiveApps)
+            foreach (var app in apps)
             {
                 if (app.Typ != AppTyps.Default) continue;
 
@@ -162,9 +177,26 @@ namespace Mastersign.Bench
                 var task = new DownloadTask(app.ID, new Uri(app.Url), targetPath);
                 task.Headers = app.DownloadHeaders;
                 task.Cookies = app.DownloadCookies;
+                tasks.Add(task);
 
                 downloader.Enqueue(task);
             }
+
+            if (tasks.Count == 0)
+            {
+                downloader.WorkFinished -= finishedHandler;
+                cb(true, null);
+            }
+        }
+
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader, AppTaskCallback cb)
+        {
+            DownloadAppResources(config, downloader, cb, config.Apps.ActiveApps);
+        }
+
+        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader, AppTaskCallback cb, string appId)
+        {
+            DownloadAppResources(config, downloader, cb, new[] { config.Apps[appId] });
         }
 
         public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)

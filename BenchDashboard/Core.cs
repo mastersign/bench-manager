@@ -30,7 +30,31 @@ namespace Mastersign.Bench.Dashboard
 
         public void DownloadAppResources()
         {
-            BenchTasks.DownloadAppResources(Config, Downloader);
+            BenchTasks.DownloadAppResources(Config, Downloader,
+                (success, errors) =>
+                {
+                    if (success)
+                    {
+                        UI.ShowInfo("Downloading App Resources", "Finished.");
+                    }
+                    else
+                    {
+                        var errorLines = new List<string>();
+                        foreach (var err in errors)
+                        {
+                            if (errorLines.Count == 10)
+                            {
+                                errorLines.Add("...");
+                                break;
+                            }
+                            errorLines.Add(err.ToString());
+                        }
+                        UI.ShowWarning("Download App Resources",
+                            "Downloading the resources for the following apps failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + string.Join(Environment.NewLine, errorLines.ToArray()));
+                    }
+                });
         }
 
         public Process LaunchApp(string id, params string[] args)
