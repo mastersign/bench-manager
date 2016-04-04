@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Windows.Forms;
 
 namespace Mastersign.Bench.Dashboard
 {
@@ -21,7 +20,7 @@ namespace Mastersign.Bench.Dashboard
 
         public Core(string benchRoot)
         {
-            Console.WriteLine("Initializing UI Core for Bench...");
+            Debug.WriteLine("Initializing UI Core for Bench...");
             UI = new WinFormsUserInterface();
             SetupStore = new SetupStore();
             Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
@@ -42,11 +41,10 @@ namespace Mastersign.Bench.Dashboard
             }
             catch (FileNotFoundException e)
             {
-                MessageBox.Show("The executable of the app could not be found."
+                UI.ShowWarning("Launching App",
+                    "The executable of the app could not be found."
                      + Environment.NewLine + Environment.NewLine
-                     + e.FileName,
-                     "Launching App Failed",
-                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                     + e.FileName);
                 return null;
             }
         }
@@ -104,11 +102,10 @@ namespace Mastersign.Bench.Dashboard
         [Conditional("DEBUG")]
         public void DisplayError(string message, Exception e)
         {
-            MessageBox.Show(message
+            UI.ShowError("Unexpected Exception",
+                message
                 + Environment.NewLine + Environment.NewLine
-                + e.ToString(),
-                "Catched unexpected exception...",
-                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                + e.ToString());
         }
     }
 }
