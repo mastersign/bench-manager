@@ -39,6 +39,8 @@
             this.tsmiEditCustomApps = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditActivationList = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditDeactivationList = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmView = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
             this.downloadList = new Mastersign.Bench.Dashboard.DownloadList();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -56,12 +58,14 @@
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmSetup,
-            this.tsmEdit});
+            this.tsmEdit,
+            this.tsmView});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
+            this.menuStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.menuStrip.Size = new System.Drawing.Size(472, 24);
             this.menuStrip.TabIndex = 5;
-            this.menuStrip.Text = "menuStrip1";
+            this.menuStrip.Text = "Menu";
             // 
             // tsmSetup
             // 
@@ -128,6 +132,22 @@
             this.tsmiEditDeactivationList.Text = "&Deactivated Apps";
             this.tsmiEditDeactivationList.Click += new System.EventHandler(this.DeactivationListHandler);
             // 
+            // tsmView
+            // 
+            this.tsmView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiAlwaysShowDownloads});
+            this.tsmView.Name = "tsmView";
+            this.tsmView.Size = new System.Drawing.Size(44, 20);
+            this.tsmView.Text = "&View";
+            // 
+            // tsmiAlwaysShowDownloads
+            // 
+            this.tsmiAlwaysShowDownloads.CheckOnClick = true;
+            this.tsmiAlwaysShowDownloads.Name = "tsmiAlwaysShowDownloads";
+            this.tsmiAlwaysShowDownloads.Size = new System.Drawing.Size(205, 22);
+            this.tsmiAlwaysShowDownloads.Text = "&Always Show Downloads";
+            this.tsmiAlwaysShowDownloads.CheckedChanged += new System.EventHandler(this.AlwaysShowDownloadsCheckedChanged);
+            // 
             // downloadList
             // 
             this.downloadList.AutoScroll = true;
@@ -171,5 +191,7 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiEditActivationList;
         private System.Windows.Forms.ToolStripMenuItem tsmiEditDeactivationList;
         private DownloadList downloadList;
+        private System.Windows.Forms.ToolStripMenuItem tsmView;
+        private System.Windows.Forms.ToolStripMenuItem tsmiAlwaysShowDownloads;
     }
 }

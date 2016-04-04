@@ -19,7 +19,7 @@ namespace Mastersign.Bench
         private readonly WebClient[] webClients;
         private readonly AutoResetEvent[] downloadEvents;
         private volatile int runningDownloads = 0;
-        private volatile bool workStarted = false;
+        private volatile bool working = false;
 
         public int ActiveDownloads { get { return runningDownloads; } }
 
@@ -32,6 +32,8 @@ namespace Mastersign.Bench
         public event EventHandler<DownloadEndEventArgs> DownloadEnded;
 
         public event EventHandler WorkFinished;
+
+        public event EventHandler IsWorkingChanged;
 
         public WebProxy HttpProxy { get; set; }
 
@@ -105,6 +107,16 @@ namespace Mastersign.Bench
             }
         }
 
+        private void OnIsWorkingChanged()
+        {
+            Debug.WriteLine("Raising event IsWorkingChanged");
+            var handler = IsWorkingChanged;
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
+        }
+
         private void OnWorkFinished()
         {
             Debug.WriteLine("Raising event WorkFinished");
@@ -115,16 +127,27 @@ namespace Mastersign.Bench
             }
         }
 
+        public bool IsWorking { get { return working; } }
+
         public void Enqueue(DownloadTask task)
         {
             Debug.WriteLine("Queuing " + task.Id + ", TargetFile=" + task.TargetFile + ", URL=" + task.Url);
+            var notify = false;
             lock (queueLock)
             {
                 if (IsDisposed) { throw new ObjectDisposedException(GetType().Name); }
                 queue.Enqueue(task);
-                workStarted = true;
+                if (!working)
+                {
+                    working = true;
+                    notify = true;
+                }
             }
             availableTasks.Release();
+            if (notify)
+            {
+                OnIsWorkingChanged();
+            }
         }
 
         private void Worker(int no)
@@ -270,15 +293,19 @@ namespace Mastersign.Bench
             var notify = false;
             lock (queueLock)
             {
-                Debug.WriteLine("Checking work state: " + workStarted + ", " + queue.Count);
-                if (!workStarted || runningDownloads > 0 || queue.Count > 0)
+                Debug.WriteLine("Checking work state: " + working + ", " + queue.Count);
+                if (!working || runningDownloads > 0 || queue.Count > 0)
                 {
                     return;
                 }
-                workStarted = false;
+                working = false;
                 notify = true;
             }
-            if (notify) OnWorkFinished();
+            if (notify)
+            {
+                OnWorkFinished();
+                OnIsWorkingChanged();
+            }
         }
 
         private void ResolveUrl(DownloadTask task, WebClient wc)

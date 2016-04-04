@@ -23,7 +23,23 @@ namespace Mastersign.Bench.Dashboard
         private void InitializeDownloadList()
         {
             downloadList.Downloader = core.Downloader;
-            IsDownloadListVisible = true;
+            core.Downloader.IsWorkingChanged += DownloaderIsWorkingChangedHandler;
+            IsDownloadListVisible = false;
+        }
+
+        private void DownloaderIsWorkingChangedHandler(object sender, EventArgs e)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke((EventHandler)DownloaderIsWorkingChangedHandler);
+                return;
+            }
+            UpdateDownloadListVisibility();
+        }
+
+        private void UpdateDownloadListVisibility()
+        {
+            IsDownloadListVisible = core.Downloader.IsWorking || tsmiAlwaysShowDownloads.Checked;
         }
 
         protected bool IsDownloadListVisible
@@ -81,6 +97,11 @@ namespace Mastersign.Bench.Dashboard
         private void DownloadAllHandler(object sender, EventArgs e)
         {
             core.DownloadAppResources();
+        }
+
+        private void AlwaysShowDownloadsCheckedChanged(object sender, EventArgs e)
+        {
+            UpdateDownloadListVisibility();
         }
     }
 }
