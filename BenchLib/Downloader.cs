@@ -19,6 +19,7 @@ namespace Mastersign.Bench
         private readonly WebClient[] webClients;
         private readonly AutoResetEvent[] downloadEvents;
         private volatile int runningDownloads = 0;
+        private volatile bool workStarted = false;
 
         public int ActiveDownloads { get { return runningDownloads; } }
 
@@ -29,6 +30,8 @@ namespace Mastersign.Bench
         public event EventHandler<DownloadProgressEventArgs> DownloadProgress;
 
         public event EventHandler<DownloadEndEventArgs> DownloadEnded;
+
+        public event EventHandler WorkFinished;
 
         public WebProxy HttpProxy { get; set; }
 
@@ -102,6 +105,16 @@ namespace Mastersign.Bench
             }
         }
 
+        private void OnWorkFinished()
+        {
+            Debug.WriteLine("Raising event WorkFinished");
+            var handler = WorkFinished;
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
+        }
+
         public void Enqueue(DownloadTask task)
         {
             Debug.WriteLine("Queuing " + task.Id + ", TargetFile=" + task.TargetFile + ", URL=" + task.Url);
@@ -109,6 +122,7 @@ namespace Mastersign.Bench
             {
                 if (IsDisposed) { throw new ObjectDisposedException(GetType().Name); }
                 queue.Enqueue(task);
+                workStarted = true;
             }
             availableTasks.Release();
         }
@@ -182,6 +196,8 @@ namespace Mastersign.Bench
 
             while (true)
             {
+                CheckWorkState();
+
                 Debug.WriteLine("Worker " + no + " waiting for task...");
                 availableTasks.WaitOne();
 
@@ -247,6 +263,22 @@ namespace Mastersign.Bench
                 // Wait for end
                 downloadEvents[no].WaitOne();
             }
+        }
+
+        private void CheckWorkState()
+        {
+            var notify = false;
+            lock (queueLock)
+            {
+                Debug.WriteLine("Checking work state: " + workStarted + ", " + queue.Count);
+                if (!workStarted || runningDownloads > 0 || queue.Count > 0)
+                {
+                    return;
+                }
+                workStarted = false;
+                notify = true;
+            }
+            if (notify) OnWorkFinished();
         }
 
         private void ResolveUrl(DownloadTask task, WebClient wc)
