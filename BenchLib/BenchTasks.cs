@@ -199,6 +199,38 @@ namespace Mastersign.Bench
             DownloadAppResources(config, downloader, cb, new[] { config.Apps[appId] });
         }
 
+        public static void DeleteAppResources(BenchConfiguration config, IEnumerable<AppFacade> apps)
+        {
+            var downloadDir = config.GetStringValue(PropertyKeys.DownloadDir);
+
+            foreach (var app in apps)
+            {
+                if (app.Typ != AppTyps.Default) continue;
+
+                var resourceFile = app.ResourceFileName ?? app.ResourceArchiveName;
+                if (resourceFile == null)
+                {
+                    Debug.WriteLine("Skipped app " + app.ID + " because of missing resource name.");
+                    continue;
+                }
+                var resourcePath = Path.Combine(downloadDir, resourceFile);
+                if (File.Exists(resourcePath))
+                {
+                    File.Delete(resourcePath);
+                }
+            }
+        }
+
+        public static void DeleteAppResources(BenchConfiguration config)
+        {
+            DeleteAppResources(config, config.Apps);
+        }
+
+        public static void DeleteAppResources(BenchConfiguration config, string appId)
+        {
+            DeleteAppResources(config, new[] { config.Apps[appId] });
+        }
+
         public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)
         {
             var app = config.Apps[appId];
