@@ -59,6 +59,7 @@
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="SchemeDispatchProxy.cs" />
     <Compile Include="SurroundedHtmlLinkUrlResolver.cs" />
+    <Compile Include="AsyncManager.cs" />
     <Compile Include="UrlPattern.cs" />
     <Compile Include="HtmlLinkUrlResolver.cs" />
     <Compile Include="IConfiguration.cs" />
