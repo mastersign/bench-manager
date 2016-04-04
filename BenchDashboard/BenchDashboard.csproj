@@ -63,6 +63,12 @@
     <Compile Include="DownloadList.Designer.cs">
       <DependentUpon>DownloadList.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImmediateMenuStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ImmediateToolStrip.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
