@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ionic.Zip;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -297,20 +298,186 @@ namespace Mastersign.Bench
             });
         }
 
-        public static void DeleteAppResources(BenchConfiguration config, 
+        public static void DeleteAppResources(BenchConfiguration config,
             ProgressCallback progressCb, AppTaskCallback endCb)
         {
             DeleteAppResources(config, progressCb, endCb, new List<AppFacade>(config.Apps));
         }
 
-        public static void DeleteAppResources(BenchConfiguration config, 
-            ProgressCallback progressCb, AppTaskCallback endCb, 
+        public static void DeleteAppResources(BenchConfiguration config,
+            ProgressCallback progressCb, AppTaskCallback endCb,
             string appId)
         {
             DeleteAppResources(config, progressCb, endCb, new[] { config.Apps[appId] });
         }
 
-        public static void InstallApps(BenchConfiguration config, 
+        public static void ExtractAppArchive(BenchConfiguration config, AppTaskCallback endCb,
+            string appId)
+        {
+            AsyncManager.StartTask(() =>
+            {
+                var error = ExtractAppArchiveSync(config, appId);
+                if (error != null)
+                {
+                    endCb(false, new[] { error });
+                }
+                else
+                {
+                    endCb(true, new AppTaskError[0]);
+                }
+            });
+        }
+
+        private static AppTaskError ExtractAppArchiveSync(BenchConfiguration config, string appId)
+        {
+            var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), appId + "_extract");
+            var app = config.Apps[appId];
+            var archiveFile = Path.Combine(config.GetStringValue(PropertyKeys.DownloadDir), app.ResourceArchiveName);
+            if (!File.Exists(archiveFile))
+            {
+                return new AppTaskError(appId,
+                    "Application resource not found: " + app.ResourceArchiveName);
+            }
+            var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
+            var extractDir = app.ResourceArchivePath != null ? tmpDir : targetDir;
+            EmptyDir(extractDir);
+            var success = false;
+            switch (app.ResourceArchiveTyp)
+            {
+                case AppArchiveTyps.Auto:
+                    if (archiveFile.EndsWith(".msi", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        success = ExtractMsiPackage(config, appId, archiveFile, extractDir);
+                    }
+                    else if (archiveFile.EndsWith(".0"))
+                    {
+                        success = ExtractInnoSetup(config, appId, archiveFile, extractDir);
+                    }
+                    else
+                    {
+                        success = ExtractArchiveGeneric(config, appId, archiveFile, extractDir);
+                    }
+                    break;
+                case AppArchiveTyps.Generic:
+                    success = ExtractArchiveGeneric(config, appId, archiveFile, extractDir);
+                    break;
+                case AppArchiveTyps.Msi:
+                    success = ExtractMsiPackage(config, appId, archiveFile, extractDir);
+                    break;
+                case AppArchiveTyps.InnoSetup:
+                    success = ExtractInnoSetup(config, appId, archiveFile, extractDir);
+                    break;
+                case AppArchiveTyps.Custom:
+                    break;
+            }
+            if (!success)
+            {
+                PurgeDir(extractDir);
+                return new AppTaskError(appId,
+                    "Extracting application resource failed: " + app.ResourceArchiveName);
+            }
+            if (app.ResourceArchivePath != null)
+            {
+                Directory.Move(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
+                PurgeDir(extractDir);
+            }
+            return null;
+        }
+
+        private static bool ExtractArchiveGeneric(BenchConfiguration config, string id,
+            string archiveFile, string targetDir)
+        {
+            if (config.Apps[AppKeys.SevenZip].Exe != null)
+            {
+                return ExtractArchive7z(config, id, archiveFile, targetDir);
+            }
+            else
+            {
+                return ExtractArchiveClr(archiveFile, targetDir);
+            }
+        }
+
+        private static bool ExtractArchiveClr(string archiveFile, string targetDir)
+        {
+            try
+            {
+                var zip = new ZipFile(archiveFile);
+                zip.ExtractAll(targetDir, ExtractExistingFileAction.OverwriteSilently);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static bool ExtractArchive7z(BenchConfiguration config, string id,
+            string archiveFile, string targetDir)
+        {
+            if (Regex.IsMatch(Path.GetExtension(archiveFile), @"^\.tar\.\w+$",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), id + "_tar");
+                EmptyDir(tmpDir);
+                if (Run7zExtract(config, archiveFile, tmpDir))
+                {
+                    // extracting the compressed file succeeded, extracting tar
+                    var tarFile = Path.ChangeExtension(
+                        Path.Combine(tmpDir, Path.GetFileName(archiveFile)),
+                        ".tar");
+                    var success = Run7zExtract(config, tarFile, targetDir);
+                    PurgeDir(tmpDir);
+                    return success;
+                }
+                else
+                {
+                    // extracting the compressed tar file failed
+                    PurgeDir(tmpDir);
+                    return false;
+                }
+            }
+            else
+            {
+                return Run7zExtract(config, archiveFile, targetDir);
+            }
+        }
+
+        private static bool Run7zExtract(BenchConfiguration config, string archiveFile, string targetDir)
+        {
+            var svnZipExe = config.Apps[AppKeys.SevenZip].Exe;
+            if (svnZipExe == null) return false;
+            var env = new BenchEnvironment(config);
+            var proc = StartProcess(env, targetDir, svnZipExe,
+                    "x", "-y", "-o" + targetDir, archiveFile);
+            proc.WaitForExit();
+            return proc.ExitCode == 0;
+        }
+
+        private static bool ExtractMsiPackage(BenchConfiguration config, string id,
+            string archiveFile, string targetDir)
+        {
+            var lessMsiExe = config.Apps[AppKeys.LessMSI].Exe;
+            if (lessMsiExe == null) return false;
+            var env = new BenchEnvironment(config);
+            var proc = StartProcess(env, targetDir, lessMsiExe,
+                "x", archiveFile, @".\");
+            proc.WaitForExit();
+            return proc.ExitCode == 0;
+        }
+
+        private static bool ExtractInnoSetup(BenchConfiguration config, string id,
+            string archiveFile, string targetDir)
+        {
+            var innoUnpExe = config.Apps[AppKeys.InnoSetupUnpacker].Exe;
+            if (innoUnpExe == null) return false;
+            var env = new BenchEnvironment(config);
+            var proc = StartProcess(env, targetDir, innoUnpExe,
+                "-q", "-x", archiveFile);
+            proc.WaitForExit();
+            return proc.ExitCode == 0;
+        }
+
+        public static void InstallApps(BenchConfiguration config,
             ProgressCallback progressCb, AppTaskCallback endC,
             ICollection<AppFacade> apps)
         {
@@ -330,7 +497,7 @@ namespace Mastersign.Bench
                 exe, ProcessArguments(app.LauncherArguments, args));
         }
 
-        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string[] args)
+        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, params string[] args)
         {
             return StartProcess(env, cwd, exe, FormatArguments(args));
         }
@@ -398,6 +565,16 @@ namespace Mastersign.Bench
             return s;
         }
 
+        private static void EmptyDir(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                PurgeDir(path);
+            }
+            Debug.WriteLine("Creating directory: " + path);
+            Directory.CreateDirectory(path);
+        }
+
         private static void AsureDir(string path)
         {
             if (!Directory.Exists(path))
@@ -405,6 +582,13 @@ namespace Mastersign.Bench
                 Debug.WriteLine("Creating directory: " + path);
                 Directory.CreateDirectory(path);
             }
+        }
+
+        private static void PurgeDir(string path)
+        {
+            if (!Directory.Exists(path)) return;
+            Debug.WriteLine("Purging directory: " + path);
+            Directory.Delete(path, true);
         }
     }
 
