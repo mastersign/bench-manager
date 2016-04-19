@@ -106,5 +106,6 @@ namespace Mastersign.Bench.Dashboard
         {
             new SetupForm(core).ShowDialog(this);
         }
+
     }
 }

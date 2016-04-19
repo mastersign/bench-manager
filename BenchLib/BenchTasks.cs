@@ -311,12 +311,35 @@ namespace Mastersign.Bench
             DeleteAppResources(config, progressCb, endCb, new[] { config.Apps[appId] });
         }
 
-        public static void ExtractAppArchive(BenchConfiguration config, AppTaskCallback endCb,
+        private static AppTaskError CopyAppResourceFile(BenchConfiguration config, string appId)
+        {
+            var app = config.Apps[appId];
+            var resourceFile = Path.Combine(config.GetStringValue(PropertyKeys.DownloadDir), app.ResourceFileName);
+            if (!File.Exists(resourceFile))
+            {
+                return new AppTaskError(appId,
+                    "Application resource not found: " + app.ResourceFileName);
+            }
+            var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
+            try
+            {
+                AsureDir(targetDir);
+                File.Copy(resourceFile, Path.Combine(targetDir, app.ResourceFileName), true);
+            }
+            catch (Exception e)
+            {
+                return new AppTaskError(appId, e.Message);
+            }
+            return null;
+        }
+
+        public static void ExtractAppArchiveAsync(BenchConfiguration config, IProcessExecutionHost execHost,
+            AppTaskCallback endCb,
             string appId)
         {
             AsyncManager.StartTask(() =>
             {
-                var error = ExtractAppArchiveSync(config, appId);
+                var error = ExtractAppArchive(config, execHost, appId);
                 if (error != null)
                 {
                     endCb(false, new[] { error });
@@ -328,7 +351,7 @@ namespace Mastersign.Bench
             });
         }
 
-        private static AppTaskError ExtractAppArchiveSync(BenchConfiguration config, string appId)
+        private static AppTaskError ExtractAppArchive(BenchConfiguration config, IProcessExecutionHost execHost, string appId)
         {
             var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), appId + "_extract");
             var app = config.Apps[appId];
@@ -340,56 +363,65 @@ namespace Mastersign.Bench
             }
             var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
             var extractDir = app.ResourceArchivePath != null ? tmpDir : targetDir;
-            EmptyDir(extractDir);
+            AsureDir(extractDir);
             var success = false;
+            var customExtractScript = CustomScript(config, "extract", app);
             switch (app.ResourceArchiveTyp)
             {
                 case AppArchiveTyps.Auto:
-                    if (archiveFile.EndsWith(".msi", StringComparison.InvariantCultureIgnoreCase))
+                    if (customExtractScript != null)
                     {
-                        success = ExtractMsiPackage(config, appId, archiveFile, extractDir);
+                        success = RunCustomScript(config, execHost, appId, customExtractScript, archiveFile, extractDir) == null;
+                    }
+                    else if (archiveFile.EndsWith(".msi", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        success = ExtractMsiPackage(config, execHost, appId, archiveFile, extractDir);
                     }
                     else if (archiveFile.EndsWith(".0"))
                     {
-                        success = ExtractInnoSetup(config, appId, archiveFile, extractDir);
+                        success = ExtractInnoSetup(config, execHost, appId, archiveFile, extractDir);
                     }
                     else
                     {
-                        success = ExtractArchiveGeneric(config, appId, archiveFile, extractDir);
+                        success = ExtractArchiveGeneric(config, execHost, appId, archiveFile, extractDir);
                     }
                     break;
                 case AppArchiveTyps.Generic:
-                    success = ExtractArchiveGeneric(config, appId, archiveFile, extractDir);
+                    success = ExtractArchiveGeneric(config, execHost, appId, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.Msi:
-                    success = ExtractMsiPackage(config, appId, archiveFile, extractDir);
+                    success = ExtractMsiPackage(config, execHost, appId, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.InnoSetup:
-                    success = ExtractInnoSetup(config, appId, archiveFile, extractDir);
+                    success = ExtractInnoSetup(config, execHost, appId, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.Custom:
+                    success = customExtractScript != null 
+                        ? RunCustomScript(config, execHost, appId, customExtractScript, archiveFile, extractDir) == null 
+                        : false;
                     break;
             }
             if (!success)
             {
-                PurgeDir(extractDir);
                 return new AppTaskError(appId,
                     "Extracting application resource failed: " + app.ResourceArchiveName);
             }
             if (app.ResourceArchivePath != null)
             {
-                Directory.Move(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
+                PurgeDir(targetDir);
+                MoveContent(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
                 PurgeDir(extractDir);
             }
             return null;
         }
 
-        private static bool ExtractArchiveGeneric(BenchConfiguration config, string id,
+        private static bool ExtractArchiveGeneric(BenchConfiguration config, IProcessExecutionHost execHost, string id,
             string archiveFile, string targetDir)
         {
-            if (config.Apps[AppKeys.SevenZip].Exe != null)
+            var sevenZipExe = config.Apps[AppKeys.SevenZip].Exe;
+            if (sevenZipExe != null && File.Exists(sevenZipExe))
             {
-                return ExtractArchive7z(config, id, archiveFile, targetDir);
+                return ExtractArchive7z(config, execHost, id, archiveFile, targetDir);
             }
             else
             {
@@ -411,21 +443,19 @@ namespace Mastersign.Bench
             }
         }
 
-        private static bool ExtractArchive7z(BenchConfiguration config, string id,
+        private static bool ExtractArchive7z(BenchConfiguration config, IProcessExecutionHost execHost, string id,
             string archiveFile, string targetDir)
         {
-            if (Regex.IsMatch(Path.GetExtension(archiveFile), @"^\.tar\.\w+$",
+            if (Regex.IsMatch(Path.GetFileName(archiveFile), @"\.tar\.\w+$",
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), id + "_tar");
                 EmptyDir(tmpDir);
-                if (Run7zExtract(config, archiveFile, tmpDir))
+                if (Run7zExtract(config, execHost, archiveFile, tmpDir))
                 {
                     // extracting the compressed file succeeded, extracting tar
-                    var tarFile = Path.ChangeExtension(
-                        Path.Combine(tmpDir, Path.GetFileName(archiveFile)),
-                        ".tar");
-                    var success = Run7zExtract(config, tarFile, targetDir);
+                    var tarFile = Path.Combine(tmpDir, Path.GetFileNameWithoutExtension(archiveFile));
+                    var success = Run7zExtract(config, execHost, tarFile, targetDir);
                     PurgeDir(tmpDir);
                     return success;
                 }
@@ -438,50 +468,221 @@ namespace Mastersign.Bench
             }
             else
             {
-                return Run7zExtract(config, archiveFile, targetDir);
+                return Run7zExtract(config, execHost, archiveFile, targetDir);
             }
         }
 
-        private static bool Run7zExtract(BenchConfiguration config, string archiveFile, string targetDir)
+        private static bool Run7zExtract(BenchConfiguration config, IProcessExecutionHost execHost,
+            string archiveFile, string targetDir)
         {
             var svnZipExe = config.Apps[AppKeys.SevenZip].Exe;
-            if (svnZipExe == null) return false;
+            if (svnZipExe == null || !File.Exists(svnZipExe)) return false;
             var env = new BenchEnvironment(config);
-            var proc = StartProcess(env, targetDir, svnZipExe,
-                    "x", "-y", "-o" + targetDir, archiveFile);
-            proc.WaitForExit();
-            return proc.ExitCode == 0;
+            var exitCode = execHost.RunProcess(env, targetDir, svnZipExe,
+                    FormatCommandLineArguments("x", "-y", "-o" + targetDir, archiveFile));
+            return exitCode == 0;
         }
 
-        private static bool ExtractMsiPackage(BenchConfiguration config, string id,
-            string archiveFile, string targetDir)
+        private static bool ExtractMsiPackage(BenchConfiguration config, IProcessExecutionHost execHost,
+            string id, string archiveFile, string targetDir)
         {
             var lessMsiExe = config.Apps[AppKeys.LessMSI].Exe;
             if (lessMsiExe == null) return false;
             var env = new BenchEnvironment(config);
-            var proc = StartProcess(env, targetDir, lessMsiExe,
-                "x", archiveFile, @".\");
-            proc.WaitForExit();
-            return proc.ExitCode == 0;
+            var exitCode = execHost.RunProcess(env, targetDir, lessMsiExe,
+                FormatCommandLineArguments("x", archiveFile, @".\"));
+            return exitCode == 0;
         }
 
-        private static bool ExtractInnoSetup(BenchConfiguration config, string id,
-            string archiveFile, string targetDir)
+        private static bool ExtractInnoSetup(BenchConfiguration config, IProcessExecutionHost execHost,
+            string id, string archiveFile, string targetDir)
         {
             var innoUnpExe = config.Apps[AppKeys.InnoSetupUnpacker].Exe;
             if (innoUnpExe == null) return false;
             var env = new BenchEnvironment(config);
-            var proc = StartProcess(env, targetDir, innoUnpExe,
-                "-q", "-x", archiveFile);
-            proc.WaitForExit();
-            return proc.ExitCode == 0;
+            var exitCode = execHost.RunProcess(env, targetDir, innoUnpExe,
+                FormatCommandLineArguments("-q", "-x", archiveFile));
+            return exitCode == 0;
         }
 
-        public static void InstallApps(BenchConfiguration config,
-            ProgressCallback progressCb, AppTaskCallback endC,
+        public static AppTaskError InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, string appId)
+        {
+            var npmExe = config.Apps[AppKeys.Npm].Exe;
+            if (npmExe == null) return new AppTaskError(appId, "The NodeJS package manager was not found.");
+            var app = config.Apps[appId];
+            var packageName = app.Version != null
+                ? string.Format("{0}@{1}", app.PackageName, app.Version)
+                : app.PackageName;
+            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
+                FormatCommandLineArguments("install", packageName, "--global"));
+            if (exitCode != 0)
+            {
+                return new AppTaskError(appId,
+                    "Installing the NPM package " + app.PackageName + " failed with exit code " + exitCode + ".");
+            }
+            return null;
+        }
+
+        public static AppTaskError InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, string appId)
+        {
+            string pipExe = null;
+            switch (pyVer)
+            {
+                case PythonVersion.Python2:
+                    pipExe = Path.Combine(
+                        Path.Combine(config.GetStringValue(PropertyKeys.LibDir), config.Apps[AppKeys.Python2].Dir),
+                        @"Scripts\pip2.exe");
+                    break;
+                case PythonVersion.Python3:
+                    pipExe = Path.Combine(
+                        Path.Combine(config.GetStringValue(PropertyKeys.LibDir), config.Apps[AppKeys.Python3].Dir),
+                        @"Scripts\pip3.exe");
+                    break;
+            }
+            if (pipExe == null) return new AppTaskError(appId, "The " + pyVer + " package manager PIP was not found.");
+            var app = config.Apps[appId];
+
+            var args = new List<string>();
+            args.Add("install");
+            if (app.Force) args.Add("--upgrade");
+            args.Add(app.PackageName);
+            if (app.Version != null) args.Add(app.Version);
+
+            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
+                    FormatCommandLineArguments(args.ToArray()));
+
+            if (exitCode != 0)
+            {
+                return new AppTaskError(appId,
+                    "Installing the " + pyVer + " package " + app.PackageName + " failed with exit code " + exitCode + ".");
+            }
+            return null;
+        }
+
+        public static void InstallApps(BenchConfiguration config, IProcessExecutionHost execHost,
+            ProgressCallback progressCb, AppTaskCallback endCb,
             ICollection<AppFacade> apps)
         {
+            AsyncManager.StartTask(() =>
+            {
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+                foreach (var app in apps)
+                {
+                    cnt++;
+                    var progress = (float)cnt / apps.Count;
 
+                    AppTaskError error = null;
+                    if (!app.IsInstalled)
+                    {
+                        // 1. Extraction / Installation
+                        progressCb(string.Format("Installing app {0}.", app.ID), errors.Count > 0, progress);
+                        switch (app.Typ)
+                        {
+                            case AppTyps.Meta:
+                                // no resource extraction
+                                break;
+                            case AppTyps.Default:
+                                if (app.ResourceFileName != null)
+                                {
+                                    error = CopyAppResourceFile(config, app.ID);
+                                }
+                                else if (app.ResourceArchiveName != null)
+                                {
+                                    error = ExtractAppArchive(config, execHost, app.ID);
+                                }
+                                break;
+                            case AppTyps.NodePackage:
+                                error = InstallNodePackage(config, execHost, app.ID);
+                                break;
+                            case AppTyps.Python2Package:
+                                error = InstallPythonPackage(config, execHost, PythonVersion.Python2, app.ID);
+                                break;
+                            case AppTyps.Python3Package:
+                                error = InstallPythonPackage(config, execHost, PythonVersion.Python3, app.ID);
+                                break;
+                            default:
+                                error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
+                                break;
+                        }
+                        if (error != null)
+                        {
+                            errors.Add(error);
+                            progressCb(error.ErrorMessage, true, progress);
+                            continue;
+                        }
+                        // 2. Custom Setup-Script
+                        var customSetupScript = CustomScript(config, "setup", app);
+                        if (customSetupScript != null)
+                        {
+                            progressCb(string.Format("Executing custom setup script for {0}.", app.ID), errors.Count > 0, progress);
+                            error = RunCustomScript(config, execHost, app.ID, customSetupScript);
+                            if (error != null)
+                            {
+                                errors.Add(error);
+                                progressCb(string.Format("Execution of custom setup script for {0} failed.", app.ID), true, progress);
+                            }
+                        }
+                        // TODO 3. Create Execution Proxy
+                        // TODO 4. Create Launcher
+                    }
+                }
+                progressCb("Finished installing apps.", errors.Count > 0, 1f);
+                endCb(errors.Count == 0, errors);
+            });
+        }
+
+        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, string appId, string path, params string[] args)
+        {
+            var customScriptRunner = Path.Combine(config.GetStringValue(PropertyKeys.BenchScripts), "Run-CustomScript.ps1");
+            var command = Convert.ToBase64String(Encoding.Unicode.GetBytes(
+                string.Format("{0} {1} {2}", customScriptRunner, path, PsList(args))));
+            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, PowerShellExecutable(),
+                FormatCommandLineArguments("-NoLogo", "-NoProfile", "-ExecutionPolicy", "Unrestricted", 
+                    "-EncodedCommand", command));
+            return exitCode != 0
+                ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.", Path.GetFileName(path)))
+                : null;
+        }
+
+        private static string PsList(params string[] args)
+        {
+            var list = new string[args.Length];
+            for (int i = 0; i < args.Length; i++)
+            {
+                list[i] = EscapeArgument(args[i]);
+            }
+            return "@(" + string.Join(", ", list) + ")";
+        }
+
+        private static string PowerShellExecutable()
+        {
+            return Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe");
+        }
+
+        private static string CustomScript(BenchConfiguration config, string typ, AppFacade app)
+        {
+            var path = Path.Combine(CustomScriptDir(config),
+                app.ID.ToLowerInvariant() + "." + typ + ".ps1");
+            return File.Exists(path) ? path : null;
+        }
+
+        private static string CustomScriptDir(BenchConfiguration config)
+        {
+            return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
+        }
+
+        public static void InstallApps(BenchConfiguration config, IProcessExecutionHost execHost,
+            ProgressCallback progressCb, AppTaskCallback endCb)
+        {
+            InstallApps(config, execHost, progressCb, endCb, config.Apps.ActiveApps);
+        }
+
+        public static void InstallApp(BenchConfiguration config, IProcessExecutionHost execHost,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            string appId)
+        {
+            InstallApps(config, execHost, progressCb, endCb, new[] { config.Apps[appId] });
         }
 
         public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)
@@ -495,11 +696,6 @@ namespace Mastersign.Bench
             }
             return StartProcess(env, config.GetStringValue(PropertyKeys.HomeDir),
                 exe, ProcessArguments(app.LauncherArguments, args));
-        }
-
-        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, params string[] args)
-        {
-            return StartProcess(env, cwd, exe, FormatArguments(args));
         }
 
         public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
@@ -534,10 +730,10 @@ namespace Mastersign.Bench
                     result.Add(arg);
                 }
             }
-            return FormatArguments(result.ToArray());
+            return FormatCommandLineArguments(result.ToArray());
         }
 
-        private static string FormatArguments(params string[] args)
+        public static string FormatCommandLineArguments(params string[] args)
         {
             var list = new string[args.Length];
             for (int i = 0; i < args.Length; i++)
@@ -589,6 +785,23 @@ namespace Mastersign.Bench
             if (!Directory.Exists(path)) return;
             Debug.WriteLine("Purging directory: " + path);
             Directory.Delete(path, true);
+        }
+
+        private static void MoveContent(string sourceDir, string targetDir)
+        {
+            AsureDir(targetDir);
+            foreach (var dir in Directory.GetDirectories(sourceDir))
+            {
+                Directory.Move(
+                    dir,
+                    Path.Combine(targetDir, Path.GetFileName(dir)));
+            }
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                File.Move(
+                    file,
+                    Path.Combine(targetDir, Path.GetFileName(file)));
+            }
         }
     }
 

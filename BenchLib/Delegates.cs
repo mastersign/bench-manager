@@ -18,4 +18,6 @@ namespace Mastersign.Bench
     public delegate void AppTaskCallback(bool success, ICollection<AppTaskError> errors);
 
     public delegate void ProgressCallback(string info, bool errors, float progress);
+
+    public delegate void ProcessExitCallback(int exitCode);
 }

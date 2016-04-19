@@ -12,6 +12,8 @@ namespace Mastersign.Bench.Dashboard
 
         public IUserInterface UI { get; private set; }
 
+        public IProcessExecutionHost ProcessExecutionHost { get; private set; }
+
         public BenchConfiguration Config { get; private set; }
 
         public BenchEnvironment Env { get; private set; }
@@ -26,6 +28,7 @@ namespace Mastersign.Bench.Dashboard
             Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
             Env = new BenchEnvironment(Config);
             Downloader = BenchTasks.InitializeDownloader(Config);
+            ProcessExecutionHost = new DefaultExecutionHost();
         }
 
         public void DownloadAppResources(ProgressCallback progressCb)
@@ -66,6 +69,25 @@ namespace Mastersign.Bench.Dashboard
                 });
         }
 
+        public void InstallApps(ProgressCallback progressCb)
+        {
+            BenchTasks.InstallApps(Config, ProcessExecutionHost, progressCb,
+            (success, errors) =>
+            {
+                if (success)
+                {
+                    UI.ShowInfo("Installing Apps", "Finished.");
+                }
+                else
+                {
+                    UI.ShowWarning("Installing Apps",
+                        "Installing the following apps failed: "
+                        + Environment.NewLine + Environment.NewLine
+                        + BuildCombinedErrorMessage(errors, 10));
+                }
+            });
+        }
+
         private static string BuildCombinedErrorMessage(IEnumerable<AppTaskError> errors, int maxLines)
         {
             var errorLines = new List<string>(maxLines);
@@ -97,9 +119,11 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
-        public Process StartProcess(string exe, params string[] args)
+        public void StartProcess(string exe, params string[] args)
         {
-            return BenchTasks.StartProcess(Env, Config.BenchRootDir, exe, args);
+            ProcessExecutionHost.StartProcess(Env, Config.BenchRootDir, exe,
+                BenchTasks.FormatCommandLineArguments(args),
+                exitCode => { });
         }
 
         public void ShowPathInExplorer(string path)

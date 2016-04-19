@@ -105,6 +105,7 @@
             this.tsmiSetup.Name = "tsmiSetup";
             this.tsmiSetup.Size = new System.Drawing.Size(184, 22);
             this.tsmiSetup.Text = "&Install Apps";
+            this.tsmiSetup.Click += new System.EventHandler(this.InstallAllHandler);
             // 
             // tsmEdit
             // 

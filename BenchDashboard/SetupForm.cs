@@ -126,5 +126,11 @@ namespace Mastersign.Bench.Dashboard
             lblTask.Text = "Delete app resources";
             core.DeleteAppResources(ProgressInfoHandler);
         }
+
+        private void InstallAllHandler(object sender, EventArgs e)
+        {
+            lblTask.Text = "Install apps";
+            core.InstallApps(ProgressInfoHandler);
+        }
     }
 }

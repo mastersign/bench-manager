@@ -84,5 +84,19 @@ namespace Mastersign.Bench.Dashboard
                 Core.LaunchApp((string)item.Tag);
             }
         }
+
+        private void listView_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Right) return;
+            if (Core == null) return;
+            var item = listView.SelectedItems.Count > 0 ? listView.SelectedItems[0] : null;
+            if (item != null)
+            {
+                BenchTasks.ExtractAppArchiveAsync(Core.Config, Core.ProcessExecutionHost, (success, errors) =>
+                {
+                    MessageBox.Show("Result: " + success);
+                }, (string)item.Tag);
+            }
+        }
     }
 }

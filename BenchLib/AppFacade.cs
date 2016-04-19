@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 
@@ -174,6 +175,24 @@ namespace Mastersign.Bench
                         return System.IO.Directory.Exists(pip3PackageDir);
                     default:
                         return System.IO.File.Exists(SetupTestFile);
+                }
+            }
+        }
+
+        public bool IsResourceCached
+        {
+            get
+            {
+                switch (Typ)
+                {
+                    case AppTyps.Default:
+                        return ResourceFileName != null
+                            ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceFileName))
+                            : ResourceArchiveName != null
+                                ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceArchiveName))
+                                : true;
+                    default:
+                        return true;
                 }
             }
         }
