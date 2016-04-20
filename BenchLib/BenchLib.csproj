@@ -64,6 +64,7 @@
     <Compile Include="FileSystem.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IProcessExecutionHost.cs" />
+    <Compile Include="PowerShell.cs" />
     <Compile Include="PythonVersion.cs" />
     <Compile Include="SchemeDispatchProxy.cs" />
     <Compile Include="SurroundedHtmlLinkUrlResolver.cs" />

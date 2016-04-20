@@ -396,8 +396,8 @@ namespace Mastersign.Bench
                     success = ExtractInnoSetup(config, execHost, appId, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.Custom:
-                    success = customExtractScript != null 
-                        ? RunCustomScript(config, execHost, appId, customExtractScript, archiveFile, extractDir) == null 
+                    success = customExtractScript != null
+                        ? RunCustomScript(config, execHost, appId, customExtractScript, archiveFile, extractDir) == null
                         : false;
                     break;
             }
@@ -635,29 +635,11 @@ namespace Mastersign.Bench
         public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, string appId, string path, params string[] args)
         {
             var customScriptRunner = Path.Combine(config.GetStringValue(PropertyKeys.BenchScripts), "Run-CustomScript.ps1");
-            var command = Convert.ToBase64String(Encoding.Unicode.GetBytes(
-                string.Format("{0} {1} {2}", customScriptRunner, path, PsList(args))));
-            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, PowerShellExecutable(),
-                FormatCommandLineArguments("-NoLogo", "-NoProfile", "-ExecutionPolicy", "Unrestricted", 
-                    "-EncodedCommand", command));
+            var exitCode = PowerShell.RunScript(new BenchEnvironment(config), execHost, config.BenchRootDir, customScriptRunner,
+                path, PowerShell.FormatArgumentList(args));
             return exitCode != 0
                 ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.", Path.GetFileName(path)))
                 : null;
-        }
-
-        private static string PsList(params string[] args)
-        {
-            var list = new string[args.Length];
-            for (int i = 0; i < args.Length; i++)
-            {
-                list[i] = EscapeArgument(args[i]);
-            }
-            return "@(" + string.Join(", ", list) + ")";
-        }
-
-        private static string PowerShellExecutable()
-        {
-            return Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe");
         }
 
         private static string CustomScript(BenchConfiguration config, string typ, AppFacade app)
