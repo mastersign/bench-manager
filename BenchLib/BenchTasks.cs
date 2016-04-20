@@ -311,13 +311,12 @@ namespace Mastersign.Bench
             DeleteAppResources(config, progressCb, endCb, new[] { config.Apps[appId] });
         }
 
-        private static AppTaskError CopyAppResourceFile(BenchConfiguration config, string appId)
+        private static AppTaskError CopyAppResourceFile(BenchConfiguration config, AppFacade app)
         {
-            var app = config.Apps[appId];
             var resourceFile = Path.Combine(config.GetStringValue(PropertyKeys.DownloadDir), app.ResourceFileName);
             if (!File.Exists(resourceFile))
             {
-                return new AppTaskError(appId,
+                return new AppTaskError(app.ID,
                     "Application resource not found: " + app.ResourceFileName);
             }
             var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
@@ -328,7 +327,7 @@ namespace Mastersign.Bench
             }
             catch (Exception e)
             {
-                return new AppTaskError(appId, e.Message);
+                return new AppTaskError(app.ID, e.Message);
             }
             return null;
         }
@@ -339,7 +338,7 @@ namespace Mastersign.Bench
         {
             AsyncManager.StartTask(() =>
             {
-                var error = ExtractAppArchive(config, execHost, appId);
+                var error = ExtractAppArchive(config, execHost, config.Apps[appId]);
                 if (error != null)
                 {
                     endCb(false, new[] { error });
@@ -351,14 +350,13 @@ namespace Mastersign.Bench
             });
         }
 
-        private static AppTaskError ExtractAppArchive(BenchConfiguration config, IProcessExecutionHost execHost, string appId)
+        private static AppTaskError ExtractAppArchive(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
         {
-            var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), appId + "_extract");
-            var app = config.Apps[appId];
+            var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), app.ID + "_extract");
             var archiveFile = Path.Combine(config.GetStringValue(PropertyKeys.DownloadDir), app.ResourceArchiveName);
             if (!File.Exists(archiveFile))
             {
-                return new AppTaskError(appId,
+                return new AppTaskError(app.ID,
                     "Application resource not found: " + app.ResourceArchiveName);
             }
             var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
@@ -371,39 +369,39 @@ namespace Mastersign.Bench
                 case AppArchiveTyps.Auto:
                     if (customExtractScript != null)
                     {
-                        success = RunCustomScript(config, execHost, appId, customExtractScript, archiveFile, extractDir) == null;
+                        success = RunCustomScript(config, execHost, app.ID, customExtractScript, archiveFile, extractDir) == null;
                     }
                     else if (archiveFile.EndsWith(".msi", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        success = ExtractMsiPackage(config, execHost, appId, archiveFile, extractDir);
+                        success = ExtractMsiPackage(config, execHost, app.ID, archiveFile, extractDir);
                     }
                     else if (archiveFile.EndsWith(".0"))
                     {
-                        success = ExtractInnoSetup(config, execHost, appId, archiveFile, extractDir);
+                        success = ExtractInnoSetup(config, execHost, app.ID, archiveFile, extractDir);
                     }
                     else
                     {
-                        success = ExtractArchiveGeneric(config, execHost, appId, archiveFile, extractDir);
+                        success = ExtractArchiveGeneric(config, execHost, app.ID, archiveFile, extractDir);
                     }
                     break;
                 case AppArchiveTyps.Generic:
-                    success = ExtractArchiveGeneric(config, execHost, appId, archiveFile, extractDir);
+                    success = ExtractArchiveGeneric(config, execHost, app.ID, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.Msi:
-                    success = ExtractMsiPackage(config, execHost, appId, archiveFile, extractDir);
+                    success = ExtractMsiPackage(config, execHost, app.ID, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.InnoSetup:
-                    success = ExtractInnoSetup(config, execHost, appId, archiveFile, extractDir);
+                    success = ExtractInnoSetup(config, execHost, app.ID, archiveFile, extractDir);
                     break;
                 case AppArchiveTyps.Custom:
                     success = customExtractScript != null
-                        ? RunCustomScript(config, execHost, appId, customExtractScript, archiveFile, extractDir) == null
+                        ? RunCustomScript(config, execHost, app.ID, customExtractScript, archiveFile, extractDir) == null
                         : false;
                     break;
             }
             if (!success)
             {
-                return new AppTaskError(appId,
+                return new AppTaskError(app.ID,
                     "Extracting application resource failed: " + app.ResourceArchiveName);
             }
             if (app.ResourceArchivePath != null)
@@ -505,11 +503,10 @@ namespace Mastersign.Bench
             return exitCode == 0;
         }
 
-        public static AppTaskError InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, string appId)
+        public static AppTaskError InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
-            if (npmExe == null) return new AppTaskError(appId, "The NodeJS package manager was not found.");
-            var app = config.Apps[appId];
+            if (npmExe == null) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
             var packageName = app.Version != null
                 ? string.Format("{0}@{1}", app.PackageName, app.Version)
                 : app.PackageName;
@@ -517,13 +514,13 @@ namespace Mastersign.Bench
                 CommandLine.FormatArgumentList("install", packageName, "--global"));
             if (exitCode != 0)
             {
-                return new AppTaskError(appId,
+                return new AppTaskError(app.ID,
                     "Installing the NPM package " + app.PackageName + " failed with exit code " + exitCode + ".");
             }
             return null;
         }
 
-        public static AppTaskError InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, string appId)
+        public static AppTaskError InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
         {
             string pipExe = null;
             switch (pyVer)
@@ -539,9 +536,8 @@ namespace Mastersign.Bench
                         @"Scripts\pip3.exe");
                     break;
             }
-            if (pipExe == null) return new AppTaskError(appId, "The " + pyVer + " package manager PIP was not found.");
-            var app = config.Apps[appId];
-
+            if (pipExe == null) return new AppTaskError(app.ID, "The " + pyVer + " package manager PIP was not found.");
+            
             var args = new List<string>();
             args.Add("install");
             if (app.Force) args.Add("--upgrade");
@@ -553,7 +549,7 @@ namespace Mastersign.Bench
 
             if (exitCode != 0)
             {
-                return new AppTaskError(appId,
+                return new AppTaskError(app.ID,
                     "Installing the " + pyVer + " package " + app.PackageName + " failed with exit code " + exitCode + ".");
             }
             return null;
@@ -573,7 +569,7 @@ namespace Mastersign.Bench
                     var progress = (float)cnt / apps.Count;
 
                     AppTaskError error = null;
-                    if (!app.IsInstalled)
+                    if (!app.IsInstalled || app.Force)
                     {
                         // 1. Extraction / Installation
                         if (progressCb != null)
@@ -588,21 +584,21 @@ namespace Mastersign.Bench
                             case AppTyps.Default:
                                 if (app.ResourceFileName != null)
                                 {
-                                    error = CopyAppResourceFile(config, app.ID);
+                                    error = CopyAppResourceFile(config, app);
                                 }
                                 else if (app.ResourceArchiveName != null)
                                 {
-                                    error = ExtractAppArchive(config, execHost, app.ID);
+                                    error = ExtractAppArchive(config, execHost, app);
                                 }
                                 break;
                             case AppTyps.NodePackage:
-                                error = InstallNodePackage(config, execHost, app.ID);
+                                error = InstallNodePackage(config, execHost, app);
                                 break;
                             case AppTyps.Python2Package:
-                                error = InstallPythonPackage(config, execHost, PythonVersion.Python2, app.ID);
+                                error = InstallPythonPackage(config, execHost, PythonVersion.Python2, app);
                                 break;
                             case AppTyps.Python3Package:
-                                error = InstallPythonPackage(config, execHost, PythonVersion.Python3, app.ID);
+                                error = InstallPythonPackage(config, execHost, PythonVersion.Python3, app);
                                 break;
                             default:
                                 error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
@@ -700,12 +696,12 @@ namespace Mastersign.Bench
 
         public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
         {
-            var p = new Process();
             if (!File.Exists(exe))
             {
                 throw new FileNotFoundException("The executable could not be found.", exe);
             }
 
+            var p = new Process();
             var si = new ProcessStartInfo(exe, arguments);
             si.UseShellExecute = false;
             si.WorkingDirectory = cwd;
