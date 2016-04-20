@@ -19,7 +19,7 @@ namespace Mastersign.Bench
             var cfg = new BenchConfiguration(benchRootDir, false, true);
 
             var customConfigDir = cfg.GetStringValue(PropertyKeys.CustomConfigDir);
-            AsureDir(customConfigDir);
+            FileSystem.AsureDir(customConfigDir);
 
             var customConfigFile = cfg.GetStringValue(PropertyKeys.CustomConfigFile);
             var customConfigFileExists = File.Exists(customConfigFile);
@@ -50,11 +50,11 @@ namespace Mastersign.Bench
             }
 
             var homeDir = cfg.GetStringValue(PropertyKeys.HomeDir);
-            AsureDir(homeDir);
-            AsureDir(Path.Combine(homeDir, "Desktop"));
-            AsureDir(Path.Combine(homeDir, "Documents"));
-            AsureDir(cfg.GetStringValue(PropertyKeys.AppDataDir));
-            AsureDir(cfg.GetStringValue(PropertyKeys.LocalAppDataDir));
+            FileSystem.AsureDir(homeDir);
+            FileSystem.AsureDir(Path.Combine(homeDir, "Desktop"));
+            FileSystem.AsureDir(Path.Combine(homeDir, "Documents"));
+            FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.AppDataDir));
+            FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.LocalAppDataDir));
 
             var privateKeyFile = Path.Combine(homeDir,
                 Path.Combine(".ssh", "id_rsa"));
@@ -64,9 +64,9 @@ namespace Mastersign.Bench
                     "Enter the Password for the private key of the RSA key pair.");
             }
 
-            AsureDir(cfg.GetStringValue(PropertyKeys.TempDir));
-            AsureDir(cfg.GetStringValue(PropertyKeys.DownloadDir));
-            AsureDir(cfg.GetStringValue(PropertyKeys.LibDir));
+            FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.TempDir));
+            FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.DownloadDir));
+            FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.LibDir));
 
             var customAppIndexFile = cfg.GetStringValue(PropertyKeys.CustomAppIndexFile);
             if (!File.Exists(customAppIndexFile))
@@ -139,7 +139,7 @@ namespace Mastersign.Bench
             ICollection<AppFacade> apps)
         {
             var targetDir = config.GetStringValue(PropertyKeys.DownloadDir);
-            AsureDir(targetDir);
+            FileSystem.AsureDir(targetDir);
 
             var tasks = new List<DownloadTask>();
             var finished = 0;
@@ -323,7 +323,7 @@ namespace Mastersign.Bench
             var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
             try
             {
-                AsureDir(targetDir);
+                FileSystem.AsureDir(targetDir);
                 File.Copy(resourceFile, Path.Combine(targetDir, app.ResourceFileName), true);
             }
             catch (Exception e)
@@ -363,7 +363,7 @@ namespace Mastersign.Bench
             }
             var targetDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
             var extractDir = app.ResourceArchivePath != null ? tmpDir : targetDir;
-            AsureDir(extractDir);
+            FileSystem.AsureDir(extractDir);
             var success = false;
             var customExtractScript = CustomScript(config, "extract", app);
             switch (app.ResourceArchiveTyp)
@@ -408,9 +408,9 @@ namespace Mastersign.Bench
             }
             if (app.ResourceArchivePath != null)
             {
-                PurgeDir(targetDir);
-                MoveContent(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
-                PurgeDir(extractDir);
+                FileSystem.PurgeDir(targetDir);
+                FileSystem.MoveContent(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
+                FileSystem.PurgeDir(extractDir);
             }
             return null;
         }
@@ -450,19 +450,19 @@ namespace Mastersign.Bench
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), id + "_tar");
-                EmptyDir(tmpDir);
+                FileSystem.EmptyDir(tmpDir);
                 if (Run7zExtract(config, execHost, archiveFile, tmpDir))
                 {
                     // extracting the compressed file succeeded, extracting tar
                     var tarFile = Path.Combine(tmpDir, Path.GetFileNameWithoutExtension(archiveFile));
                     var success = Run7zExtract(config, execHost, tarFile, targetDir);
-                    PurgeDir(tmpDir);
+                    FileSystem.PurgeDir(tmpDir);
                     return success;
                 }
                 else
                 {
                     // extracting the compressed tar file failed
-                    PurgeDir(tmpDir);
+                    FileSystem.PurgeDir(tmpDir);
                     return false;
                 }
             }
@@ -479,7 +479,7 @@ namespace Mastersign.Bench
             if (svnZipExe == null || !File.Exists(svnZipExe)) return false;
             var env = new BenchEnvironment(config);
             var exitCode = execHost.RunProcess(env, targetDir, svnZipExe,
-                    FormatCommandLineArguments("x", "-y", "-o" + targetDir, archiveFile));
+                    FormatCommandLineArguments("x", "-y", "-bd", "-o" + targetDir, archiveFile));
             return exitCode == 0;
         }
 
@@ -759,49 +759,6 @@ namespace Mastersign.Bench
             var s = Regex.Replace(arg.Trim('"'), @"(\\*)" + "\"", @"$1$1\" + "\"");
             s = "\"" + Regex.Replace(s, @"(\\+)$", @"$1$1") + "\"";
             return s;
-        }
-
-        private static void EmptyDir(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                PurgeDir(path);
-            }
-            Debug.WriteLine("Creating directory: " + path);
-            Directory.CreateDirectory(path);
-        }
-
-        private static void AsureDir(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                Debug.WriteLine("Creating directory: " + path);
-                Directory.CreateDirectory(path);
-            }
-        }
-
-        private static void PurgeDir(string path)
-        {
-            if (!Directory.Exists(path)) return;
-            Debug.WriteLine("Purging directory: " + path);
-            Directory.Delete(path, true);
-        }
-
-        private static void MoveContent(string sourceDir, string targetDir)
-        {
-            AsureDir(targetDir);
-            foreach (var dir in Directory.GetDirectories(sourceDir))
-            {
-                Directory.Move(
-                    dir,
-                    Path.Combine(targetDir, Path.GetFileName(dir)));
-            }
-            foreach (var file in Directory.GetFiles(sourceDir))
-            {
-                File.Move(
-                    file,
-                    Path.Combine(targetDir, Path.GetFileName(file)));
-            }
         }
     }
 

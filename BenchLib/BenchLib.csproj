@@ -60,6 +60,7 @@
     <Compile Include="Downloader.cs" />
     <Compile Include="DownloadEventArgs.cs" />
     <Compile Include="DownloadTask.cs" />
+    <Compile Include="FileSystem.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IProcessExecutionHost.cs" />
     <Compile Include="PythonVersion.cs" />
