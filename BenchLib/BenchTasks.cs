@@ -107,6 +107,9 @@ namespace Mastersign.Bench
                 downloader.HttpProxy = new WebProxy(httpProxy, true, proxyBypass);
                 downloader.HttpsProxy = new WebProxy(httpsProxy, true, proxyBypass);
             }
+            downloader.UrlResolver.Clear();
+            downloader.UrlResolver.Add(EclipseMirrorResolver);
+            downloader.UrlResolver.Add(EclipseDownloadLinkResolver);
             return downloader;
         }
 
@@ -134,11 +137,167 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader,
+
+        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, string appId, string path, params string[] args)
+        {
+            var customScriptRunner = Path.Combine(config.GetStringValue(PropertyKeys.BenchScripts), "Run-CustomScript.ps1");
+            var exitCode = PowerShell.RunScript(new BenchEnvironment(config), execHost, config.BenchRootDir, customScriptRunner,
+                path, PowerShell.FormatArgumentList(args));
+            return exitCode != 0
+                ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.", Path.GetFileName(path)))
+                : null;
+        }
+
+        private static string CustomScript(BenchConfiguration config, string typ, AppFacade app)
+        {
+            var path = Path.Combine(CustomScriptDir(config),
+                app.ID.ToLowerInvariant() + "." + typ + ".ps1");
+            return File.Exists(path) ? path : null;
+        }
+
+        private static string CustomScriptDir(BenchConfiguration config)
+        {
+            return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
+        }
+
+
+        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
+        {
+            if (!File.Exists(exe))
+            {
+                throw new FileNotFoundException("The executable could not be found.", exe);
+            }
+
+            var p = new Process();
+            var si = new ProcessStartInfo(exe, arguments);
+            si.UseShellExecute = false;
+            si.WorkingDirectory = cwd;
+            env.Load(si.EnvironmentVariables);
+            p.StartInfo = si;
+            p.Start();
+            return p;
+        }
+
+        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)
+        {
+            var app = config.Apps[appId];
+            var exe = app.LauncherExecutable;
+
+            if (string.IsNullOrEmpty(exe))
+            {
+                throw new ArgumentException("The launcher executable is not set.");
+            }
+            return StartProcess(env, config.GetStringValue(PropertyKeys.HomeDir),
+                exe, CommandLine.SubstituteArgumentList(app.LauncherArguments, args));
+        }
+
+        private static string PipExe(BenchConfiguration config, PythonVersion pyVer)
+        {
+            switch (pyVer)
+            {
+                case PythonVersion.Python2:
+                    return Path.Combine(
+                        Path.Combine(config.GetStringValue(PropertyKeys.LibDir), config.Apps[AppKeys.Python2].Dir),
+                        @"Scripts\pip2.exe");
+                case PythonVersion.Python3:
+                    return Path.Combine(
+                        Path.Combine(config.GetStringValue(PropertyKeys.LibDir), config.Apps[AppKeys.Python3].Dir),
+                        @"Scripts\pip3.exe");
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        #region Task Composition
+
+        public static void RunTasks(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            ICollection<AppFacade> apps, params BenchTask[] tasks)
+        {
+            if (tasks.Length == 0)
+            {
+                endCb(true, new AppTaskError[0]);
+                return;
+            }
+
+            InternalRunTasks(man, progressCb, endCb,
+                new List<AppFacade>(apps), new List<AppTaskError>(),
+                tasks, 0);
+        }
+
+        public static void RunTasks(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            params BenchTask[] tasks)
+        {
+            RunTasks(man, progressCb, endCb,
+                new List<AppFacade>(man.Config.Apps.ActiveApps),
+                tasks);
+        }
+
+        public static void RunTasks(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            string appId,
+            params BenchTask[] tasks)
+        {
+            RunTasks(man, progressCb, endCb,
+                new[] { man.Config.Apps[appId] },
+                tasks);
+        }
+
+        private static void InternalRunTasks(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            List<AppFacade> apps, List<AppTaskError> collectedErrors,
+            BenchTask[] tasks, int i)
+        {
+            var taskProgress = i / tasks.Length;
+            ProgressCallback pcb = (info, err, progress) =>
+            {
+                if (progressCb != null)
+                {
+                    progressCb(info, err || collectedErrors.Count > 0, taskProgress + progress / tasks.Length);
+                }
+            };
+
+            tasks[i](man, pcb, (success, errors) =>
+            {
+                if (errors != null)
+                {
+                    collectedErrors.AddRange(errors);
+                }
+                if (i == tasks.Length - 1)
+                {
+                    if (progressCb != null)
+                    {
+                        progressCb("Finished.", collectedErrors.Count > 0, 1f);
+                    }
+                    if (endCb != null)
+                    {
+                        endCb(collectedErrors.Count == 0, collectedErrors);
+                    }
+                }
+                else
+                {
+                    if (errors != null)
+                    {
+                        foreach (var err in errors)
+                        {
+                            apps.RemoveAll(app => app.ID == err.AppId);
+                        }
+                    }
+                    InternalRunTasks(man, progressCb, endCb, apps, collectedErrors, tasks, i + 1);
+                }
+            }, apps);
+        }
+
+        #endregion
+
+        #region Download App Resources
+
+        public static void DownloadAppResources(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
             ICollection<AppFacade> apps)
         {
-            var targetDir = config.GetStringValue(PropertyKeys.DownloadDir);
+            var targetDir = man.Config.GetStringValue(PropertyKeys.DownloadDir);
             FileSystem.AsureDir(targetDir);
 
             var tasks = new List<DownloadTask>();
@@ -159,8 +318,8 @@ namespace Mastersign.Bench
             EventHandler workFinishedHandler = null;
             workFinishedHandler = (EventHandler)((o, e) =>
             {
-                downloader.DownloadEnded -= downloadEndedHandler;
-                downloader.WorkFinished -= workFinishedHandler;
+                man.Downloader.DownloadEnded -= downloadEndedHandler;
+                man.Downloader.WorkFinished -= workFinishedHandler;
                 var errors = new List<AppTaskError>();
                 foreach (var t in tasks)
                 {
@@ -175,12 +334,8 @@ namespace Mastersign.Bench
                     endCb(errors.Count == 0, errors);
                 }
             });
-            downloader.DownloadEnded += downloadEndedHandler;
-            downloader.WorkFinished += workFinishedHandler;
-
-            downloader.UrlResolver.Clear();
-            downloader.UrlResolver.Add(EclipseMirrorResolver);
-            downloader.UrlResolver.Add(EclipseDownloadLinkResolver);
+            man.Downloader.DownloadEnded += downloadEndedHandler;
+            man.Downloader.WorkFinished += workFinishedHandler;
 
             if (progressCb != null)
             {
@@ -209,13 +364,13 @@ namespace Mastersign.Bench
                 task.Cookies = app.DownloadCookies;
                 tasks.Add(task);
 
-                downloader.Enqueue(task);
+                man.Downloader.Enqueue(task);
             }
 
             if (tasks.Count == 0)
             {
-                downloader.DownloadEnded -= downloadEndedHandler;
-                downloader.WorkFinished -= workFinishedHandler;
+                man.Downloader.DownloadEnded -= downloadEndedHandler;
+                man.Downloader.WorkFinished -= workFinishedHandler;
                 if (progressCb != null)
                 {
                     progressCb("Nothing to download", false, 1.0f);
@@ -227,24 +382,28 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader,
+        public static void DownloadAppResources(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb)
         {
-            DownloadAppResources(config, downloader, progressCb, endCb, config.Apps.ActiveApps);
+            DownloadAppResources(man, progressCb, endCb, man.Config.Apps.ActiveApps);
         }
 
-        public static void DownloadAppResources(BenchConfiguration config, Downloader downloader,
+        public static void DownloadAppResources(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
             string appId)
         {
-            DownloadAppResources(config, downloader, progressCb, endCb, new[] { config.Apps[appId] });
+            DownloadAppResources(man, progressCb, endCb, new[] { man.Config.Apps[appId] });
         }
 
-        public static void DeleteAppResources(BenchConfiguration config,
+        #endregion
+
+        #region Delete App Resources
+
+        public static void DeleteAppResources(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
             ICollection<AppFacade> apps)
         {
-            var downloadDir = config.GetStringValue(PropertyKeys.DownloadDir);
+            var downloadDir = man.Config.GetStringValue(PropertyKeys.DownloadDir);
 
             if (progressCb != null)
             {
@@ -298,18 +457,22 @@ namespace Mastersign.Bench
             });
         }
 
-        public static void DeleteAppResources(BenchConfiguration config,
+        public static void DeleteAppResources(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb)
         {
-            DeleteAppResources(config, progressCb, endCb, new List<AppFacade>(config.Apps));
+            DeleteAppResources(man, progressCb, endCb, new List<AppFacade>(man.Config.Apps));
         }
 
-        public static void DeleteAppResources(BenchConfiguration config,
+        public static void DeleteAppResources(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
             string appId)
         {
-            DeleteAppResources(config, progressCb, endCb, new[] { config.Apps[appId] });
+            DeleteAppResources(man, progressCb, endCb, new[] { man.Config.Apps[appId] });
         }
+
+        #endregion
+
+        #region Install Apps
 
         private static AppTaskError CopyAppResourceFile(BenchConfiguration config, AppFacade app)
         {
@@ -522,27 +685,18 @@ namespace Mastersign.Bench
 
         public static AppTaskError InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
         {
-            string pipExe = null;
-            switch (pyVer)
+            var pipExe = PipExe(config, pyVer);
+            if (pipExe == null)
             {
-                case PythonVersion.Python2:
-                    pipExe = Path.Combine(
-                        Path.Combine(config.GetStringValue(PropertyKeys.LibDir), config.Apps[AppKeys.Python2].Dir),
-                        @"Scripts\pip2.exe");
-                    break;
-                case PythonVersion.Python3:
-                    pipExe = Path.Combine(
-                        Path.Combine(config.GetStringValue(PropertyKeys.LibDir), config.Apps[AppKeys.Python3].Dir),
-                        @"Scripts\pip3.exe");
-                    break;
+                return new AppTaskError(app.ID, "The " + pyVer + " package manager PIP was not found.");
             }
-            if (pipExe == null) return new AppTaskError(app.ID, "The " + pyVer + " package manager PIP was not found.");
-            
+
             var args = new List<string>();
             args.Add("install");
-            if (app.Force) args.Add("--upgrade");
             args.Add(app.PackageName);
             if (app.Version != null) args.Add(app.Version);
+            if (app.IsInstalled) args.Add("--upgrade");
+            args.Add("--quiet");
 
             var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
                     CommandLine.FormatArgumentList(args.ToArray()));
@@ -555,7 +709,7 @@ namespace Mastersign.Bench
             return null;
         }
 
-        public static void InstallApps(BenchConfiguration config, IProcessExecutionHost execHost,
+        public static void InstallApps(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
             ICollection<AppFacade> apps)
         {
@@ -584,21 +738,21 @@ namespace Mastersign.Bench
                             case AppTyps.Default:
                                 if (app.ResourceFileName != null)
                                 {
-                                    error = CopyAppResourceFile(config, app);
+                                    error = CopyAppResourceFile(man.Config, app);
                                 }
                                 else if (app.ResourceArchiveName != null)
                                 {
-                                    error = ExtractAppArchive(config, execHost, app);
+                                    error = ExtractAppArchive(man.Config, man.ProcessExecutionHost, app);
                                 }
                                 break;
                             case AppTyps.NodePackage:
-                                error = InstallNodePackage(config, execHost, app);
+                                error = InstallNodePackage(man.Config, man.ProcessExecutionHost, app);
                                 break;
                             case AppTyps.Python2Package:
-                                error = InstallPythonPackage(config, execHost, PythonVersion.Python2, app);
+                                error = InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
                                 break;
                             case AppTyps.Python3Package:
-                                error = InstallPythonPackage(config, execHost, PythonVersion.Python3, app);
+                                error = InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
                                 break;
                             default:
                                 error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
@@ -614,14 +768,14 @@ namespace Mastersign.Bench
                             continue;
                         }
                         // 2. Custom Setup-Script
-                        var customSetupScript = CustomScript(config, "setup", app);
+                        var customSetupScript = CustomScript(man.Config, "setup", app);
                         if (customSetupScript != null)
                         {
                             if (progressCb != null)
                             {
                                 progressCb(string.Format("Executing custom setup script for {0}.", app.ID), errors.Count > 0, progress);
                             }
-                            error = RunCustomScript(config, execHost, app.ID, customSetupScript);
+                            error = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customSetupScript);
                             if (error != null)
                             {
                                 errors.Add(error);
@@ -646,70 +800,142 @@ namespace Mastersign.Bench
             });
         }
 
-        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, string appId, string path, params string[] args)
-        {
-            var customScriptRunner = Path.Combine(config.GetStringValue(PropertyKeys.BenchScripts), "Run-CustomScript.ps1");
-            var exitCode = PowerShell.RunScript(new BenchEnvironment(config), execHost, config.BenchRootDir, customScriptRunner,
-                path, PowerShell.FormatArgumentList(args));
-            return exitCode != 0
-                ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.", Path.GetFileName(path)))
-                : null;
-        }
-
-        private static string CustomScript(BenchConfiguration config, string typ, AppFacade app)
-        {
-            var path = Path.Combine(CustomScriptDir(config),
-                app.ID.ToLowerInvariant() + "." + typ + ".ps1");
-            return File.Exists(path) ? path : null;
-        }
-
-        private static string CustomScriptDir(BenchConfiguration config)
-        {
-            return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
-        }
-
-        public static void InstallApps(BenchConfiguration config, IProcessExecutionHost execHost,
+        public static void InstallApps(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb)
         {
-            InstallApps(config, execHost, progressCb, endCb, config.Apps.ActiveApps);
+            InstallApps(man, progressCb, endCb, man.Config.Apps.ActiveApps);
         }
 
-        public static void InstallApp(BenchConfiguration config, IProcessExecutionHost execHost,
+        public static void InstallApp(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
             string appId)
         {
-            InstallApps(config, execHost, progressCb, endCb, new[] { config.Apps[appId] });
+            InstallApps(man, progressCb, endCb, new[] { man.Config.Apps[appId] });
         }
 
-        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)
+        #endregion
+
+        #region Uninstall App
+
+        public static AppTaskError UninstallGeneric(BenchConfiguration config, AppFacade app)
         {
-            var app = config.Apps[appId];
-            var exe = app.LauncherExecutable;
-
-            if (string.IsNullOrEmpty(exe))
+            var appDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
+            if (appDir != null)
             {
-                throw new ArgumentException("The launcher executable is not set.");
+                try
+                {
+                    FileSystem.PurgeDir(appDir);
+                }
+                catch (Exception e)
+                {
+                    return new AppTaskError(app.ID,
+                        string.Format("Uninstalling app {0} failed: {1}", app.ID, e.Message));
+                }
             }
-            return StartProcess(env, config.GetStringValue(PropertyKeys.HomeDir),
-                exe, CommandLine.SubstituteArgumentList(app.LauncherArguments, args));
+            return null;
         }
 
-        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
+        public static AppTaskError UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
         {
-            if (!File.Exists(exe))
+            var npmExe = config.Apps[AppKeys.Npm].Exe;
+            if (npmExe == null) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
+            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
+                CommandLine.FormatArgumentList("uninstall", app.PackageName, "--global"));
+            if (exitCode != 0)
             {
-                throw new FileNotFoundException("The executable could not be found.", exe);
+                return new AppTaskError(app.ID,
+                    "Uninstalling the NPM package " + app.PackageName + " failed with exit code " + exitCode + ".");
+            }
+            return null;
+        }
+
+        public static AppTaskError UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
+        {
+            var pipExe = PipExe(config, pyVer);
+            if (pipExe == null)
+            {
+                return new AppTaskError(app.ID, "The " + pyVer + " package manager PIP was not found.");
             }
 
-            var p = new Process();
-            var si = new ProcessStartInfo(exe, arguments);
-            si.UseShellExecute = false;
-            si.WorkingDirectory = cwd;
-            env.Load(si.EnvironmentVariables);
-            p.StartInfo = si;
-            p.Start();
-            return p;
+            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
+                    CommandLine.FormatArgumentList("uninstall", app.PackageName, "--yes", "--quiet"));
+
+            if (exitCode != 0)
+            {
+                return new AppTaskError(app.ID,
+                    "Uninstalling the " + pyVer + " package " + app.PackageName + " failed with exit code " + exitCode + ".");
+            }
+            return null;
         }
+
+        public static void UninstallApps(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            ICollection<AppFacade> apps)
+        {
+            AsyncManager.StartTask(() =>
+            {
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+                foreach (var app in apps)
+                {
+                    cnt++;
+                    var progress = (float)cnt / apps.Count;
+
+                    AppTaskError error = null;
+                    if (app.IsInstalled)
+                    {
+                        if (progressCb != null)
+                        {
+                            progressCb(string.Format("Uninstalling app {0}.", app.ID), errors.Count > 0, progress);
+                        }
+                        switch (app.Typ)
+                        {
+                            case AppTyps.Meta:
+                                error = UninstallGeneric(man.Config, app);
+                                break;
+                            case AppTyps.Default:
+                                error = UninstallGeneric(man.Config, app);
+                                break;
+                            case AppTyps.NodePackage:
+                                error = UninstallNodePackage(man.Config, man.ProcessExecutionHost, app);
+                                break;
+                            case AppTyps.Python2Package:
+                                error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
+                                break;
+                            case AppTyps.Python3Package:
+                                error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
+                                break;
+                            default:
+                                error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
+                                break;
+                        }
+                    }
+                    if (progressCb != null)
+                    {
+                        progressCb("Finished uninstalling apps.", errors.Count > 0, 1f);
+                    }
+                    if (endCb != null)
+                    {
+                        endCb(errors.Count == 0, errors);
+                    }
+                }
+            });
+        }
+
+        public static void UninstallApps(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb)
+        {
+            UninstallApps(man, progressCb, endCb, man.Config.Apps.ActiveApps);
+        }
+
+        public static void UninstallApp(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            string appId)
+        {
+            UninstallApps(man, progressCb, endCb, new[] { man.Config.Apps[appId] });
+        }
+
+        #endregion
     }
 
 }

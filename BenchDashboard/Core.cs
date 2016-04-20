@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace Mastersign.Bench.Dashboard
 {
-    public class Core : IDisposable
+    public class Core : IDisposable, IBenchManager
     {
         public SetupStore SetupStore { get; private set; }
 
@@ -20,6 +22,14 @@ namespace Mastersign.Bench.Dashboard
 
         public Downloader Downloader { get; private set; }
 
+        public Control GuiContext { get; set; }
+
+        public event EventHandler ConfigReloaded;
+
+        public event EventHandler AllAppStateChanged;
+
+        public event EventHandler<AppEventArgs> AppStateChanged;
+
         public Core(string benchRoot)
         {
             Debug.WriteLine("Initializing UI Core for Bench...");
@@ -31,9 +41,66 @@ namespace Mastersign.Bench.Dashboard
             ProcessExecutionHost = new DefaultExecutionHost();
         }
 
+        public void SyncWithGui(ThreadStart task)
+        {
+            if (GuiContext != null && GuiContext.InvokeRequired)
+            {
+                GuiContext.Invoke(task);
+            }
+            else
+            {
+                task();
+            }
+        }
+
+        private void OnConfigReloaded()
+        {
+            SyncWithGui(() =>
+            {
+                var handler = ConfigReloaded;
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+            });
+        }
+
+        private void OnAllAppStateChanged()
+        {
+            SyncWithGui(() =>
+            {
+                var handler = AllAppStateChanged;
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+            });
+        }
+
+        private void OnAppStateChanged(string appId)
+        {
+            SyncWithGui(() =>
+            {
+                var handler = AppStateChanged;
+                if (handler != null)
+                {
+                    handler(this, new AppEventArgs(appId));
+                }
+            });
+        }
+
+        public void ReloadConfig()
+        {
+            Config = Config.Reload();
+            Env = new BenchEnvironment(Config);
+            //Downloader.Dispose();
+            //Downloader = BenchTasks.InitializeDownloader(Config);
+            OnConfigReloaded();
+        }
+
         public void DownloadAppResources(ProgressCallback progressCb)
         {
-            BenchTasks.DownloadAppResources(Config, Downloader, progressCb,
+            BenchTasks.DownloadAppResources(this, progressCb,
                 (success, errors) =>
                 {
                     if (success)
@@ -47,12 +114,30 @@ namespace Mastersign.Bench.Dashboard
                             + Environment.NewLine + Environment.NewLine
                             + BuildCombinedErrorMessage(errors, 10));
                     }
+                    OnAllAppStateChanged();
                 });
+        }
+
+        public void DownloadAppResource(ProgressCallback progressCb, string appId)
+        {
+            BenchTasks.DownloadAppResources(this, progressCb,
+                (success, errors) =>
+                {
+                    if (!success)
+                    {
+                        UI.ShowWarning("Downloading App Resource",
+                            "Downloading app resource failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAppStateChanged(appId);
+                }, 
+                appId);
         }
 
         public void DeleteAppResources(ProgressCallback progressCb)
         {
-            BenchTasks.DeleteAppResources(Config, progressCb,
+            BenchTasks.DeleteAppResources(this, progressCb,
                 (success, errors) =>
                 {
                     if (success)
@@ -66,12 +151,30 @@ namespace Mastersign.Bench.Dashboard
                             + Environment.NewLine + Environment.NewLine
                             + BuildCombinedErrorMessage(errors, 10));
                     }
+                    OnAllAppStateChanged();
                 });
+        }
+
+        public void DeleteAppResource(ProgressCallback progressCb, string appId)
+        {
+            BenchTasks.DeleteAppResources(this, progressCb,
+                (success, errors) =>
+                {
+                    if (!success)
+                    {
+                        UI.ShowWarning("Deleting App Resource",
+                            "Deleting app resource failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAppStateChanged(appId);
+                }, 
+                appId);
         }
 
         public void InstallApps(ProgressCallback progressCb)
         {
-            BenchTasks.InstallApps(Config, ProcessExecutionHost, progressCb,
+            BenchTasks.RunTasks(this, progressCb,
             (success, errors) =>
             {
                 if (success)
@@ -85,7 +188,66 @@ namespace Mastersign.Bench.Dashboard
                         + Environment.NewLine + Environment.NewLine
                         + BuildCombinedErrorMessage(errors, 10));
                 }
+                OnAllAppStateChanged();
+            },
+            BenchTasks.DownloadAppResources,
+            BenchTasks.InstallApps);
+        }
+
+        public void InstallApp(ProgressCallback progressCb, string appId)
+        {
+            BenchTasks.RunTasks(this, progressCb,
+            (success, errors) =>
+            {
+                if (!success)
+                {
+                    UI.ShowWarning("Installing App",
+                        "Installing the app failed: "
+                        + Environment.NewLine + Environment.NewLine
+                        + BuildCombinedErrorMessage(errors, 10));
+                }
+                OnAppStateChanged(appId);
+            },
+            appId,
+            BenchTasks.DownloadAppResources,
+            BenchTasks.InstallApps);
+        }
+
+        public void UninstallApps(ProgressCallback progressCb)
+        {
+            BenchTasks.UninstallApps(this, progressCb,
+            (success, errors) =>
+            {
+                if (success)
+                {
+                    UI.ShowInfo("Uninstalling Apps", "Finished.");
+                }
+                else
+                {
+                    UI.ShowWarning("Uninstalling Apps",
+                        "Uninstalling the following apps failed: "
+                        + Environment.NewLine + Environment.NewLine
+                        + BuildCombinedErrorMessage(errors, 10));
+                }
+                OnAllAppStateChanged();
             });
+        }
+
+        public void UninstallApp(ProgressCallback progressCb, string appId)
+        {
+            BenchTasks.UninstallApp(this, progressCb,
+            (success, errors) =>
+            {
+                if (!success)
+                {
+                    UI.ShowWarning("Uninstalling App",
+                        "Uninstalling the app failed: "
+                        + Environment.NewLine + Environment.NewLine
+                        + BuildCombinedErrorMessage(errors, 10));
+                }
+                OnAppStateChanged(appId);
+            },
+            appId);
         }
 
         private static string BuildCombinedErrorMessage(IEnumerable<AppTaskError> errors, int maxLines)

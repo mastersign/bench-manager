@@ -21,10 +21,19 @@ namespace Mastersign.Bench.Dashboard
         public MainForm(Core core)
         {
             this.core = core;
+            core.AllAppStateChanged += AppStateChangedHandler;
+            core.AppStateChanged += AppStateChangedHandler;
+            core.ConfigReloaded += AppStateChangedHandler;
+            core.GuiContext = this;
             InitializeComponent();
             InitializeAppLauncherList();
             InitializeTopPanel();
             InitializeStatusStrip();
+        }
+
+        private void AppStateChangedHandler(object sender, EventArgs e)
+        {
+            InitializeAppLauncherList();
         }
 
         private void InitializeAppLauncherList()

@@ -60,7 +60,10 @@ namespace Mastersign.Bench
 
         // Common App Properties
 
-        public const string AppActivated = "Activated";
+        public const string AppIsActivated = "IsActivated";
+        public const string AppIsDeactivated = "IsDeactivated";
+        public const string AppIsRequired = "IsRequired";
+        public const string AppIsDependency = "IsDependency";
 
         public const string AppTyp = "Typ";
         public const string AppVersion = "Version";

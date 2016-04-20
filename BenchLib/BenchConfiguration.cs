@@ -18,6 +18,9 @@ namespace Mastersign.Bench
 
         public string BenchRootDir { get; private set; }
 
+        public bool WithAppIndex { get; private set; }
+        public bool WithCustomConfiguration { get; private set; }
+
         public BenchConfiguration(string benchRootDir)
             : this(benchRootDir, true, true)
         {
@@ -26,6 +29,8 @@ namespace Mastersign.Bench
         public BenchConfiguration(string benchRootDir, bool loadAppIndex, bool loadCustomConfiguration)
         {
             BenchRootDir = benchRootDir;
+            WithAppIndex = loadAppIndex;
+            WithCustomConfiguration = loadCustomConfiguration;
             AddResolver(new GroupedVariableResolver(this));
             AddResolver(new VariableResolver(this));
             AddResolver(new PathResolver(IsPathProperty, GetBaseForPathProperty));
@@ -123,7 +128,7 @@ namespace Mastersign.Bench
             foreach (var app in Apps.ByCategory(DefaultAppCategory))
             {
                 Debug.WriteLine(string.Format("Activating required app '{0}'", app.ID));
-                app.Activate();
+                app.ActivateAsRequired();
             }
 
             // activate manually activated apps
@@ -146,7 +151,7 @@ namespace Mastersign.Bench
                 if (Apps.Exists(appName))
                 {
                     Debug.WriteLine(string.Format("Deactivating app '{0}'", appName));
-                    Apps[appName].Activate();
+                    Apps[appName].Deactivate();
                 }
             }
         }
@@ -182,5 +187,10 @@ namespace Mastersign.Bench
         }
 
         public AppIndexFacade Apps { get { return appIndexFacade; } }
+
+        public BenchConfiguration Reload()
+        {
+            return new BenchConfiguration(BenchRootDir, WithAppIndex, WithCustomConfiguration);
+        }
     }
 }

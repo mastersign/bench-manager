@@ -44,12 +44,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppEventArgs.cs" />
     <Compile Include="AppLauncherControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="AppLauncherControl.Designer.cs">
       <DependentUpon>AppLauncherControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppWrapper.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DownloadControl.cs">
       <SubType>UserControl</SubType>
@@ -89,6 +91,7 @@
     <Compile Include="SetupForm.Designer.cs">
       <DependentUpon>SetupForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SortedBindingList.cs" />
     <Compile Include="UserInfoDialog.cs">
       <SubType>Form</SubType>
     </Compile>

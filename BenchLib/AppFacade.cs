@@ -74,7 +74,15 @@ namespace Mastersign.Bench
             Dependencies = RemoveFromSet(Dependencies, app);
         }
 
-        public bool IsActive { get { return BoolValue(PropertyKeys.AppActivated); } }
+        public bool IsActivated { get { return BoolValue(PropertyKeys.AppIsActivated); } }
+
+        public bool IsDeactivated { get { return BoolValue(PropertyKeys.AppIsDeactivated); } }
+
+        public bool IsRequired { get { return BoolValue(PropertyKeys.AppIsRequired); } }
+
+        public bool IsDependency { get { return BoolValue(PropertyKeys.AppIsDependency); } }
+
+        public bool IsActive { get { return !IsDeactivated && (IsRequired || IsDependency || IsActivated); } }
 
         public string Url { get { return StringValue(PropertyKeys.AppUrl); } }
 
@@ -179,6 +187,15 @@ namespace Mastersign.Bench
             }
         }
 
+        public bool HasResource
+        {
+            get
+            {
+                return Typ == AppTyps.Default && 
+                    (ResourceFileName != null || ResourceArchiveName != null);
+            }
+        }
+
         public bool IsResourceCached
         {
             get
@@ -199,20 +216,37 @@ namespace Mastersign.Bench
 
         public void Activate()
         {
-            AppIndex.SetGroupValue(AppName, PropertyKeys.AppActivated, true);
+            AppIndex.SetGroupValue(AppName, PropertyKeys.AppIsActivated, true);
+            ActivateDependencies();
+        }
+
+        public void ActivateAsRequired()
+        {
+            AppIndex.SetGroupValue(AppName, PropertyKeys.AppIsRequired, true);
+            ActivateDependencies();
+        }
+
+        public void ActivateAsDependency()
+        {
+            AppIndex.SetGroupValue(AppName, PropertyKeys.AppIsDependency, true);
+            ActivateDependencies();
+        }
+
+        private void ActivateDependencies()
+        {
             foreach (var depName in Dependencies)
             {
                 var depApp = new AppFacade(AppIndex, depName);
                 if (!depApp.IsActive)
                 {
-                    depApp.Activate();
+                    depApp.ActivateAsDependency();
                 }
             }
         }
 
         public void Deactivate()
         {
-            AppIndex.SetGroupValue(AppName, PropertyKeys.AppActivated, false);
+            AppIndex.SetGroupValue(AppName, PropertyKeys.AppIsDeactivated, true);
         }
 
         public void SetupAutoConfiguration()

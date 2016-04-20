@@ -42,10 +42,10 @@ namespace Mastersign.Bench
                 var result = new List<AppFacade>();
                 foreach (var appName in AppIndex.Groups())
                 {
-                    var isActive = AppIndex.GetBooleanGroupValue(appName, PropertyKeys.AppActivated);
-                    if (isActive)
+                    var app = new AppFacade(AppIndex, appName);
+                    if (app.IsActive)
                     {
-                        result.Add(new AppFacade(AppIndex, appName));
+                        result.Add(app);
                     }
                 }
                 return result.ToArray();
