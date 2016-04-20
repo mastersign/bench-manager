@@ -576,7 +576,10 @@ namespace Mastersign.Bench
                     if (!app.IsInstalled)
                     {
                         // 1. Extraction / Installation
-                        progressCb(string.Format("Installing app {0}.", app.ID), errors.Count > 0, progress);
+                        if (progressCb != null)
+                        {
+                            progressCb(string.Format("Installing app {0}.", app.ID), errors.Count > 0, progress);
+                        }
                         switch (app.Typ)
                         {
                             case AppTyps.Meta:
@@ -608,27 +611,42 @@ namespace Mastersign.Bench
                         if (error != null)
                         {
                             errors.Add(error);
-                            progressCb(error.ErrorMessage, true, progress);
+                            if (progressCb != null)
+                            {
+                                progressCb(error.ErrorMessage, true, progress);
+                            }
                             continue;
                         }
                         // 2. Custom Setup-Script
                         var customSetupScript = CustomScript(config, "setup", app);
                         if (customSetupScript != null)
                         {
-                            progressCb(string.Format("Executing custom setup script for {0}.", app.ID), errors.Count > 0, progress);
+                            if (progressCb != null)
+                            {
+                                progressCb(string.Format("Executing custom setup script for {0}.", app.ID), errors.Count > 0, progress);
+                            }
                             error = RunCustomScript(config, execHost, app.ID, customSetupScript);
                             if (error != null)
                             {
                                 errors.Add(error);
-                                progressCb(string.Format("Execution of custom setup script for {0} failed.", app.ID), true, progress);
+                                if (progressCb != null)
+                                {
+                                    progressCb(string.Format("Execution of custom setup script for {0} failed.", app.ID), true, progress);
+                                }
                             }
                         }
                         // TODO 3. Create Execution Proxy
                         // TODO 4. Create Launcher
                     }
                 }
-                progressCb("Finished installing apps.", errors.Count > 0, 1f);
-                endCb(errors.Count == 0, errors);
+                if (progressCb != null)
+                {
+                    progressCb("Finished installing apps.", errors.Count > 0, 1f);
+                }
+                if (endCb != null)
+                {
+                    endCb(errors.Count == 0, errors);
+                }
             });
         }
 
