@@ -12,10 +12,21 @@ namespace Mastersign.Bench
         {
             if (Directory.Exists(path))
             {
-                PurgeDir(path);
+                Debug.WriteLine("Cleaning directory: " + path);
+                foreach (var dir in Directory.GetDirectories(path))
+                {
+                    Directory.Delete(dir, true);
+                }
+                foreach (var file in Directory.GetFiles(path))
+                {
+                    File.Delete(file);
+                }
             }
-            Debug.WriteLine("Creating directory: " + path);
-            Directory.CreateDirectory(path);
+            else
+            {
+                Debug.WriteLine("Creating directory: " + path);
+                Directory.CreateDirectory(path);
+            }
         }
 
         public static void AsureDir(string path)
@@ -36,6 +47,7 @@ namespace Mastersign.Bench
 
         public static void MoveContent(string sourceDir, string targetDir)
         {
+            Debug.WriteLine("Moving content from: " + sourceDir + " to: " + targetDir);
             AsureDir(targetDir);
             foreach (var dir in Directory.GetDirectories(sourceDir))
             {
