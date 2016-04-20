@@ -479,7 +479,7 @@ namespace Mastersign.Bench
             if (svnZipExe == null || !File.Exists(svnZipExe)) return false;
             var env = new BenchEnvironment(config);
             var exitCode = execHost.RunProcess(env, targetDir, svnZipExe,
-                    FormatCommandLineArguments("x", "-y", "-bd", "-o" + targetDir, archiveFile));
+                    CommandLine.FormatArgumentList("x", "-y", "-bd", "-o" + targetDir, archiveFile));
             return exitCode == 0;
         }
 
@@ -490,7 +490,7 @@ namespace Mastersign.Bench
             if (lessMsiExe == null) return false;
             var env = new BenchEnvironment(config);
             var exitCode = execHost.RunProcess(env, targetDir, lessMsiExe,
-                FormatCommandLineArguments("x", archiveFile, @".\"));
+                CommandLine.FormatArgumentList("x", archiveFile, @".\"));
             return exitCode == 0;
         }
 
@@ -501,7 +501,7 @@ namespace Mastersign.Bench
             if (innoUnpExe == null) return false;
             var env = new BenchEnvironment(config);
             var exitCode = execHost.RunProcess(env, targetDir, innoUnpExe,
-                FormatCommandLineArguments("-q", "-x", archiveFile));
+                CommandLine.FormatArgumentList("-q", "-x", archiveFile));
             return exitCode == 0;
         }
 
@@ -514,7 +514,7 @@ namespace Mastersign.Bench
                 ? string.Format("{0}@{1}", app.PackageName, app.Version)
                 : app.PackageName;
             var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
-                FormatCommandLineArguments("install", packageName, "--global"));
+                CommandLine.FormatArgumentList("install", packageName, "--global"));
             if (exitCode != 0)
             {
                 return new AppTaskError(appId,
@@ -549,7 +549,7 @@ namespace Mastersign.Bench
             if (app.Version != null) args.Add(app.Version);
 
             var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
-                    FormatCommandLineArguments(args.ToArray()));
+                    CommandLine.FormatArgumentList(args.ToArray()));
 
             if (exitCode != 0)
             {
@@ -695,7 +695,7 @@ namespace Mastersign.Bench
                 throw new ArgumentException("The launcher executable is not set.");
             }
             return StartProcess(env, config.GetStringValue(PropertyKeys.HomeDir),
-                exe, ProcessArguments(app.LauncherArguments, args));
+                exe, CommandLine.SubstituteArgumentList(app.LauncherArguments, args));
         }
 
         public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
@@ -713,52 +713,6 @@ namespace Mastersign.Bench
             p.StartInfo = si;
             p.Start();
             return p;
-        }
-
-        private static string ProcessArguments(string[] launcherArguments, string[] args)
-        {
-            var result = new List<string>();
-            for (int i = 0; i < launcherArguments.Length; i++)
-            {
-                var arg = SubstituteArgument(launcherArguments[i], args);
-                if (arg == "%*")
-                {
-                    result.AddRange(args);
-                }
-                else
-                {
-                    result.Add(arg);
-                }
-            }
-            return FormatCommandLineArguments(result.ToArray());
-        }
-
-        public static string FormatCommandLineArguments(params string[] args)
-        {
-            var list = new string[args.Length];
-            for (int i = 0; i < args.Length; i++)
-            {
-                list[i] = EscapeArgument(args[i]);
-            }
-            return string.Join(" ", list);
-        }
-
-        private static string SubstituteArgument(string arg, string[] args)
-        {
-            arg = Environment.ExpandEnvironmentVariables(arg);
-            for (int i = 0; i < 10; i++)
-            {
-                var v = args.Length > i ? args[i] : "";
-                arg = arg.Replace("%" + i, v);
-            }
-            return arg;
-        }
-
-        private static string EscapeArgument(string arg)
-        {
-            var s = Regex.Replace(arg.Trim('"'), @"(\\*)" + "\"", @"$1$1\" + "\"");
-            s = "\"" + Regex.Replace(s, @"(\\+)$", @"$1$1") + "\"";
-            return s;
         }
     }
 

@@ -122,7 +122,7 @@ namespace Mastersign.Bench.Dashboard
         public void StartProcess(string exe, params string[] args)
         {
             ProcessExecutionHost.StartProcess(Env, Config.BenchRootDir, exe,
-                BenchTasks.FormatCommandLineArguments(args),
+                CommandLine.FormatArgumentList(args),
                 exitCode => { });
         }
 

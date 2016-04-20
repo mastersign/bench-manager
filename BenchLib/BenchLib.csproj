@@ -54,6 +54,7 @@
     <Compile Include="BenchProxyInfo.cs" />
     <Compile Include="BenchTasks.cs" />
     <Compile Include="BenchUserInfo.cs" />
+    <Compile Include="CommandLine.cs" />
     <Compile Include="DefaultExecutionHost.cs" />
     <Compile Include="ConsoleUI.cs" />
     <Compile Include="Delegates.cs" />
