@@ -342,22 +342,16 @@ namespace Mastersign.Bench
                 progressCb("Starting downloads...", false, 0);
             }
 
+            var selectedApps = new List<AppFacade>();
             foreach (var app in apps)
             {
-                if (app.Typ != AppTyps.Default) continue;
+                if (app.Typ == AppTyps.Default && app.HasResource && !app.IsResourceCached) selectedApps.Add(app);
+            }
 
+            foreach (var app in selectedApps)
+            {
                 var targetFile = app.ResourceFileName ?? app.ResourceArchiveName;
-                if (targetFile == null)
-                {
-                    Debug.WriteLine("Skipped app " + app.ID + " because of missing resource name.");
-                    continue;
-                }
                 var targetPath = Path.Combine(targetDir, targetFile);
-                if (File.Exists(targetPath))
-                {
-                    Debug.WriteLine("Skipped app " + app.ID + " because resource already exists.");
-                    continue;
-                }
 
                 var task = new DownloadTask(app.ID, new Uri(app.Url), targetPath);
                 task.Headers = app.DownloadHeaders;
@@ -412,38 +406,37 @@ namespace Mastersign.Bench
 
             AsyncManager.StartTask(() =>
             {
-                var errors = new List<AppTaskError>();
-                var cnt = 0;
+                var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
-                    cnt++;
-                    if (app.Typ != AppTyps.Default) continue;
+                    if (app.HasResource && app.IsResourceCached) selectedApps.Add(app);
+                }
 
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+                foreach (var app in selectedApps)
+                {
+                    cnt++;
+                    var progress = (float)cnt / selectedApps.Count;
+
+                    var resourceFile = app.ResourceFileName ?? app.ResourceArchiveName;
+                    var resourcePath = Path.Combine(downloadDir, resourceFile);
                     try
                     {
-                        var resourceFile = app.ResourceFileName ?? app.ResourceArchiveName;
-                        if (resourceFile == null)
-                        {
-                            Debug.WriteLine("Skipped app " + app.ID + " because of missing resource name.");
-                            continue;
-                        }
-                        var resourcePath = Path.Combine(downloadDir, resourceFile);
-                        if (File.Exists(resourcePath))
-                        {
-                            File.Delete(resourcePath);
-                        }
-                        if (progressCb != null)
-                        {
-                            progressCb("Deleted app resources for " + app.ID, errors.Count > 0, (float)cnt / apps.Count);
-                        }
+                        File.Delete(resourcePath);
                     }
                     catch (Exception e)
                     {
                         errors.Add(new AppTaskError(app.ID, e.Message));
                         if (progressCb != null)
                         {
-                            progressCb(e.Message, true, (float)cnt / apps.Count);
+                            progressCb(e.Message, true, progress);
                         }
+                        continue;
+                    }
+                    if (progressCb != null)
+                    {
+                        progressCb("Deleted app resources for " + app.ID, errors.Count > 0, progress);
                     }
                 }
                 if (progressCb != null)
@@ -715,79 +708,84 @@ namespace Mastersign.Bench
         {
             AsyncManager.StartTask(() =>
             {
-                var errors = new List<AppTaskError>();
-                var cnt = 0;
+                var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
+                    if (!app.IsInstalled || app.Force) selectedApps.Add(app);
+                }
+
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+
+                foreach (var app in selectedApps)
+                {
                     cnt++;
-                    var progress = (float)cnt / apps.Count;
+                    var progress = (float)cnt / selectedApps.Count;
 
                     AppTaskError error = null;
-                    if (!app.IsInstalled || app.Force)
+
+                    // 1. Extraction / Installation
+                    if (progressCb != null)
                     {
-                        // 1. Extraction / Installation
+                        progressCb(string.Format("Installing app {0}.", app.ID), errors.Count > 0, progress);
+                    }
+                    switch (app.Typ)
+                    {
+                        case AppTyps.Meta:
+                            // no resource extraction
+                            break;
+                        case AppTyps.Default:
+                            if (app.ResourceFileName != null)
+                            {
+                                error = CopyAppResourceFile(man.Config, app);
+                            }
+                            else if (app.ResourceArchiveName != null)
+                            {
+                                error = ExtractAppArchive(man.Config, man.ProcessExecutionHost, app);
+                            }
+                            break;
+                        case AppTyps.NodePackage:
+                            error = InstallNodePackage(man.Config, man.ProcessExecutionHost, app);
+                            break;
+                        case AppTyps.Python2Package:
+                            error = InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
+                            break;
+                        case AppTyps.Python3Package:
+                            error = InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
+                            break;
+                        default:
+                            error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
+                            break;
+                    }
+                    if (error != null)
+                    {
+                        errors.Add(error);
                         if (progressCb != null)
                         {
-                            progressCb(string.Format("Installing app {0}.", app.ID), errors.Count > 0, progress);
+                            progressCb(error.ErrorMessage, true, progress);
                         }
-                        switch (app.Typ)
+                        continue;
+                    }
+                    // 2. Custom Setup-Script
+                    var customSetupScript = CustomScript(man.Config, "setup", app);
+                    if (customSetupScript != null)
+                    {
+                        if (progressCb != null)
                         {
-                            case AppTyps.Meta:
-                                // no resource extraction
-                                break;
-                            case AppTyps.Default:
-                                if (app.ResourceFileName != null)
-                                {
-                                    error = CopyAppResourceFile(man.Config, app);
-                                }
-                                else if (app.ResourceArchiveName != null)
-                                {
-                                    error = ExtractAppArchive(man.Config, man.ProcessExecutionHost, app);
-                                }
-                                break;
-                            case AppTyps.NodePackage:
-                                error = InstallNodePackage(man.Config, man.ProcessExecutionHost, app);
-                                break;
-                            case AppTyps.Python2Package:
-                                error = InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
-                                break;
-                            case AppTyps.Python3Package:
-                                error = InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
-                                break;
-                            default:
-                                error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
-                                break;
+                            progressCb(string.Format("Executing custom setup script for {0}.", app.ID), errors.Count > 0, progress);
                         }
+                        error = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customSetupScript);
                         if (error != null)
                         {
                             errors.Add(error);
                             if (progressCb != null)
                             {
-                                progressCb(error.ErrorMessage, true, progress);
-                            }
-                            continue;
-                        }
-                        // 2. Custom Setup-Script
-                        var customSetupScript = CustomScript(man.Config, "setup", app);
-                        if (customSetupScript != null)
-                        {
-                            if (progressCb != null)
-                            {
-                                progressCb(string.Format("Executing custom setup script for {0}.", app.ID), errors.Count > 0, progress);
-                            }
-                            error = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customSetupScript);
-                            if (error != null)
-                            {
-                                errors.Add(error);
-                                if (progressCb != null)
-                                {
-                                    progressCb(string.Format("Execution of custom setup script for {0} failed.", app.ID), true, progress);
-                                }
+                                progressCb(string.Format("Execution of custom setup script for {0} failed.", app.ID), true, progress);
                             }
                         }
-                        // TODO 3. Create Execution Proxy
-                        // TODO 4. Create Launcher
                     }
+                    // TODO 3. Create Execution Proxy
+                    // TODO 4. Create Launcher
                 }
                 if (progressCb != null)
                 {
@@ -874,41 +872,46 @@ namespace Mastersign.Bench
         {
             AsyncManager.StartTask(() =>
             {
-                var errors = new List<AppTaskError>();
-                var cnt = 0;
+                var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
+                    if (app.IsInstalled) selectedApps.Add(app);
+                }
+                selectedApps.Reverse();
+
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+
+                foreach (var app in selectedApps)
+                {
                     cnt++;
-                    var progress = (float)cnt / apps.Count;
+                    var progress = (float)cnt / selectedApps.Count;
 
                     AppTaskError error = null;
-                    if (app.IsInstalled)
+                    if (progressCb != null)
                     {
-                        if (progressCb != null)
-                        {
-                            progressCb(string.Format("Uninstalling app {0}.", app.ID), errors.Count > 0, progress);
-                        }
-                        switch (app.Typ)
-                        {
-                            case AppTyps.Meta:
-                                error = UninstallGeneric(man.Config, app);
-                                break;
-                            case AppTyps.Default:
-                                error = UninstallGeneric(man.Config, app);
-                                break;
-                            case AppTyps.NodePackage:
-                                error = UninstallNodePackage(man.Config, man.ProcessExecutionHost, app);
-                                break;
-                            case AppTyps.Python2Package:
-                                error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
-                                break;
-                            case AppTyps.Python3Package:
-                                error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
-                                break;
-                            default:
-                                error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
-                                break;
-                        }
+                        progressCb(string.Format("Uninstalling app {0}.", app.ID), errors.Count > 0, progress);
+                    }
+                    switch (app.Typ)
+                    {
+                        case AppTyps.Meta:
+                            error = UninstallGeneric(man.Config, app);
+                            break;
+                        case AppTyps.Default:
+                            error = UninstallGeneric(man.Config, app);
+                            break;
+                        case AppTyps.NodePackage:
+                            error = UninstallNodePackage(man.Config, man.ProcessExecutionHost, app);
+                            break;
+                        case AppTyps.Python2Package:
+                            error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
+                            break;
+                        case AppTyps.Python3Package:
+                            error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
+                            break;
+                        default:
+                            error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
+                            break;
                     }
                 }
                 if (progressCb != null)
@@ -939,16 +942,19 @@ namespace Mastersign.Bench
                     {
                         FileSystem.EmptyDir(libDir);
                         success = true;
-                        if (progressCb != null)
-                        {
-                            progressCb("Finished uninstalling apps.", false, 1f);
-                        }
                     }
                     catch (Exception e)
                     {
                         if (progressCb != null)
                         {
                             progressCb("Uninstalling apps failed: " + e.Message, true, 1f);
+                        }
+                    }
+                    if (success)
+                    {
+                        if (progressCb != null)
+                        {
+                            progressCb("Finished uninstalling apps.", false, 1f);
                         }
                     }
                 }
