@@ -157,6 +157,17 @@ namespace Mastersign.Bench
 
         public string SetupTestFile { get { return StringValue(PropertyKeys.AppSetupTestFile); } }
 
+        public bool CanCheckInstallation
+        {
+            get
+            {
+                return SetupTestFile != null
+                    || Typ == AppTyps.NodePackage
+                    || Typ == AppTyps.Python2Package
+                    || Typ == AppTyps.Python3Package;
+            }
+        }
+
         public bool IsInstalled
         {
             get
@@ -209,7 +220,7 @@ namespace Mastersign.Bench
                                 ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceArchiveName))
                                 : true;
                     default:
-                        return true;
+                        return false;
                 }
             }
         }
@@ -218,7 +229,7 @@ namespace Mastersign.Bench
         {
             get
             {
-                if (IsInstalled)
+                if (CanCheckInstallation && IsInstalled)
                     if (HasResource && !IsResourceCached)
                         return "not cached";
                     else
@@ -231,7 +242,10 @@ namespace Mastersign.Bench
                             return "deactivated";
                     else
                         if (IsActive)
-                            return "pending";
+                            if (CanCheckInstallation)
+                                return "pending";
+                            else
+                                return "active";
                         else
                             if (HasResource && IsResourceCached)
                                 return "cached";
@@ -248,7 +262,7 @@ namespace Mastersign.Bench
                 {
                     case AppTyps.Meta:
                     case AppTyps.Default:
-                        if (IsInstalled)
+                        if (CanCheckInstallation && IsInstalled)
                             if (IsDeactivated)
                                 if (HasResource && IsResourceCached)
                                     return "App is deactivated, but cached and installed.";
@@ -270,6 +284,28 @@ namespace Mastersign.Bench
                                         return "App is not active, but installed.";
                                     else
                                         return "App is not active, but cached and installed.";
+                        else if (!CanCheckInstallation)
+                            if (IsDeactivated)
+                                if (HasResource && IsResourceCached)
+                                    return "App is deactivated, but cached.";
+                                else
+                                    return "App is deactivated.";
+                            else
+                                if (IsActivated)
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is active, but not cached.";
+                                    else
+                                        return "App is active.";
+                                else if (IsActive)
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is required, but not cached.";
+                                    else
+                                        return "App is required.";
+                                else
+                                    if (HasResource && IsResourceCached)
+                                        return "App is not active, but cached.";
+                                    else
+                                        return "App is not active.";
                         else
                             if (IsDeactivated)
                                 if (HasResource && IsResourceCached)
@@ -288,10 +324,10 @@ namespace Mastersign.Bench
                                     else
                                         return "App is required, but not installed.";
                                 else
-                                    if (HasResource && !IsResourceCached)
-                                        return "App is not active.";
-                                    else
+                                    if (HasResource && IsResourceCached)
                                         return "App is not active, but cached.";
+                                    else
+                                        return "App is not active.";
                     case AppTyps.NodePackage:
                     case AppTyps.Python2Package:
                     case AppTyps.Python3Package:
@@ -310,11 +346,11 @@ namespace Mastersign.Bench
                                 return "Package is deactivated.";
                             else
                                 if (IsActivated)
-                                    return "Package is activated and installed.";
+                                    return "Package is activated, but not installed.";
                                 else if (IsActive)
-                                    return "Package is required and installed.";
+                                    return "Package is required, but not installed.";
                                 else
-                                    return "Package is not active, but installed.";
+                                    return "Package is not active.";
                     default:
                         return "Unkown app typ.";
                 }
@@ -325,7 +361,7 @@ namespace Mastersign.Bench
         {
             get
             {
-                if (IsInstalled)
+                if (CanCheckInstallation && IsInstalled)
                     if (IsDeactivated)
                         return AppStatusIcon.Warning;
                     else
@@ -344,9 +380,18 @@ namespace Mastersign.Bench
                             return AppStatusIcon.Blocked;
                     else
                         if (IsActive)
-                            return AppStatusIcon.Task;
+                            if (CanCheckInstallation)
+                                return AppStatusIcon.Task;
+                            else
+                                if (HasResource && !IsResourceCached)
+                                    return AppStatusIcon.Info;
+                                else
+                                    return AppStatusIcon.OK;
                         else
-                            return AppStatusIcon.None;
+                            if (HasResource && IsResourceCached)
+                                return AppStatusIcon.Cached;
+                            else
+                                return AppStatusIcon.None;
             }
         }
 

@@ -5,6 +5,7 @@
         None,
         OK,
         Info,
+        Cached,
         Tolerated,
         Blocked,
         Task,
