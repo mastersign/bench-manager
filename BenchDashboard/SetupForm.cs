@@ -186,6 +186,7 @@ namespace Mastersign.Bench.Dashboard
         private void UpgradeAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Upgrade apps");
+
             MessageBox.Show("Not implemented yet.");
         }
 
