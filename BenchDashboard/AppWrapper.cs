@@ -7,7 +7,7 @@ using Mastersign.Bench.Dashboard.Properties;
 
 namespace Mastersign.Bench.Dashboard
 {
-    class AppWrapper
+    class AppWrapper : INotifyPropertyChanged
     {
         private readonly AppFacade app;
         private readonly int no;
@@ -95,6 +95,20 @@ namespace Mastersign.Bench.Dashboard
 
         public bool IsInstalled { get { return app.IsInstalled; } }
 
-        public string ResourceState { get { return app.HasResource ? (app.IsResourceCached ? "cached" : "missing") : "none"; } }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void NotifyChanges()
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs("StatusIcon"));
+                handler(this, new PropertyChangedEventArgs("IsActive"));
+                handler(this, new PropertyChangedEventArgs("IsDeactivated"));
+                handler(this, new PropertyChangedEventArgs("IsInstalled"));
+                handler(this, new PropertyChangedEventArgs("ShortStatus"));
+                handler(this, new PropertyChangedEventArgs("LongStatus"));
+            }
+        }
     }
 }

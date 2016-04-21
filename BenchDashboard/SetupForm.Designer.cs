@@ -77,6 +77,7 @@
             this.tsmiEditDeactivationList = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmView = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiRefreshView = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -95,11 +96,6 @@
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
             toolStripSeparator2.Size = new System.Drawing.Size(176, 6);
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // splitterBottom
             // 
@@ -461,6 +457,11 @@
             this.tsmiUninstallAll.Text = "U&ninstall Apps";
             this.tsmiUninstallAll.Click += new System.EventHandler(this.UninstallAllHandler);
             // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
+            // 
             // tsmiDownloadAllResources
             // 
             this.tsmiDownloadAllResources.Name = "tsmiDownloadAllResources";
@@ -521,7 +522,8 @@
             // tsmView
             // 
             this.tsmView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiAlwaysShowDownloads});
+            this.tsmiAlwaysShowDownloads,
+            this.tsmiRefreshView});
             this.tsmView.Name = "tsmView";
             this.tsmView.Size = new System.Drawing.Size(44, 20);
             this.tsmView.Text = "&View";
@@ -533,6 +535,13 @@
             this.tsmiAlwaysShowDownloads.Size = new System.Drawing.Size(205, 22);
             this.tsmiAlwaysShowDownloads.Text = "&Always Show Downloads";
             this.tsmiAlwaysShowDownloads.CheckedChanged += new System.EventHandler(this.AlwaysShowDownloadsCheckedChanged);
+            // 
+            // tsmiRefreshView
+            // 
+            this.tsmiRefreshView.Name = "tsmiRefreshView";
+            this.tsmiRefreshView.Size = new System.Drawing.Size(205, 22);
+            this.tsmiRefreshView.Text = "&Refresh";
+            this.tsmiRefreshView.Click += new System.EventHandler(this.tsmiRefreshView_Click);
             // 
             // SetupForm
             // 
@@ -605,5 +614,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colLauncher;
         private System.Windows.Forms.DataGridViewTextBoxColumn colStatus;
         private System.Windows.Forms.DataGridViewTextBoxColumn colComment;
+        private System.Windows.Forms.ToolStripMenuItem tsmiRefreshView;
     }
 }

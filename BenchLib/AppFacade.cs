@@ -18,6 +18,12 @@ namespace Mastersign.Bench
             AppName = appName;
         }
 
+        public void DiscardCachedValues()
+        {
+            isInstalled = null;
+            isResourceCached = null;
+        }
+
         private object Value(string property)
         {
             return AppIndex.GetGroupValue(AppName, property);

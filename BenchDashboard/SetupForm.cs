@@ -17,10 +17,15 @@ namespace Mastersign.Bench.Dashboard
         private ListSortDirection sortDirection;
         private AppFacade contextApp;
 
+        private readonly Dictionary<string, AppWrapper> appLookup = new Dictionary<string, AppWrapper>();
+
         public SetupForm(Core core)
         {
             this.core = core;
             core.ConfigReloaded += ConfigReloadedHandler;
+            core.AllAppStateChanged += ConfigReloadedHandler;
+            core.AppStateChanged += AppStateChangedHandler;
+            core.BusyChanged += CoreBusyChangedHandler;
             InitializeComponent();
             gridApps.AutoGenerateColumns = false;
             InitializeDownloadList();
@@ -37,6 +42,29 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
+        private void AppStateChangedHandler(object sender, AppEventArgs e)
+        {
+            AppWrapper wrapper;
+            if (appLookup.TryGetValue(e.ID, out wrapper))
+            {
+                wrapper.App.DiscardCachedValues();
+                wrapper.NotifyChanges();
+            }
+        }
+
+        private void CoreBusyChangedHandler(object sender, EventArgs e)
+        {
+            var notBusy = !core.Busy;
+            foreach (ToolStripItem tsmi in tsmSetup.DropDownItems)
+            {
+                tsmi.Enabled = notBusy;
+            }
+            foreach (ToolStripItem mi in ctxmAppActions.Items)
+            {
+                mi.Enabled = notBusy;
+            }
+        }
+
         private void InitializeDownloadList()
         {
             downloadList.Downloader = core.Downloader;
@@ -46,12 +74,15 @@ namespace Mastersign.Bench.Dashboard
 
         private void InitializeAppList()
         {
+            appLookup.Clear();
             var list = new List<AppWrapper>();
             var cnt = 0;
             foreach (var app in core.Config.Apps)
             {
                 cnt++;
-                list.Add(new AppWrapper(app, cnt));
+                var wrapper = new AppWrapper(app, cnt);
+                list.Add(wrapper);
+                appLookup[app.ID] = wrapper;
             }
             gridApps.DataSource = new SortedBindingList<AppWrapper>(list);
             if (sortedColumn != null)
@@ -280,6 +311,11 @@ namespace Mastersign.Bench.Dashboard
             miDownloadResource.Visible = contextApp.HasResource && !contextApp.IsResourceCached;
             miDeleteResource.Visible = contextApp.HasResource && contextApp.IsResourceCached;
             e.ContextMenuStrip = ctxmAppActions;
+        }
+
+        private void tsmiRefreshView_Click(object sender, EventArgs e)
+        {
+            core.ReloadConfig();
         }
     }
 }
