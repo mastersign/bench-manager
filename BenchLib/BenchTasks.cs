@@ -910,14 +910,14 @@ namespace Mastersign.Bench
                                 break;
                         }
                     }
-                    if (progressCb != null)
-                    {
-                        progressCb("Finished uninstalling apps.", errors.Count > 0, 1f);
-                    }
-                    if (endCb != null)
-                    {
-                        endCb(errors.Count == 0, errors);
-                    }
+                }
+                if (progressCb != null)
+                {
+                    progressCb("Finished uninstalling apps.", errors.Count > 0, 1f);
+                }
+                if (endCb != null)
+                {
+                    endCb(errors.Count == 0, errors);
                 }
             });
         }
