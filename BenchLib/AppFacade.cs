@@ -191,7 +191,7 @@ namespace Mastersign.Bench
         {
             get
             {
-                return Typ == AppTyps.Default && 
+                return Typ == AppTyps.Default &&
                     (ResourceFileName != null || ResourceArchiveName != null);
             }
         }
@@ -211,6 +211,142 @@ namespace Mastersign.Bench
                     default:
                         return true;
                 }
+            }
+        }
+
+        public string ShortStatus
+        {
+            get
+            {
+                if (IsInstalled)
+                    if (HasResource && !IsResourceCached)
+                        return "not cached";
+                    else
+                        return "installed";
+                else
+                    if (IsDeactivated)
+                        if (HasResource && IsResourceCached)
+                            return "cached";
+                        else
+                            return "deactivated";
+                    else
+                        if (IsActive)
+                            return "pending";
+                        else
+                            if (HasResource && IsResourceCached)
+                                return "cached";
+                            else
+                                return "inactive";
+            }
+        }
+
+        public string LongStatus
+        {
+            get
+            {
+                switch (Typ)
+                {
+                    case AppTyps.Meta:
+                    case AppTyps.Default:
+                        if (IsInstalled)
+                            if (IsDeactivated)
+                                if (HasResource && IsResourceCached)
+                                    return "App is deactivated, but cached and installed.";
+                                else
+                                    return "App is deactivated, but installed.";
+                            else
+                                if (IsActivated)
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is active and installed, but its resource is not cached.";
+                                    else
+                                        return "App is active and installed.";
+                                else if (IsActive)
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is required and installed, but its resource is not cached.";
+                                    else
+                                        return "App is required and installed.";
+                                else
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is not active, but installed.";
+                                    else
+                                        return "App is not active, but cached and installed.";
+                        else
+                            if (IsDeactivated)
+                                if (HasResource && IsResourceCached)
+                                    return "App is deactivated, but cached.";
+                                else
+                                    return "App is deactivated.";
+                            else
+                                if (IsActivated)
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is active, but not cached or installed.";
+                                    else
+                                        return "App is active, but not installed.";
+                                else if (IsActive)
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is required, but not cached or installed.";
+                                    else
+                                        return "App is required, but not installed.";
+                                else
+                                    if (HasResource && !IsResourceCached)
+                                        return "App is not active.";
+                                    else
+                                        return "App is not active, but cached.";
+                    case AppTyps.NodePackage:
+                    case AppTyps.Python2Package:
+                    case AppTyps.Python3Package:
+                        if (IsInstalled)
+                            if (IsDeactivated)
+                                return "Package is deactivated, but installed.";
+                            else
+                                if (IsActivated)
+                                    return "Package is active and installed.";
+                                else if (IsActive)
+                                    return "Package is required and installed.";
+                                else
+                                    return "Package is not active, but installed.";
+                        else
+                            if (IsDeactivated)
+                                return "Package is deactivated.";
+                            else
+                                if (IsActivated)
+                                    return "Package is activated and installed.";
+                                else if (IsActive)
+                                    return "Package is required and installed.";
+                                else
+                                    return "Package is not active, but installed.";
+                    default:
+                        return "Unkown app typ.";
+                }
+            }
+        }
+
+        public AppStatusIcon StatusIcon
+        {
+            get
+            {
+                if (IsInstalled)
+                    if (IsDeactivated)
+                        return AppStatusIcon.Warning;
+                    else
+                        if (IsActive)
+                            if (HasResource && !IsResourceCached)
+                                return AppStatusIcon.Info;
+                            else
+                                return AppStatusIcon.OK;
+                        else
+                            return AppStatusIcon.Tolerated;
+                else
+                    if (IsDeactivated)
+                        if (HasResource && IsResourceCached)
+                            return AppStatusIcon.Info;
+                        else
+                            return AppStatusIcon.Blocked;
+                    else
+                        if (IsActive)
+                            return AppStatusIcon.Task;
+                        else
+                            return AppStatusIcon.None;
             }
         }
 
