@@ -131,7 +131,7 @@ namespace Mastersign.Bench.Dashboard
                             + BuildCombinedErrorMessage(errors, 10));
                     }
                     OnAppStateChanged(appId);
-                }, 
+                },
                 appId);
         }
 
