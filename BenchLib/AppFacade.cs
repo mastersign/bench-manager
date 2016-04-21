@@ -64,6 +64,14 @@ namespace Mastersign.Bench
 
         public string Version { get { return StringValue(PropertyKeys.AppVersion); } }
 
+        public bool IsVersioned
+        {
+            get
+            {
+                return Version != null && !Version.Equals("latest", StringComparison.InvariantCultureIgnoreCase);
+            }
+        }
+
         public string[] Dependencies
         {
             get { return ListValue(PropertyKeys.AppDependencies); }

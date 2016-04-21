@@ -325,6 +325,10 @@ namespace Mastersign.Bench
                 {
                     if (!t.Success) errors.Add(new AppTaskError(t.Id, t.ErrorMessage));
                 }
+                foreach(var app in apps)
+                {
+                    app.DiscardCachedValues();
+                }
                 if (progressCb != null)
                 {
                     progressCb("Finished downloads", errors.Count > 0, 1.0f);
@@ -438,6 +442,7 @@ namespace Mastersign.Bench
                     {
                         progressCb("Deleted app resources for " + app.ID, errors.Count > 0, progress);
                     }
+                    app.DiscardCachedValues();
                 }
                 if (progressCb != null)
                 {
@@ -786,6 +791,8 @@ namespace Mastersign.Bench
                     }
                     // TODO 3. Create Execution Proxy
                     // TODO 4. Create Launcher
+
+                    app.DiscardCachedValues();
                 }
                 if (progressCb != null)
                 {
@@ -913,6 +920,7 @@ namespace Mastersign.Bench
                             error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
                             break;
                     }
+                    app.DiscardCachedValues();
                 }
                 if (progressCb != null)
                 {
