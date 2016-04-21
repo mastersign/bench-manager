@@ -24,11 +24,15 @@ namespace Mastersign.Bench.Dashboard
 
         public Control GuiContext { get; set; }
 
+        private bool busy;
+
         public event EventHandler ConfigReloaded;
 
         public event EventHandler AllAppStateChanged;
 
         public event EventHandler<AppEventArgs> AppStateChanged;
+
+        public event EventHandler BusyChanged;
 
         public Core(string benchRoot)
         {
@@ -51,6 +55,29 @@ namespace Mastersign.Bench.Dashboard
             {
                 task();
             }
+        }
+
+        public bool Busy
+        {
+            get { return busy; }
+            set
+            {
+                if (value == busy) return;
+                busy = value;
+                OnBusyChanged();
+            }
+        }
+
+        private void OnBusyChanged()
+        {
+            SyncWithGui(() =>
+            {
+                var handler = BusyChanged;
+                if (handler != null)
+                {
+                    handler(this, EventArgs.Empty);
+                }
+            });
         }
 
         private void OnConfigReloaded()
@@ -100,9 +127,12 @@ namespace Mastersign.Bench.Dashboard
 
         public void DownloadAppResources(ProgressCallback progressCb)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.DownloadAppResources(this, progressCb,
                 (success, errors) =>
                 {
+                    Busy = false;
                     if (success)
                     {
                         UI.ShowInfo("Downloading App Resources", "Finished.");
@@ -120,9 +150,12 @@ namespace Mastersign.Bench.Dashboard
 
         public void DownloadAppResource(ProgressCallback progressCb, string appId)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.DownloadAppResources(this, progressCb,
                 (success, errors) =>
                 {
+                    Busy = false;
                     if (!success)
                     {
                         UI.ShowWarning("Downloading App Resource",
@@ -137,9 +170,12 @@ namespace Mastersign.Bench.Dashboard
 
         public void DeleteAppResources(ProgressCallback progressCb)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.DeleteAppResources(this, progressCb,
                 (success, errors) =>
                 {
+                    Busy = false;
                     if (success)
                     {
                         UI.ShowInfo("Deleting App Resources", "Finished.");
@@ -157,9 +193,12 @@ namespace Mastersign.Bench.Dashboard
 
         public void DeleteAppResource(ProgressCallback progressCb, string appId)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.DeleteAppResources(this, progressCb,
                 (success, errors) =>
                 {
+                    Busy = false;
                     if (!success)
                     {
                         UI.ShowWarning("Deleting App Resource",
@@ -168,86 +207,98 @@ namespace Mastersign.Bench.Dashboard
                             + BuildCombinedErrorMessage(errors, 10));
                     }
                     OnAppStateChanged(appId);
-                }, 
+                },
                 appId);
         }
 
         public void InstallApps(ProgressCallback progressCb)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.RunTasks(this, progressCb,
-            (success, errors) =>
-            {
-                if (success)
+                (success, errors) =>
                 {
-                    UI.ShowInfo("Installing Apps", "Finished.");
-                }
-                else
-                {
-                    UI.ShowWarning("Installing Apps",
-                        "Installing the following apps failed: "
-                        + Environment.NewLine + Environment.NewLine
-                        + BuildCombinedErrorMessage(errors, 10));
-                }
-                OnAllAppStateChanged();
-            },
-            BenchTasks.DownloadAppResources,
-            BenchTasks.InstallApps);
+                    Busy = false;
+                    if (success)
+                    {
+                        UI.ShowInfo("Installing Apps", "Finished.");
+                    }
+                    else
+                    {
+                        UI.ShowWarning("Installing Apps",
+                            "Installing the following apps failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAllAppStateChanged();
+                },
+                BenchTasks.DownloadAppResources,
+                BenchTasks.InstallApps);
         }
 
         public void InstallApp(ProgressCallback progressCb, string appId)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.RunTasks(this, progressCb,
-            (success, errors) =>
-            {
-                if (!success)
+                (success, errors) =>
                 {
-                    UI.ShowWarning("Installing App",
-                        "Installing the app failed: "
-                        + Environment.NewLine + Environment.NewLine
-                        + BuildCombinedErrorMessage(errors, 10));
-                }
-                OnAppStateChanged(appId);
-            },
-            appId,
-            BenchTasks.DownloadAppResources,
-            BenchTasks.InstallApps);
+                    Busy = false;
+                    if (!success)
+                    {
+                        UI.ShowWarning("Installing App",
+                            "Installing the app failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAppStateChanged(appId);
+                },
+                appId,
+                BenchTasks.DownloadAppResources,
+                BenchTasks.InstallApps);
         }
 
         public void UninstallApps(ProgressCallback progressCb)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.UninstallApps(this, progressCb,
-            (success, errors) =>
-            {
-                if (success)
+                (success, errors) =>
                 {
-                    UI.ShowInfo("Uninstalling Apps", "Finished.");
-                }
-                else
-                {
-                    UI.ShowWarning("Uninstalling Apps",
-                        "Uninstalling the following apps failed: "
-                        + Environment.NewLine + Environment.NewLine
-                        + BuildCombinedErrorMessage(errors, 10));
-                }
-                OnAllAppStateChanged();
-            });
+                    Busy = false;
+                    if (success)
+                    {
+                        UI.ShowInfo("Uninstalling Apps", "Finished.");
+                    }
+                    else
+                    {
+                        UI.ShowWarning("Uninstalling Apps",
+                            "Uninstalling the following apps failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAllAppStateChanged();
+                });
         }
 
         public void UninstallApp(ProgressCallback progressCb, string appId)
         {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
             BenchTasks.UninstallApp(this, progressCb,
-            (success, errors) =>
-            {
-                if (!success)
+                (success, errors) =>
                 {
-                    UI.ShowWarning("Uninstalling App",
-                        "Uninstalling the app failed: "
-                        + Environment.NewLine + Environment.NewLine
-                        + BuildCombinedErrorMessage(errors, 10));
-                }
-                OnAppStateChanged(appId);
-            },
-            appId);
+                    Busy = false;
+                    if (!success)
+                    {
+                        UI.ShowWarning("Uninstalling App",
+                            "Uninstalling the app failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAppStateChanged(appId);
+                },
+                appId);
         }
 
         private static string BuildCombinedErrorMessage(IEnumerable<AppTaskError> errors, int maxLines)
