@@ -925,7 +925,38 @@ namespace Mastersign.Bench
         public static void UninstallApps(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb)
         {
-            UninstallApps(man, progressCb, endCb, man.Config.Apps.ActiveApps);
+            AsyncManager.StartTask(() =>
+            {
+                if (progressCb != null)
+                {
+                    progressCb("Uninstalling all apps.", false, 0f);
+                }
+                var success = false;
+                var libDir = man.Config.GetStringValue(PropertyKeys.LibDir);
+                if (libDir != null && Directory.Exists(libDir))
+                {
+                    try
+                    {
+                        FileSystem.EmptyDir(libDir);
+                        success = true;
+                        if (progressCb != null)
+                        {
+                            progressCb("Finished uninstalling apps.", false, 1f);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        if (progressCb != null)
+                        {
+                            progressCb("Uninstalling apps failed: " + e.Message, true, 1f);
+                        }
+                    }
+                }
+                if (endCb != null)
+                {
+                    endCb(success, null);
+                }
+            });
         }
 
         public static void UninstallApp(IBenchManager man,
