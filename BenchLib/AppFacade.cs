@@ -168,33 +168,41 @@ namespace Mastersign.Bench
             }
         }
 
+        private bool? isInstalled;
+
+        private bool GetIsInstalled()
+        {
+            switch (Typ)
+            {
+                case AppTyps.NodePackage:
+                    var npmDir = AppIndex.GetStringGroupValue(AppKeys.Npm, PropertyKeys.AppDir);
+                    var npmPackageDir = System.IO.Path.Combine(
+                        System.IO.Path.Combine(npmDir, "node_modules"),
+                        PackageName);
+                    return System.IO.Directory.Exists(npmPackageDir);
+                case AppTyps.Python2Package:
+                    var python2Dir = AppIndex.GetStringGroupValue(AppKeys.Python2, PropertyKeys.AppDir);
+                    var pip2PackageDir = System.IO.Path.Combine(
+                        System.IO.Path.Combine(python2Dir, "lib"),
+                        System.IO.Path.Combine("site-packages", PackageName));
+                    return System.IO.Directory.Exists(pip2PackageDir);
+                case AppTyps.Python3Package:
+                    var python3Dir = AppIndex.GetStringGroupValue(AppKeys.Python3, PropertyKeys.AppDir);
+                    var pip3PackageDir = System.IO.Path.Combine(
+                        System.IO.Path.Combine(python3Dir, "lib"),
+                        System.IO.Path.Combine("site-packages", PackageName));
+                    return System.IO.Directory.Exists(pip3PackageDir);
+                default:
+                    return System.IO.File.Exists(SetupTestFile);
+            }
+        }
+
         public bool IsInstalled
         {
             get
             {
-                switch (Typ)
-                {
-                    case AppTyps.NodePackage:
-                        var npmDir = AppIndex.GetStringGroupValue(AppKeys.Npm, PropertyKeys.AppDir);
-                        var npmPackageDir = System.IO.Path.Combine(
-                            System.IO.Path.Combine(npmDir, "node_modules"),
-                            PackageName);
-                        return System.IO.Directory.Exists(npmPackageDir);
-                    case AppTyps.Python2Package:
-                        var python2Dir = AppIndex.GetStringGroupValue(AppKeys.Python2, PropertyKeys.AppDir);
-                        var pip2PackageDir = System.IO.Path.Combine(
-                            System.IO.Path.Combine(python2Dir, "lib"),
-                            System.IO.Path.Combine("site-packages", PackageName));
-                        return System.IO.Directory.Exists(pip2PackageDir);
-                    case AppTyps.Python3Package:
-                        var python3Dir = AppIndex.GetStringGroupValue(AppKeys.Python3, PropertyKeys.AppDir);
-                        var pip3PackageDir = System.IO.Path.Combine(
-                            System.IO.Path.Combine(python3Dir, "lib"),
-                            System.IO.Path.Combine("site-packages", PackageName));
-                        return System.IO.Directory.Exists(pip3PackageDir);
-                    default:
-                        return System.IO.File.Exists(SetupTestFile);
-                }
+                if (!isInstalled.HasValue) isInstalled = GetIsInstalled();
+                return isInstalled.Value;
             }
         }
 
@@ -207,21 +215,29 @@ namespace Mastersign.Bench
             }
         }
 
+        private bool? isResourceCached;
+
+        private bool GetIsResourceCached()
+        {
+            switch (Typ)
+            {
+                case AppTyps.Default:
+                    return ResourceFileName != null
+                        ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceFileName))
+                        : ResourceArchiveName != null
+                            ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceArchiveName))
+                            : true;
+                default:
+                    return false;
+            }
+        }
+
         public bool IsResourceCached
         {
             get
             {
-                switch (Typ)
-                {
-                    case AppTyps.Default:
-                        return ResourceFileName != null
-                            ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceFileName))
-                            : ResourceArchiveName != null
-                                ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceArchiveName))
-                                : true;
-                    default:
-                        return false;
-                }
+                if (!isResourceCached.HasValue) isResourceCached = GetIsResourceCached();
+                return isResourceCached.Value;
             }
         }
 

@@ -65,10 +65,9 @@ namespace Mastersign.Bench
                     appTyp = AppIndex.GetGroupValue(appName, PropertyKeys.AppTyp) as string;
                     if (appTyp == AppTyps.Default)
                     {
-                        var path = Path.Combine(
+                        return Path.Combine(
                             AppIndex.GetGroupValue(appName, PropertyKeys.AppDir) as string,
                             appName.ToLowerInvariant() + ".exe");
-                        return File.Exists(path) ? path : null;
                     }
                     return null;
                 case PropertyKeys.AppRegister:

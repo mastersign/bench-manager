@@ -641,7 +641,7 @@ namespace Mastersign.Bench
             string id, string archiveFile, string targetDir)
         {
             var lessMsiExe = config.Apps[AppKeys.LessMSI].Exe;
-            if (lessMsiExe == null) return false;
+            if (lessMsiExe == null || !File.Exists(lessMsiExe)) return false;
             var env = new BenchEnvironment(config);
             var exitCode = execHost.RunProcess(env, targetDir, lessMsiExe,
                 CommandLine.FormatArgumentList("x", archiveFile, @".\"));
@@ -652,7 +652,7 @@ namespace Mastersign.Bench
             string id, string archiveFile, string targetDir)
         {
             var innoUnpExe = config.Apps[AppKeys.InnoSetupUnpacker].Exe;
-            if (innoUnpExe == null) return false;
+            if (innoUnpExe == null || !File.Exists(innoUnpExe)) return false;
             var env = new BenchEnvironment(config);
             var exitCode = execHost.RunProcess(env, targetDir, innoUnpExe,
                 CommandLine.FormatArgumentList("-q", "-x", archiveFile));
@@ -662,7 +662,7 @@ namespace Mastersign.Bench
         public static AppTaskError InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
-            if (npmExe == null) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
+            if (npmExe == null || !File.Exists(npmExe)) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
             var packageName = app.Version != null
                 ? string.Format("{0}@{1}", app.PackageName, app.Version)
                 : app.PackageName;
@@ -836,7 +836,7 @@ namespace Mastersign.Bench
         public static AppTaskError UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
-            if (npmExe == null) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
+            if (npmExe == null || !File.Exists(npmExe)) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
             var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
                 CommandLine.FormatArgumentList("uninstall", app.PackageName, "--global"));
             if (exitCode != 0)
