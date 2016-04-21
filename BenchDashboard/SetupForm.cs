@@ -211,14 +211,13 @@ namespace Mastersign.Bench.Dashboard
         private void ReinstallAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Reinstall apps");
-            MessageBox.Show("Not implemented yet.");
+            core.ReinstallApps(ProgressInfoHandler);
         }
 
         private void UpgradeAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Upgrade apps");
-
-            MessageBox.Show("Not implemented yet.");
+            core.UpgradeApps(ProgressInfoHandler);
         }
 
         private void ActivateAppHandler(object sender, EventArgs e)
@@ -243,12 +242,21 @@ namespace Mastersign.Bench.Dashboard
         private void ReinstallAppHandler(object sender, EventArgs e)
         {
             AnnounceTask("Reinstall app " + contextApp.ID);
+            core.ReinstallApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void UpgradeAppHandler(object sender, EventArgs e)
         {
             AnnounceTask("Upgrade app " + contextApp.ID);
+            core.UpgradeApp(ProgressInfoHandler, contextApp.ID);
+            contextApp = null;
+        }
+
+        private void UpgradePackageHandler(object sender, EventArgs e)
+        {
+            AnnounceTask("Upgrade app " + contextApp.ID);
+            core.UpgradeApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
@@ -271,6 +279,11 @@ namespace Mastersign.Bench.Dashboard
             AnnounceTask("Uninstall app " + contextApp.ID);
             core.UninstallApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
+        }
+
+        private void RefreshViewHandler(object sender, EventArgs e)
+        {
+            core.ReloadConfig();
         }
 
         private void gridApps_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -303,19 +316,21 @@ namespace Mastersign.Bench.Dashboard
             var appWrapper = row.DataBoundItem as AppWrapper;
             if (appWrapper == null) return;
             contextApp = appWrapper.App;
-            miActivate.Visible = !contextApp.IsActivated;
-            miDeactivate.Visible = !contextApp.IsDeactivated;
-            miInstall.Visible = !contextApp.IsInstalled;
-            miUninstall.Visible = contextApp.IsInstalled;
-            miReinstall.Visible = true;
+
+            miInstall.Visible =  contextApp.CanCheckInstallation && !contextApp.IsInstalled;
+            miReinstall.Visible = contextApp.Typ == AppTyps.Default
+                && contextApp.CanCheckInstallation && contextApp.IsInstalled
+                && contextApp.HasResource;
+            miUpgrade.Visible = contextApp.Typ == AppTyps.Default
+                && contextApp.CanCheckInstallation && contextApp.IsInstalled
+                && contextApp.HasResource && !contextApp.IsVersioned;
+            miPackageUpgrade.Visible = contextApp.Typ != AppTyps.Default
+                && contextApp.CanCheckInstallation && contextApp.IsInstalled;
+            miUninstall.Visible = contextApp.CanCheckInstallation && contextApp.IsInstalled;
+
             miDownloadResource.Visible = contextApp.HasResource && !contextApp.IsResourceCached;
             miDeleteResource.Visible = contextApp.HasResource && contextApp.IsResourceCached;
             e.ContextMenuStrip = ctxmAppActions;
-        }
-
-        private void tsmiRefreshView_Click(object sender, EventArgs e)
-        {
-            core.ReloadConfig();
         }
     }
 }
