@@ -156,6 +156,11 @@
     <None Include="Resources\missing_app.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\cached_16.png" />
+    <Content Include="Resources\none_16.png" />
+    <Content Include="Resources\task_16.png" />
+    <Content Include="Resources\tolerated_16.png" />
+    <Content Include="Resources\warning_16.png" />
     <None Include="Resources\apps.png" />
     <None Include="Resources\bash_16.png" />
     <Content Include="Resources\bench.ico" />
@@ -163,6 +168,9 @@
     <None Include="Resources\config.png" />
     <None Include="Resources\exclude.png" />
     <None Include="Resources\include.png" />
+    <Content Include="Resources\blocked_16.png" />
+    <Content Include="Resources\info_16.png" />
+    <Content Include="Resources\ok_16.png" />
     <Content Include="Resources\setup.ico" />
     <None Include="Resources\setup_16.png" />
   </ItemGroup>

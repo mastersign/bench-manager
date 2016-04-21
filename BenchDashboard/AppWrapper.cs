@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Text;
+using Mastersign.Bench.Dashboard.Properties;
 
 namespace Mastersign.Bench.Dashboard
 {
@@ -48,6 +50,36 @@ namespace Mastersign.Bench.Dashboard
                 }
             }
         }
+
+        public Bitmap StatusIcon
+        {
+            get
+            {
+                switch (app.StatusIcon)
+                {
+                    case AppStatusIcon.OK:
+                        return Resources.ok_16;
+                    case AppStatusIcon.Info:
+                        return Resources.info_16;
+                    case AppStatusIcon.Cached:
+                        return Resources.cached_16;
+                    case AppStatusIcon.Tolerated:
+                        return Resources.tolerated_16;
+                    case AppStatusIcon.Blocked:
+                        return Resources.blocked_16;
+                    case AppStatusIcon.Task:
+                        return Resources.task_16;
+                    case AppStatusIcon.Warning:
+                        return Resources.warning_16;
+                    default:
+                        return Resources.none_16;
+                }
+            }
+        }
+
+        public string ShortStatus { get { return app.ShortStatus; } }
+
+        public string LongStatus { get { return app.LongStatus; } }
 
         public string IsActive
         {
