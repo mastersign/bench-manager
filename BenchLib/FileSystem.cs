@@ -57,7 +57,28 @@ namespace Mastersign.Bench
         {
             if (!Directory.Exists(path)) return;
             Debug.WriteLine("Purging directory: " + path);
-            Directory.Delete(path, true);
+            ForceDeleteDirectory(path);
+        }
+
+        private static void ForceDeleteDirectory(string targetDir)
+        {
+            File.SetAttributes(targetDir, FileAttributes.Normal);
+
+            string[] files = Directory.GetFiles(targetDir);
+            string[] dirs = Directory.GetDirectories(targetDir);
+
+            foreach (string file in files)
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+                File.Delete(file);
+            }
+
+            foreach (string dir in dirs)
+            {
+                ForceDeleteDirectory(dir);
+            }
+
+            Directory.Delete(targetDir, false);
         }
 
         public static void MoveContent(string sourceDir, string targetDir)
