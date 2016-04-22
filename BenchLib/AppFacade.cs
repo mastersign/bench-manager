@@ -4,6 +4,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 
+using IOPath = System.IO.Path;
+
 namespace Mastersign.Bench
 {
     public class AppFacade
@@ -190,24 +192,24 @@ namespace Mastersign.Bench
             {
                 case AppTyps.NodePackage:
                     var npmDir = AppIndex.GetStringGroupValue(AppKeys.Npm, PropertyKeys.AppDir);
-                    var npmPackageDir = System.IO.Path.Combine(
-                        System.IO.Path.Combine(npmDir, "node_modules"),
+                    var npmPackageDir = IOPath.Combine(
+                        IOPath.Combine(npmDir, "node_modules"),
                         PackageName);
-                    return System.IO.Directory.Exists(npmPackageDir);
+                    return Directory.Exists(npmPackageDir);
                 case AppTyps.Python2Package:
                     var python2Dir = AppIndex.GetStringGroupValue(AppKeys.Python2, PropertyKeys.AppDir);
-                    var pip2PackageDir = System.IO.Path.Combine(
-                        System.IO.Path.Combine(python2Dir, "lib"),
-                        System.IO.Path.Combine("site-packages", PackageName));
-                    return System.IO.Directory.Exists(pip2PackageDir);
+                    var pip2PackageDir = IOPath.Combine(
+                        IOPath.Combine(python2Dir, "lib"),
+                        IOPath.Combine("site-packages", PackageName));
+                    return Directory.Exists(pip2PackageDir);
                 case AppTyps.Python3Package:
                     var python3Dir = AppIndex.GetStringGroupValue(AppKeys.Python3, PropertyKeys.AppDir);
-                    var pip3PackageDir = System.IO.Path.Combine(
-                        System.IO.Path.Combine(python3Dir, "lib"),
-                        System.IO.Path.Combine("site-packages", PackageName));
-                    return System.IO.Directory.Exists(pip3PackageDir);
+                    var pip3PackageDir = IOPath.Combine(
+                        IOPath.Combine(python3Dir, "lib"),
+                        IOPath.Combine("site-packages", PackageName));
+                    return Directory.Exists(pip3PackageDir);
                 default:
-                    return System.IO.File.Exists(SetupTestFile);
+                    return File.Exists(SetupTestFile);
             }
         }
 
@@ -237,9 +239,9 @@ namespace Mastersign.Bench
             {
                 case AppTyps.Default:
                     return ResourceFileName != null
-                        ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceFileName))
+                        ? File.Exists(IOPath.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceFileName))
                         : ResourceArchiveName != null
-                            ? File.Exists(System.IO.Path.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceArchiveName))
+                            ? File.Exists(IOPath.Combine(AppIndex.GetStringValue(PropertyKeys.DownloadDir), ResourceArchiveName))
                             : true;
                 default:
                     return false;
@@ -569,7 +571,7 @@ namespace Mastersign.Bench
         {
             if (AdornedExecutables.Length > 0)
             {
-                var proxyDir = System.IO.Path.Combine(
+                var proxyDir = IOPath.Combine(
                     AppIndex.GetStringValue(PropertyKeys.AppAdornmentBaseDir),
                     AppName.ToLowerInvariant());
                 Path = AppendToList(Path, proxyDir);
