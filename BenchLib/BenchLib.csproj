@@ -64,7 +64,7 @@
     <Compile Include="DownloadTask.cs" />
     <Compile Include="FileSystem.cs" />
     <Compile Include="GroupedVariableResolver.cs" />
-    <Compile Include="ICore.cs" />
+    <Compile Include="IBenchManager.cs" />
     <Compile Include="IProcessExecutionHost.cs" />
     <Compile Include="PowerShell.cs" />
     <Compile Include="PythonVersion.cs" />
