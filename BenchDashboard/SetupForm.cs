@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Mastersign.Bench.Dashboard
@@ -28,18 +29,41 @@ namespace Mastersign.Bench.Dashboard
             core.BusyChanged += CoreBusyChangedHandler;
             InitializeComponent();
             gridApps.AutoGenerateColumns = false;
+        }
+
+        private void SetupForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            core.ConfigReloaded -= ConfigReloadedHandler;
+            core.AllAppStateChanged -= ConfigReloadedHandler;
+            core.AppStateChanged -= AppStateChangedHandler;
+            core.BusyChanged -= CoreBusyChangedHandler;
+        }
+
+        private void SetupForm_Load(object sender, EventArgs e)
+        {
             InitializeDownloadList();
+            InitializeBounds();
+        }
+
+        private void SetupForm_Activated(object sender, EventArgs e)
+        {
+            Application.DoEvents();
             InitializeAppList();
+        }
+
+        private void InitializeBounds()
+        {
+            var region = Screen.PrimaryScreen.WorkingArea;
+            var w = Math.Max(MinimumSize.Width, region.Width / 2);
+            var h = Math.Max(MinimumSize.Height, region.Height);
+            var x = region.Right - w;
+            var y = region.Top;
+            SetBounds(x, y, w, h);
         }
 
         private void ConfigReloadedHandler(object sender, EventArgs e)
         {
-            var selectedRow = gridApps.SelectedRows.Count > 0 ? gridApps.SelectedRows[0].Index : -1;
             InitializeAppList();
-            if (gridApps.Rows.Count >= selectedRow + 1)
-            {
-                gridApps.Rows[selectedRow].Selected = true;
-            }
         }
 
         private void AppStateChangedHandler(object sender, AppEventArgs e)
@@ -63,6 +87,7 @@ namespace Mastersign.Bench.Dashboard
             {
                 mi.Enabled = notBusy;
             }
+            btnAuto.Enabled = notBusy;
         }
 
         private void InitializeDownloadList()
@@ -74,21 +99,35 @@ namespace Mastersign.Bench.Dashboard
 
         private void InitializeAppList()
         {
-            appLookup.Clear();
-            var list = new List<AppWrapper>();
-            var cnt = 0;
-            foreach (var app in core.Config.Apps)
+            AsyncManager.StartTask(() =>
             {
-                cnt++;
-                var wrapper = new AppWrapper(app, cnt);
-                list.Add(wrapper);
-                appLookup[app.ID] = wrapper;
-            }
-            gridApps.DataSource = new SortedBindingList<AppWrapper>(list);
-            if (sortedColumn != null)
-            {
-                gridApps.Sort(sortedColumn, sortDirection);
-            }
+                appLookup.Clear();
+                var list = new List<AppWrapper>();
+                var cnt = 0;
+                foreach (var app in core.Config.Apps)
+                {
+                    cnt++;
+                    var wrapper = new AppWrapper(app, cnt);
+                    list.Add(wrapper);
+                    appLookup[app.ID] = wrapper;
+                }
+
+                var bindingList = new SortedBindingList<AppWrapper>(list);
+
+                BeginInvoke((ThreadStart)(() =>
+                {
+                    var selectedRow = gridApps.SelectedRows.Count > 0 ? gridApps.SelectedRows[0].Index : -10;
+                    gridApps.DataSource = bindingList;
+                    if (sortedColumn != null)
+                    {
+                        gridApps.Sort(sortedColumn, sortDirection);
+                    }
+                    if (selectedRow >= 0 && gridApps.Rows.Count >= selectedRow + 1)
+                    {
+                        gridApps.Rows[selectedRow].Selected = true;
+                    }
+                }));
+            });
         }
 
         private void UpdateProgressBar(float progress)
@@ -130,6 +169,7 @@ namespace Mastersign.Bench.Dashboard
 
         private void EditTextFile(string name, string path)
         {
+            if (core.Busy) throw new InvalidOperationException("The core is already busy.");
             if (!File.Exists(path))
             {
                 MessageBox.Show(
@@ -141,7 +181,13 @@ namespace Mastersign.Bench.Dashboard
                     MessageBoxIcon.Error);
                 return;
             }
-            core.UI.EditTextFile(path);
+            core.Busy = true;
+            AsyncManager.StartTask(() =>
+            {
+                core.UI.EditTextFile(path);
+                core.Busy = false;
+                core.Reload(path == core.Config.GetStringValue(PropertyKeys.CustomConfigFile));
+            });
         }
 
         private void EditCustomConfigHandler(object sender, EventArgs e)
@@ -182,6 +228,12 @@ namespace Mastersign.Bench.Dashboard
         private void AnnounceTask(string label)
         {
             lblTask.Text = label;
+        }
+
+        private void AutoHandler(object sender, EventArgs e)
+        {
+            AnnounceTask("Automatic Setup");
+            core.AutoSetup(ProgressInfoHandler);
         }
 
         private void DownloadAllHandler(object sender, EventArgs e)
@@ -289,7 +341,7 @@ namespace Mastersign.Bench.Dashboard
 
         private void RefreshViewHandler(object sender, EventArgs e)
         {
-            core.ReloadConfig();
+            core.Reload();
         }
 
         private void gridApps_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -317,13 +369,14 @@ namespace Mastersign.Bench.Dashboard
 
         private void gridApps_RowContextMenuStripNeeded(object sender, DataGridViewRowContextMenuStripNeededEventArgs e)
         {
+            if (e.RowIndex < 0) return;
             var row = gridApps.Rows[e.RowIndex];
             row.Selected = true;
             var appWrapper = row.DataBoundItem as AppWrapper;
             if (appWrapper == null) return;
             contextApp = appWrapper.App;
 
-            miInstall.Visible =  contextApp.CanCheckInstallation && !contextApp.IsInstalled;
+            miInstall.Visible = contextApp.CanInstall;
             miReinstall.Visible = contextApp.Typ == AppTyps.Default
                 && contextApp.CanCheckInstallation && contextApp.IsInstalled
                 && contextApp.HasResource;
@@ -336,7 +389,29 @@ namespace Mastersign.Bench.Dashboard
 
             miDownloadResource.Visible = contextApp.HasResource && !contextApp.IsResourceCached;
             miDeleteResource.Visible = contextApp.HasResource && contextApp.IsResourceCached;
+
+            tsSeparatorDownloads.Visible = miDownloadResource.Visible || miDeleteResource.Visible;
+
             e.ContextMenuStrip = ctxmAppActions;
+        }
+
+        private void gridApps_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex < 0 || e.RowIndex < 0) return;
+            var col = gridApps.Columns[e.ColumnIndex];
+            if (col == colActivated || col == colExcluded)
+            {
+                var row = gridApps.Rows[e.RowIndex];
+                var appWrapper = row.DataBoundItem as AppWrapper;
+                if (col == colActivated)
+                {
+                    core.SetAppActivated(appWrapper.ID, !appWrapper.App.IsActivated);
+                }
+                if (col == colExcluded)
+                {
+                    core.SetAppDeactivated(appWrapper.ID, !appWrapper.App.IsDeactivated);
+                }
+            }
         }
     }
 }

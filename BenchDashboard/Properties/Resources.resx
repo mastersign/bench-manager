@@ -166,4 +166,34 @@
   <data name="cached_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\cached_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="clear_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\clear_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="deletedownload_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\deletedownload_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="download_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\download_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="do_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\do_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="do_32" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\do_32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="install_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\install_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="reinstall_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\reinstall_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="uninstall_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\uninstall_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="upgrade_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\upgrade_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="updateenv_16" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\updateenv_16.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

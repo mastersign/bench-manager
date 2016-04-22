@@ -116,13 +116,77 @@ namespace Mastersign.Bench.Dashboard
             });
         }
 
-        public void ReloadConfig()
+        public void Reload(bool configChanged = false)
         {
             Config = Config.Reload();
             Env = new BenchEnvironment(Config);
-            //Downloader.Dispose();
-            //Downloader = BenchTasks.InitializeDownloader(Config);
+            if (configChanged)
+            {
+                Downloader.Dispose();
+                Downloader = BenchTasks.InitializeDownloader(Config);
+            }
             OnConfigReloaded();
+        }
+
+        public void SetAppActivated(string appId, bool value)
+        {
+            var activationFile = new ActivationFile(Config.GetStringValue(PropertyKeys.AppActivationFile));
+            if (value)
+            {
+                activationFile.SignIn(appId);
+            }
+            else
+            {
+                activationFile.SignOut(appId);
+            }
+            Reload();
+        }
+
+        public void SetAppDeactivated(string appId, bool value)
+        {
+            var deactivationFile = new ActivationFile(Config.GetStringValue(PropertyKeys.AppDeactivationFile));
+            if (value)
+            {
+                deactivationFile.SignIn(appId);
+            }
+            else
+            {
+                deactivationFile.SignOut(appId);
+            }
+            Reload();
+        }
+
+        public void AutoSetup(ProgressCallback progressCb)
+        {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
+
+            var activeApps = Config.Apps.ActiveApps;
+            var inactiveApps = Config.Apps.InactiveApps;
+
+            BenchTasks.RunTasks(this, progressCb,
+                (success, errors) =>
+                {
+                    Busy = false;
+                    if (success)
+                    {
+                        UI.ShowInfo("Installing Apps", "Finished.");
+                    }
+                    else
+                    {
+                        UI.ShowWarning("Installing Apps",
+                            BuildCombinedErrorMessage(
+                                "Installing the following apps failed:",
+                                "Installing the apps failed.",
+                                errors, 10));
+                    }
+                    OnAllAppStateChanged();
+                },
+                new ICollection<AppFacade>[] { inactiveApps, activeApps },
+                BenchTasks.UninstallApps,
+                BenchTasks.DownloadAppResources,
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void DownloadAppResources(ProgressCallback progressCb)
@@ -238,8 +302,7 @@ namespace Mastersign.Bench.Dashboard
                     OnAllAppStateChanged();
                 },
                 BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.InstallApps);
         }
 
         public void InstallApp(ProgressCallback progressCb, string appId)
@@ -262,8 +325,7 @@ namespace Mastersign.Bench.Dashboard
                 },
                 appId,
                 BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.InstallApps);
         }
 
         public void ReinstallApps(ProgressCallback progressCb)
@@ -290,8 +352,7 @@ namespace Mastersign.Bench.Dashboard
                 },
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.InstallApps);
         }
 
         public void ReinstallApp(ProgressCallback progressCb, string appId)
@@ -315,8 +376,7 @@ namespace Mastersign.Bench.Dashboard
                 appId,
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.InstallApps);
         }
 
         public void UpgradeApps(ProgressCallback progressCb)
@@ -344,8 +404,7 @@ namespace Mastersign.Bench.Dashboard
                 BenchTasks.DeleteAppResources,
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.InstallApps);
         }
 
         public void UpgradeApp(ProgressCallback progressCb, string appId)
@@ -370,8 +429,7 @@ namespace Mastersign.Bench.Dashboard
                 BenchTasks.DeleteAppResources,
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.InstallApps);
         }
 
         public void UninstallApps(ProgressCallback progressCb)

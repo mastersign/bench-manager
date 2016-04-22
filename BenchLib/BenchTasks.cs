@@ -80,7 +80,7 @@ namespace Mastersign.Bench
             {
                 var activationTemplateFile = cfg.GetStringValue(PropertyKeys.AppActivationTemplateFile);
                 File.Copy(activationTemplateFile, activationFile, false);
-                ui.EditTextFile(activationFile, "Activate some of the included apps.");
+                //ui.EditTextFile(activationFile, "Activate some of the included apps.");
             }
             var deactivationFile = cfg.GetStringValue(PropertyKeys.AppDeactivationFile);
             if (!File.Exists(deactivationFile))
@@ -148,13 +148,6 @@ namespace Mastersign.Bench
                 : null;
         }
 
-        private static string CustomScript(BenchConfiguration config, string typ, AppFacade app)
-        {
-            var path = Path.Combine(CustomScriptDir(config),
-                app.ID.ToLowerInvariant() + "." + typ + ".ps1");
-            return File.Exists(path) ? path : null;
-        }
-
         private static string CustomScriptDir(BenchConfiguration config)
         {
             return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
@@ -212,7 +205,7 @@ namespace Mastersign.Bench
 
         public static void RunTasks(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
-            ICollection<AppFacade> apps, params BenchTask[] tasks)
+            ICollection<AppFacade>[] taskApps, params BenchTask[] tasks)
         {
             if (tasks.Length == 0)
             {
@@ -221,7 +214,7 @@ namespace Mastersign.Bench
             }
 
             InternalRunTasks(man, progressCb, endCb,
-                new List<AppFacade>(apps), new List<AppTaskError>(),
+                taskApps, new List<AppTaskError>(),
                 tasks, 0);
         }
 
@@ -230,7 +223,17 @@ namespace Mastersign.Bench
             params BenchTask[] tasks)
         {
             RunTasks(man, progressCb, endCb,
-                new List<AppFacade>(man.Config.Apps.ActiveApps),
+                new ICollection<AppFacade>[] { new List<AppFacade>(man.Config.Apps.ActiveApps) },
+                tasks);
+        }
+
+        public static void RunTasks(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            ICollection<AppFacade> apps,
+            params BenchTask[] tasks)
+        {
+            RunTasks(man, progressCb, endCb,
+                new ICollection<AppFacade>[] { apps },
                 tasks);
         }
 
@@ -244,9 +247,16 @@ namespace Mastersign.Bench
                 tasks);
         }
 
+        private static T FindLastNotNull<T>(T[] a, int p)
+        {
+            p = Math.Min(a.Length - 1, p);
+            while (p > 0 && a[p] == null) p--;
+            return a[p];
+        }
+
         private static void InternalRunTasks(IBenchManager man,
             ProgressCallback progressCb, AppTaskCallback endCb,
-            List<AppFacade> apps, List<AppTaskError> collectedErrors,
+            ICollection<AppFacade>[] taskApps, List<AppTaskError> collectedErrors,
             BenchTask[] tasks, int i)
         {
             var taskProgress = i / tasks.Length;
@@ -257,6 +267,12 @@ namespace Mastersign.Bench
                     progressCb(info, err || collectedErrors.Count > 0, taskProgress + progress / tasks.Length);
                 }
             };
+
+            var apps = new List<AppFacade>(FindLastNotNull(taskApps, i));
+            foreach (var err in collectedErrors)
+            {
+                apps.RemoveAll(app => app.ID == err.AppId);
+            }
 
             tasks[i](man, pcb, (success, errors) =>
             {
@@ -277,14 +293,7 @@ namespace Mastersign.Bench
                 }
                 else
                 {
-                    if (errors != null)
-                    {
-                        foreach (var err in errors)
-                        {
-                            apps.RemoveAll(app => app.ID == err.AppId);
-                        }
-                    }
-                    InternalRunTasks(man, progressCb, endCb, apps, collectedErrors, tasks, i + 1);
+                    InternalRunTasks(man, progressCb, endCb, taskApps, collectedErrors, tasks, i + 1);
                 }
             }, apps);
         }
@@ -343,7 +352,7 @@ namespace Mastersign.Bench
 
             if (progressCb != null)
             {
-                progressCb("Starting downloads...", false, 0);
+                progressCb("Downloading app resources...", false, 0);
             }
 
             var selectedApps = new List<AppFacade>();
@@ -633,6 +642,11 @@ namespace Mastersign.Bench
                     {
                         error = CreateLauncher(man.Config, app);
                     }
+                    var envScript = app.GetCustomScriptFile("env");
+                    if (error == null && envScript != null)
+                    {
+                        error = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, envScript);
+                    }
                     if (error != null) errors.Add(error);
                     if (progressCb != null)
                     {
@@ -712,7 +726,7 @@ namespace Mastersign.Bench
             var extractDir = app.ResourceArchivePath != null ? tmpDir : targetDir;
             FileSystem.AsureDir(extractDir);
             var success = false;
-            var customExtractScript = CustomScript(config, "extract", app);
+            var customExtractScript = app.GetCustomScriptFile("extract");
             switch (app.ResourceArchiveTyp)
             {
                 case AppArchiveTyps.Auto:
@@ -904,7 +918,10 @@ namespace Mastersign.Bench
                 var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
-                    if (!app.IsInstalled || app.Force) selectedApps.Add(app);
+                    if (!app.CanCheckInstallation || !app.IsInstalled || app.Force)
+                    {
+                        selectedApps.Add(app);
+                    }
                 }
 
                 var errors = new List<AppTaskError>();
@@ -961,7 +978,7 @@ namespace Mastersign.Bench
                     }
 
                     // 2. Custom Setup-Script
-                    var customSetupScript = CustomScript(man.Config, "setup", app);
+                    var customSetupScript = app.GetCustomScriptFile("setup");
                     if (customSetupScript != null)
                     {
                         if (progressCb != null)
@@ -976,14 +993,49 @@ namespace Mastersign.Bench
                             {
                                 progressCb(string.Format("Execution of custom setup script for {0} failed.", app.ID), true, progress);
                             }
+                            continue;
                         }
                     }
 
                     // 3. Create Execution Proxy
-                    CreateExecutionProxies(man.Config, app);
+                    error = CreateExecutionProxies(man.Config, app);
+                    if (error != null)
+                    {
+                        errors.Add(error);
+                        if (progressCb != null)
+                        {
+                            progressCb(string.Format("Creating the execution proxy for {0} failed.", app.ID), true, progress);
+                        }
+                        continue;
+                    }
 
                     // 4. Create Launcher
-                    CreateLauncher(man.Config, app);
+                    error = CreateLauncher(man.Config, app);
+                    if (error != null)
+                    {
+                        errors.Add(error);
+                        if (progressCb != null)
+                        {
+                            progressCb(string.Format("Creating the launcher for {0} failed.", app.ID), true, progress);
+                        }
+                        continue;
+                    }
+
+                    // 5. Run Custom Environment Script
+                    var envScript = app.GetCustomScriptFile("env");
+                    if (envScript != null)
+                    {
+                        error = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, envScript);
+                        if (error != null)
+                        {
+                            errors.Add(error);
+                            if (progressCb != null)
+                            {
+                                progressCb(string.Format("Running the custom environment script for {0} failed.", app.ID), true, progress);
+                            }
+                            continue;
+                        }
+                    }
 
                     app.DiscardCachedValues();
                 }

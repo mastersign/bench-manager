@@ -157,9 +157,20 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\cached_16.png" />
+    <Content Include="Resources\clear_16.png" />
+    <Content Include="Resources\deletedownload_16.png" />
+    <Content Include="Resources\download_16.png" />
+    <Content Include="Resources\do_16.png" />
+    <Content Include="Resources\do_32.png" />
+    <Content Include="Resources\install_16.png" />
     <Content Include="Resources\none_16.png" />
+    <Content Include="Resources\purge_16.png" />
+    <Content Include="Resources\reinstall_16.png" />
     <Content Include="Resources\task_16.png" />
     <Content Include="Resources\tolerated_16.png" />
+    <Content Include="Resources\uninstall_16.png" />
+    <Content Include="Resources\updateenv_16.png" />
+    <Content Include="Resources\upgrade_16.png" />
     <Content Include="Resources\warning_16.png" />
     <None Include="Resources\apps.png" />
     <None Include="Resources\bash_16.png" />

@@ -24,7 +24,6 @@ namespace Mastersign.Bench.Dashboard
             core.AllAppStateChanged += AppStateChangedHandler;
             core.AppStateChanged += AppStateChangedHandler;
             core.ConfigReloaded += AppStateChangedHandler;
-            core.GuiContext = this;
             InitializeComponent();
             InitializeAppLauncherList();
             InitializeTopPanel();

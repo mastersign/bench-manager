@@ -32,7 +32,12 @@ namespace Mastersign.Bench.Dashboard
             }
             Core = new Core(rootPath);
 
-            Application.Run(new MainForm(Core));
+            var mainForm = new MainForm(Core);
+            Core.GuiContext = mainForm;
+            var ui = Core.UI as WinFormsUserInterface;
+            if (ui != null) ui.ParentWindow = mainForm;
+
+            Application.Run(mainForm);
 
             Core.Dispose();
             return 0;

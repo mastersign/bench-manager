@@ -9,21 +9,38 @@ namespace Mastersign.Bench.Dashboard
 {
     class WinFormsUserInterface : IUserInterface
     {
+        public Form ParentWindow { get; set; }
+
         public void ShowInfo(string topic, string message)
         {
-            MessageBox.Show(message, topic,
+            if (ParentWindow != null && ParentWindow.InvokeRequired)
+            {
+                ParentWindow.Invoke((InfoShowCase)ShowInfo, topic, message);
+                return;
+            }
+            MessageBox.Show(ParentWindow, message, topic,
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         public void ShowWarning(string topic, string message)
         {
-            MessageBox.Show(message, topic,
+            if (ParentWindow != null && ParentWindow.InvokeRequired)
+            {
+                ParentWindow.Invoke((InfoShowCase)ShowWarning, topic, message);
+                return;
+            }
+            MessageBox.Show(ParentWindow, message, topic,
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         public void ShowError(string topic, string message)
         {
-            MessageBox.Show(message, topic,
+            if (ParentWindow != null && ParentWindow.InvokeRequired)
+            {
+                ParentWindow.Invoke((InfoShowCase)ShowError, topic, message);
+                return;
+            }
+            MessageBox.Show(ParentWindow, message, topic,
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
@@ -47,10 +64,12 @@ namespace Mastersign.Bench.Dashboard
 
         public void EditTextFile(string path, string prompt)
         {
-            MessageBox.Show(prompt
+            MessageBox.Show(ParentWindow, prompt
                 + Environment.NewLine + Environment.NewLine
                 + "Close the editor to continue.");
             EditTextFile(path);
         }
+
+        private delegate void InfoShowCase(string topic, string message);
     }
 }

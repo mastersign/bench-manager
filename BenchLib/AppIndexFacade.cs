@@ -52,6 +52,23 @@ namespace Mastersign.Bench
             }
         }
 
+        public AppFacade[] InactiveApps
+        {
+            get
+            {
+                var result = new List<AppFacade>();
+                foreach (var appName in AppIndex.Groups())
+                {
+                    var app = new AppFacade(AppIndex, appName);
+                    if (!app.IsActive)
+                    {
+                        result.Add(app);
+                    }
+                }
+                return result.ToArray();
+            }
+        }
+
         public IEnumerator<AppFacade> GetEnumerator()
         {
             foreach (var appName in AppIndex.Groups())

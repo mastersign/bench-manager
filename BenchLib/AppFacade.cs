@@ -20,6 +20,12 @@ namespace Mastersign.Bench
             AppName = appName;
         }
 
+        public void LoadCachedValues()
+        {
+            isInstalled = GetIsInstalled();
+            isResourceCached = GetIsResourceCached();
+        }
+
         public void DiscardCachedValues()
         {
             isInstalled = null;
@@ -221,6 +227,14 @@ namespace Mastersign.Bench
                 ID.ToLowerInvariant() + ".cmd");
         }
 
+        public string GetCustomScriptFile(string typ)
+        {
+            var path = IOPath.Combine(
+                IOPath.Combine(AppIndex.GetStringValue(PropertyKeys.BenchAuto), "apps"),
+                ID.ToLowerInvariant() + "." + typ + ".ps1");
+            return File.Exists(path) ? path : null;
+        }
+
         public string SetupTestFile { get { return StringValue(PropertyKeys.AppSetupTestFile); } }
 
         public bool CanCheckInstallation
@@ -231,6 +245,15 @@ namespace Mastersign.Bench
                     || Typ == AppTyps.NodePackage
                     || Typ == AppTyps.Python2Package
                     || Typ == AppTyps.Python3Package;
+            }
+        }
+
+        public bool CanInstall
+        {
+            get
+            {
+                return CanCheckInstallation && !IsInstalled
+                    || !CanCheckInstallation && GetCustomScriptFile("setup") != null;
             }
         }
 
