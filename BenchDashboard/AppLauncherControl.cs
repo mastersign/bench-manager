@@ -92,10 +92,7 @@ namespace Mastersign.Bench.Dashboard
             var item = listView.SelectedItems.Count > 0 ? listView.SelectedItems[0] : null;
             if (item != null)
             {
-                BenchTasks.ExtractAppArchiveAsync(Core.Config, Core.ProcessExecutionHost, (success, errors) =>
-                {
-                    MessageBox.Show("Result: " + success);
-                }, (string)item.Tag);
+                // nothing yet
             }
         }
     }
