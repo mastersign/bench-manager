@@ -508,6 +508,34 @@ namespace Mastersign.Bench
             FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherScriptDir));
         }
 
+        private static void CreateBenchDashboardLauncher(BenchConfiguration config)
+        {
+            var benchDashboard = Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), @"bin\BenchDashboard.exe");
+            var benchDashboardShortcut = Path.Combine(config.GetStringValue(PropertyKeys.LauncherDir), "Bench Dashboard.lnk");
+            FileSystem.CreateShortcut(benchDashboardShortcut, benchDashboard,
+                string.Format("-root \"{0}\"", config.BenchRootDir), config.BenchRootDir,
+                benchDashboard);
+        }
+
+        private static void CreateActionLauncher(BenchConfiguration config, string label, string action, string icon)
+        {
+            var launcherDir = config.GetStringValue(PropertyKeys.LauncherDir);
+            var actionDir = config.GetStringValue(PropertyKeys.ActionDir);
+            var shortcut = Path.Combine(launcherDir, label + ".lnk");
+            var target = Path.Combine(actionDir, action + ".cmd");
+            FileSystem.CreateShortcut(shortcut, target, null, config.BenchRootDir, icon);
+        }
+
+        public static void CreateActionLaunchers(BenchConfiguration config)
+        {
+            CreateBenchDashboardLauncher(config);
+
+            //CreateActionLauncher(config, "Bench Control", "bench-ctl", @"%SystemRoot%\System32\imageres.dll,109");
+            CreateActionLauncher(config, "Command Line", "bench-cmd", @"%SystemRoot%\System32\cmd.exe");
+            CreateActionLauncher(config, "PowerShell", "bench-ps", @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe");
+            CreateActionLauncher(config, "Bourne Again Shell", "bench-bash", @"%SystemRoot%\System32\imageres.dll,89");
+        }
+
         public static AppTaskError CreateLauncher(BenchConfiguration config, AppFacade app)
         {
             var label = app.Launcher;
@@ -579,6 +607,16 @@ namespace Mastersign.Bench
                 catch (Exception e)
                 {
                     progressCb("Cleaning launchers failed: " + e.Message, true, 0f);
+                    endCb(false, null);
+                    return;
+                }
+                try
+                {
+                    CreateActionLaunchers(man.Config);
+                }
+                catch (Exception e)
+                {
+                    progressCb("Creating bench action launchers failed: " + e.Message, true, 0f);
                     endCb(false, null);
                     return;
                 }
