@@ -3,12 +3,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using WshShell = IWshRuntimeLibrary.WshShell;
+using WshShortcut = IWshRuntimeLibrary.WshShortcut;
 
 namespace Mastersign.Bench
 {
     public static class FileSystem
     {
-        public static void EmptyDir(string path)
+        private static WshShell wshShell;
+
+        public static WshShell WindowsScriptingHostShell
+        {
+            get
+            {
+                if (wshShell == null) wshShell = new WshShell();
+                return wshShell;
+            }
+        }
+
+        public static string EmptyDir(string path)
         {
             if (Directory.Exists(path))
             {
@@ -27,15 +40,17 @@ namespace Mastersign.Bench
                 Debug.WriteLine("Creating directory: " + path);
                 Directory.CreateDirectory(path);
             }
+            return path;
         }
 
-        public static void AsureDir(string path)
+        public static string AsureDir(string path)
         {
             if (!Directory.Exists(path))
             {
                 Debug.WriteLine("Creating directory: " + path);
                 Directory.CreateDirectory(path);
             }
+            return path;
         }
 
         public static void PurgeDir(string path)
@@ -61,6 +76,26 @@ namespace Mastersign.Bench
                     file,
                     Path.Combine(targetDir, Path.GetFileName(file)));
             }
+        }
+
+        public static void CreateShortcut(string file, string target,
+            string arguments = null, string workingDir = null, string iconPath = null,
+            ShortcutWindowStyle windowStyle = ShortcutWindowStyle.Default)
+        {
+            var s = (WshShortcut)WindowsScriptingHostShell.CreateShortcut(file);
+            s.TargetPath = target;
+            if (arguments != null) s.Arguments = arguments;
+            if (workingDir != null) s.WorkingDirectory = workingDir;
+            if (iconPath != null) s.IconLocation = iconPath;
+            s.WindowStyle = (int)windowStyle;
+            s.Save();
+        }
+
+        public enum ShortcutWindowStyle : int
+        {
+            Default = 1,
+            Maximized = 3,
+            Minimized = 7,
         }
     }
 }

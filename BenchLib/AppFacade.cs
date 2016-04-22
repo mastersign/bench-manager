@@ -161,6 +161,39 @@ namespace Mastersign.Bench
             AdornedExecutables = RemoveFromSet(AdornedExecutables, path);
         }
 
+        public string AdornmentProxyBasePath
+        {
+            get
+            {
+                return IOPath.Combine(
+                    AppIndex.GetStringValue(PropertyKeys.AppAdornmentBaseDir),
+                    ID.ToLowerInvariant());
+            }
+        }
+
+        public bool IsExecutableAdorned(string exePath)
+        {
+            if (!IOPath.IsPathRooted(exePath))
+            {
+                exePath = IOPath.Combine(Dir, exePath);
+            }
+            foreach (var p in AdornedExecutables)
+            {
+                var adornedPath = IOPath.IsPathRooted(p) ? p : IOPath.Combine(Dir, p);
+                if (exePath.Equals(adornedPath, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string GetExecutableProxy(string exePath)
+        {
+            return IOPath.Combine(AdornmentProxyBasePath,
+                IOPath.GetFileNameWithoutExtension(exePath) + ".cmd");
+        }
+
         public string[] RegistryKeys { get { return ListValue(PropertyKeys.AppRegistryKeys); } }
 
         public string Launcher { get { return StringValue(PropertyKeys.AppLauncher); } }
@@ -170,6 +203,23 @@ namespace Mastersign.Bench
         public string[] LauncherArguments { get { return ListValue(PropertyKeys.AppLauncherArguments); } }
 
         public string LauncherIcon { get { return StringValue(PropertyKeys.AppLauncherIcon); } }
+
+        public string GetLauncherFile()
+        {
+            var launcher = Launcher;
+            return launcher != null
+                ? IOPath.Combine(
+                    AppIndex.GetStringValue(PropertyKeys.LauncherDir),
+                    launcher + ".lnk")
+                : null;
+        }
+
+        public string GetLauncherScriptFile()
+        {
+            return IOPath.Combine(
+                AppIndex.GetStringValue(PropertyKeys.LauncherScriptDir),
+                ID.ToLowerInvariant() + ".cmd");
+        }
 
         public string SetupTestFile { get { return StringValue(PropertyKeys.AppSetupTestFile); } }
 

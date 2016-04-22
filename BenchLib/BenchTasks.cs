@@ -160,7 +160,6 @@ namespace Mastersign.Bench
             return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
         }
 
-
         public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
         {
             if (!File.Exists(exe))
@@ -182,6 +181,7 @@ namespace Mastersign.Bench
         {
             var app = config.Apps[appId];
             var exe = app.LauncherExecutable;
+            if (app.IsExecutableAdorned(exe)) exe = app.GetLauncherScriptFile();
 
             if (string.IsNullOrEmpty(exe))
             {
@@ -325,7 +325,7 @@ namespace Mastersign.Bench
                 {
                     if (!t.Success) errors.Add(new AppTaskError(t.Id, t.ErrorMessage));
                 }
-                foreach(var app in apps)
+                foreach (var app in apps)
                 {
                     app.DiscardCachedValues();
                 }
@@ -466,6 +466,156 @@ namespace Mastersign.Bench
             string appId)
         {
             DeleteAppResources(man, progressCb, endCb, new[] { man.Config.Apps[appId] });
+        }
+
+        #endregion
+
+        #region Setup Environment
+
+        public static void CleanExecutionProxies(BenchConfiguration config)
+        {
+            FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.AppAdornmentBaseDir));
+        }
+
+        public static AppTaskError CreateExecutionProxies(BenchConfiguration config, AppFacade app)
+        {
+            var adornedExePaths = app.AdornedExecutables;
+            if (adornedExePaths.Length > 0)
+            {
+                try
+                {
+                    var proxyBaseDir = FileSystem.EmptyDir(app.AdornmentProxyBasePath);
+                    foreach (var exePath in adornedExePaths)
+                    {
+                        var proxyPath = app.GetExecutableProxy(exePath);
+                        var code = new StringBuilder();
+                        code.AppendLine("@ECHO OFF");
+                        code.AppendLine(string.Format("runps Run-Adorned {0}, \"{1}\" %*", app.ID, exePath));
+                        File.WriteAllText(proxyPath, code.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    return new AppTaskError(app.ID, "Creating the execution proxy failed: " + e.Message);
+                }
+            }
+            return null;
+        }
+
+        public static void CleanLaunchers(BenchConfiguration config)
+        {
+            FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherDir));
+            FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherScriptDir));
+        }
+
+        public static AppTaskError CreateLauncher(BenchConfiguration config, AppFacade app)
+        {
+            var label = app.Launcher;
+            if (label == null) return null;
+
+            try
+            {
+                var executable = app.LauncherExecutable;
+                var args = CommandLine.FormatArgumentList(app.LauncherArguments);
+                var script = app.GetLauncherScriptFile();
+                var autoDir = config.GetStringValue(PropertyKeys.BenchAuto);
+
+                var code = new StringBuilder();
+                code.AppendLine("@ECHO OFF");
+                code.AppendLine(string.Format("ECHO.Launching {0} in Bench Context ...", label));
+                code.AppendLine(string.Format("CALL \"{0}\\env.cmd\"", autoDir));
+                if (app.IsExecutableAdorned(executable))
+                {
+                    code.AppendLine(string.Format("\"{0}\\runps.cmd\" Run-Adorned {1} \"{2}\" {3}",
+                        autoDir, app.ID, executable, args));
+                }
+                else
+                {
+                    code.AppendLine(string.Format("START \"{0}\" \"{1}\" {2}", label, executable, args));
+                }
+                File.WriteAllText(script, code.ToString());
+
+                var shortcut = app.GetLauncherFile();
+                FileSystem.CreateShortcut(shortcut, script, null, config.BenchRootDir, app.LauncherIcon,
+                    FileSystem.ShortcutWindowStyle.Minimized);
+            }
+            catch (Exception e)
+            {
+                return new AppTaskError(app.ID, "Creating the launcher failed: " + e.Message);
+            }
+            return null;
+        }
+
+        public static void UpdateEnvironment(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb,
+            ICollection<AppFacade> _)
+        {
+            AsyncManager.StartTask(() =>
+            {
+                try
+                {
+                    man.Env.WriteEnvironmentFile();
+                }
+                catch (Exception e)
+                {
+                    progressCb("Writing the environment file failed: " + e.Message, true, 0f);
+                    endCb(false, null);
+                    return;
+                }
+                try
+                {
+                    CleanExecutionProxies(man.Config);
+                }
+                catch (Exception e)
+                {
+                    progressCb("Cleaning execution proxies failed: " + e.Message, true, 0f);
+                    endCb(false, null);
+                    return;
+                }
+                try
+                {
+                    CleanLaunchers(man.Config);
+                }
+                catch (Exception e)
+                {
+                    progressCb("Cleaning launchers failed: " + e.Message, true, 0f);
+                    endCb(false, null);
+                    return;
+                }
+                var selectedApps = man.Config.Apps.ActiveApps;
+                var errors = new List<AppTaskError>();
+                var cnt = 0;
+                foreach (var app in selectedApps)
+                {
+                    cnt++;
+                    var progress = (float)cnt / selectedApps.Length;
+                    AppTaskError error = null;
+                    error = CreateExecutionProxies(man.Config, app);
+                    if (error == null)
+                    {
+                        error = CreateLauncher(man.Config, app);
+                    }
+                    if (error != null) errors.Add(error);
+                    if (progressCb != null)
+                    {
+                        progressCb("Setup environment for " + app.ID, errors.Count > 0, progress);
+                    }
+                }
+                if (progressCb != null)
+                {
+                    progressCb("Finished updating environment.", errors.Count > 0, 1f);
+                }
+                if (endCb != null)
+                {
+                    endCb(errors.Count == 0, errors);
+                }
+            });
+        }
+
+        public static void UpdateEnvironment(IBenchManager man,
+            ProgressCallback progressCb, AppTaskCallback endCb)
+        {
+            UpdateEnvironment(man, progressCb, endCb, null);
         }
 
         #endregion
@@ -771,6 +921,7 @@ namespace Mastersign.Bench
                         }
                         continue;
                     }
+
                     // 2. Custom Setup-Script
                     var customSetupScript = CustomScript(man.Config, "setup", app);
                     if (customSetupScript != null)
@@ -789,8 +940,12 @@ namespace Mastersign.Bench
                             }
                         }
                     }
-                    // TODO 3. Create Execution Proxy
-                    // TODO 4. Create Launcher
+
+                    // 3. Create Execution Proxy
+                    CreateExecutionProxies(man.Config, app);
+
+                    // 4. Create Launcher
+                    CreateLauncher(man.Config, app);
 
                     app.DiscardCachedValues();
                 }

@@ -38,6 +38,7 @@ namespace Mastersign.Bench
         public const string AppRegistryBaseDir = "AppRegistryBaseDir";
         public const string ActionDir = "ActionDir";
         public const string LauncherDir = "LauncherDir";
+        public const string LauncherScriptDir = "LauncherScriptDir";
         public const string HomeDir = "HomeDir";
         public const string AppDataDir = "AppDataDir";
         public const string LocalAppDataDir = "LocalAppDataDir";
