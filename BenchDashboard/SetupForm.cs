@@ -186,97 +186,103 @@ namespace Mastersign.Bench.Dashboard
 
         private void DownloadAllHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Download app resources");
+            AnnounceTask("Download App Resources");
             core.DownloadAppResources(ProgressInfoHandler);
         }
 
         private void DeleteAllResourcesHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Delete app resources");
+            AnnounceTask("Delete App Resources");
             core.DeleteAppResources(ProgressInfoHandler);
         }
 
         private void InstallAllHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Install apps");
+            AnnounceTask("Install Apps");
             core.InstallApps(ProgressInfoHandler);
         }
 
         private void UninstallAllHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Uninstall apps");
+            AnnounceTask("Uninstall Apps");
             core.UninstallApps(ProgressInfoHandler);
         }
 
         private void ReinstallAllHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Reinstall apps");
+            AnnounceTask("Reinstall Apps");
             core.ReinstallApps(ProgressInfoHandler);
         }
 
         private void UpgradeAllHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Upgrade apps");
+            AnnounceTask("Upgrade Apps");
             core.UpgradeApps(ProgressInfoHandler);
+        }
+
+        private void UpdateEnvironment(object sender, EventArgs e)
+        {
+            AnnounceTask("Update Environment");
+            core.UpdateEnvironment(ProgressInfoHandler);
         }
 
         private void ActivateAppHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Activate app " + contextApp.ID);
+            AnnounceTask("Activate App " + contextApp.ID);
             contextApp = null;
         }
 
         private void DeactivateAppHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Deactivate app " + contextApp.ID);
+            AnnounceTask("Deactivate App " + contextApp.ID);
             contextApp = null;
         }
 
         private void InstallAppHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Install app " + contextApp.ID);
+            AnnounceTask("Install App " + contextApp.ID);
             core.InstallApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void ReinstallAppHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Reinstall app " + contextApp.ID);
+            AnnounceTask("Reinstall App " + contextApp.ID);
             core.ReinstallApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void UpgradeAppHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Upgrade app " + contextApp.ID);
+            AnnounceTask("Upgrade App " + contextApp.ID);
             core.UpgradeApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void UpgradePackageHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Upgrade app " + contextApp.ID);
+            AnnounceTask("Upgrade App " + contextApp.ID);
             core.UpgradeApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void DownloadAppResourceHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Download app resource for " + contextApp.ID);
+            AnnounceTask("Download App Resource for " + contextApp.ID);
             core.DownloadAppResource(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void DeleteAppResourceHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Delete app resource app for " + contextApp.ID);
+            AnnounceTask("Delete App Resource for " + contextApp.ID);
             core.DeleteAppResource(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
         private void UninstallAppHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Uninstall app " + contextApp.ID);
+            AnnounceTask("Uninstall App " + contextApp.ID);
             core.UninstallApp(ProgressInfoHandler, contextApp.ID);
             contextApp = null;
         }

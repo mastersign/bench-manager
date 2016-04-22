@@ -233,7 +233,8 @@ namespace Mastersign.Bench.Dashboard
                     OnAllAppStateChanged();
                 },
                 BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps);
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void InstallApp(ProgressCallback progressCb, string appId)
@@ -255,7 +256,8 @@ namespace Mastersign.Bench.Dashboard
                 },
                 appId,
                 BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps);
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void ReinstallApps(ProgressCallback progressCb)
@@ -281,7 +283,8 @@ namespace Mastersign.Bench.Dashboard
                 },
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void ReinstallApp(ProgressCallback progressCb, string appId)
@@ -304,7 +307,8 @@ namespace Mastersign.Bench.Dashboard
                 appId,
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void UpgradeApps(ProgressCallback progressCb)
@@ -331,7 +335,8 @@ namespace Mastersign.Bench.Dashboard
                 BenchTasks.DeleteAppResources,
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void UpgradeApp(ProgressCallback progressCb, string appId)
@@ -355,14 +360,15 @@ namespace Mastersign.Bench.Dashboard
                 BenchTasks.DeleteAppResources,
                 BenchTasks.DownloadAppResources,
                 BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+                BenchTasks.InstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void UninstallApps(ProgressCallback progressCb)
         {
             if (Busy) throw new InvalidOperationException("The core is already busy.");
             Busy = true;
-            BenchTasks.UninstallApps(this, progressCb,
+            BenchTasks.RunTasks(this, progressCb,
                 (success, errors) =>
                 {
                     Busy = false;
@@ -378,14 +384,16 @@ namespace Mastersign.Bench.Dashboard
                             + BuildCombinedErrorMessage(errors, 10));
                     }
                     OnAllAppStateChanged();
-                });
+                },
+                BenchTasks.UninstallApps,
+                BenchTasks.UpdateEnvironment);
         }
 
         public void UninstallApp(ProgressCallback progressCb, string appId)
         {
             if (Busy) throw new InvalidOperationException("The core is already busy.");
             Busy = true;
-            BenchTasks.UninstallApp(this, progressCb,
+            BenchTasks.RunTasks(this, progressCb,
                 (success, errors) =>
                 {
                     Busy = false;
@@ -398,7 +406,32 @@ namespace Mastersign.Bench.Dashboard
                     }
                     OnAppStateChanged(appId);
                 },
-                appId);
+                appId,
+                BenchTasks.UninstallApps,
+                BenchTasks.UpdateEnvironment);
+        }
+
+        public void UpdateEnvironment(ProgressCallback progressCb)
+        {
+            if (Busy) throw new InvalidOperationException("The core is already busy.");
+            Busy = true;
+            BenchTasks.UpdateEnvironment(this, progressCb,
+                (success, errors) =>
+                {
+                    Busy = false;
+                    if (success)
+                    {
+                        UI.ShowInfo("Updating Environment", "Finished.");
+                    }
+                    else
+                    {
+                        UI.ShowWarning("Updating Environment",
+                            "Updating the bench environment for the following apps failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + BuildCombinedErrorMessage(errors, 10));
+                    }
+                    OnAllAppStateChanged();
+                });
         }
 
         private static string BuildCombinedErrorMessage(IEnumerable<AppTaskError> errors, int maxLines)
