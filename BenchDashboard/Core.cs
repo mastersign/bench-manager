@@ -140,9 +140,10 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Downloading App Resources",
-                            "Downloading resources for the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Downloading resources for the following apps failed:",
+                                "Downloading the app resources failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 });
@@ -159,9 +160,10 @@ namespace Mastersign.Bench.Dashboard
                     if (!success)
                     {
                         UI.ShowWarning("Downloading App Resource",
-                            "Downloading app resource failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Downloading app resource failed:",
+                                "Downloading the resource for app " + appId + " failed.",
+                                errors, 10));
                     }
                     OnAppStateChanged(appId);
                 },
@@ -183,9 +185,10 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Deleting App Resources",
-                            "Deleting resources for the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Deleting resources for the following apps failed:",
+                                "Deleting the app resources failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 });
@@ -202,9 +205,10 @@ namespace Mastersign.Bench.Dashboard
                     if (!success)
                     {
                         UI.ShowWarning("Deleting App Resource",
-                            "Deleting app resource failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Deleting app resource failed:",
+                                "Deleting the resource of app " + appId + " failed.",
+                                errors, 10));
                     }
                     OnAppStateChanged(appId);
                 },
@@ -226,9 +230,10 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Installing Apps",
-                            "Installing the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Installing the following apps failed:",
+                                "Installing the apps failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 },
@@ -248,9 +253,10 @@ namespace Mastersign.Bench.Dashboard
                     if (!success)
                     {
                         UI.ShowWarning("Installing App",
-                            "Installing the app failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Installing the app failed:",
+                                "Installing the app " + appId + " failed.",
+                                errors, 10));
                     }
                     OnAppStateChanged(appId);
                 },
@@ -275,9 +281,10 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Reinstalling Apps",
-                            "Reinstalling the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Reinstalling the following apps failed:",
+                                "Reinstalling the apps failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 },
@@ -298,9 +305,10 @@ namespace Mastersign.Bench.Dashboard
                     if (!success)
                     {
                         UI.ShowWarning("Reinstall App",
-                            "Reinstalling the app failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Reinstalling the app failed:",
+                                "Reinstalling the app " + appId + " failed.",
+                                errors, 10));
                     }
                     OnAppStateChanged(appId);
                 },
@@ -326,9 +334,10 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Upgrading Apps",
-                            "Upgrading the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Upgrading the following apps failed:",
+                                "Upgrading the apps failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 },
@@ -350,9 +359,10 @@ namespace Mastersign.Bench.Dashboard
                     if (!success)
                     {
                         UI.ShowWarning("Upgrade App",
-                            "Upgrading the app failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Upgrading the app failed:",
+                                "Upgrading the app " + appId + " failed.",
+                                errors, 10));
                     }
                     OnAppStateChanged(appId);
                 },
@@ -379,9 +389,10 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Uninstalling Apps",
-                            "Uninstalling the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Uninstalling the following apps failed:",
+                                "Uninstalling the apps failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 },
@@ -400,9 +411,10 @@ namespace Mastersign.Bench.Dashboard
                     if (!success)
                     {
                         UI.ShowWarning("Uninstalling App",
-                            "Uninstalling the app failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Uninstalling the app failed:",
+                                "Uninstalling the app " + appId + " failed.",
+                                errors, 10));
                     }
                     OnAppStateChanged(appId);
                 },
@@ -426,27 +438,36 @@ namespace Mastersign.Bench.Dashboard
                     else
                     {
                         UI.ShowWarning("Updating Environment",
-                            "Updating the bench environment for the following apps failed: "
-                            + Environment.NewLine + Environment.NewLine
-                            + BuildCombinedErrorMessage(errors, 10));
+                            BuildCombinedErrorMessage(
+                                "Updating the bench environment for the following apps failed:",
+                                "Updating the bench environment failed.",
+                                errors, 10));
                     }
                     OnAllAppStateChanged();
                 });
         }
 
-        private static string BuildCombinedErrorMessage(IEnumerable<AppTaskError> errors, int maxLines)
+        private static string BuildCombinedErrorMessage(string infoWithErrors, string infoWithoutErrors,
+            IEnumerable<AppTaskError> errors, int maxLines)
         {
-            var errorLines = new List<string>(maxLines);
-            foreach (var err in errors)
+            var sb = new StringBuilder();
+            var cnt = 0;
+            if (errors != null)
             {
-                if (errorLines.Count >= maxLines - 1)
+                foreach (var err in errors)
                 {
-                    errorLines.Add("...");
-                    break;
+                    cnt++;
+                    if (cnt >= maxLines)
+                    {
+                        sb.AppendLine("...");
+                        break;
+                    }
+                    sb.AppendLine(err.ToString());
                 }
-                errorLines.Add(err.ToString());
             }
-            return string.Join(Environment.NewLine, errorLines.ToArray());
+            return cnt > 0
+                ? infoWithErrors + Environment.NewLine + Environment.NewLine + sb.ToString()
+                : infoWithoutErrors;
         }
 
         public Process LaunchApp(string id, params string[] args)
