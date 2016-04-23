@@ -1069,7 +1069,7 @@ namespace Mastersign.Bench
 
         public static AppTaskError UninstallGeneric(BenchConfiguration config, AppFacade app)
         {
-            var appDir = Path.Combine(config.GetStringValue(PropertyKeys.LibDir), app.Dir);
+            var appDir = app.Dir;
             if (appDir != null)
             {
                 try
