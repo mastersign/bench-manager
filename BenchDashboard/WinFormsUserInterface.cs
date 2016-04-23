@@ -18,6 +18,7 @@ namespace Mastersign.Bench.Dashboard
                 ParentWindow.Invoke((InfoShowCase)ShowInfo, topic, message);
                 return;
             }
+            if (ParentWindow.IsDisposed) ParentWindow = null;
             MessageBox.Show(ParentWindow, message, topic,
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -29,6 +30,7 @@ namespace Mastersign.Bench.Dashboard
                 ParentWindow.Invoke((InfoShowCase)ShowWarning, topic, message);
                 return;
             }
+            if (ParentWindow.IsDisposed) ParentWindow = null;
             MessageBox.Show(ParentWindow, message, topic,
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
@@ -40,6 +42,7 @@ namespace Mastersign.Bench.Dashboard
                 ParentWindow.Invoke((InfoShowCase)ShowError, topic, message);
                 return;
             }
+            if (ParentWindow.IsDisposed) ParentWindow = null;
             MessageBox.Show(ParentWindow, message, topic,
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
