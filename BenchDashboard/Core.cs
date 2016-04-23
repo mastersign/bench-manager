@@ -454,8 +454,7 @@ namespace Mastersign.Bench.Dashboard
                     }
                     OnAllAppStateChanged();
                 },
-                BenchTasks.UninstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.UninstallApps);
         }
 
         public void UninstallApp(ProgressCallback progressCb, string appId)
@@ -477,8 +476,7 @@ namespace Mastersign.Bench.Dashboard
                     OnAppStateChanged(appId);
                 },
                 appId,
-                BenchTasks.UninstallApps,
-                BenchTasks.UpdateEnvironment);
+                BenchTasks.UninstallApps);
         }
 
         public void UpdateEnvironment(ProgressCallback progressCb)
