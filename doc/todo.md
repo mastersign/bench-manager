@@ -6,11 +6,11 @@
 * add support for global custom `setup.ps1`
 * add support for global custom `env.ps1`
 * add support for global custom `clean.ps1`
-* add exception handling to all file system operations
+* ~~add exception handling to all file system operations~~
 
 ## Reporting
 
-* Fix progress bar
+* ~~Fix progress bar~~
 * Add app ID to progress to allow instant updates of individual apps
 * Add detailed exception info to `AppTaskError`
 * Allow the user to inspect collected errors of the last action
@@ -19,7 +19,7 @@
 
 ## UX
 
-* Integrated execution of command line processes via ConEmu embedded
+* ~~Integrated execution of command line processes via ConEmu embedded~~
 * Thorough checks for all tasks
 	+ Download Resource
 	+ Delete Resource
