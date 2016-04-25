@@ -769,9 +769,17 @@ namespace Mastersign.Bench
             }
             if (app.ResourceArchivePath != null)
             {
-                FileSystem.PurgeDir(targetDir);
-                FileSystem.MoveContent(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
-                FileSystem.PurgeDir(extractDir);
+                try
+                {
+                    FileSystem.PurgeDir(targetDir);
+                    FileSystem.MoveContent(Path.Combine(extractDir, app.ResourceArchivePath), targetDir);
+                    FileSystem.PurgeDir(extractDir);
+                }
+                catch (Exception e)
+                {
+                    return new AppTaskError(app.ID,
+                        "Moving extracted application resources into the target location failed: " + e.Message);
+                }
             }
             return null;
         }
@@ -811,19 +819,40 @@ namespace Mastersign.Bench
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 var tmpDir = Path.Combine(config.GetStringValue(PropertyKeys.TempDir), id + "_tar");
-                FileSystem.EmptyDir(tmpDir);
+                try
+                {
+                    FileSystem.EmptyDir(tmpDir);
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
                 if (Run7zExtract(config, execHost, archiveFile, tmpDir))
                 {
                     // extracting the compressed file succeeded, extracting tar
                     var tarFile = Path.Combine(tmpDir, Path.GetFileNameWithoutExtension(archiveFile));
                     var success = Run7zExtract(config, execHost, tarFile, targetDir);
-                    FileSystem.PurgeDir(tmpDir);
+                    try
+                    {
+                        FileSystem.PurgeDir(tmpDir);
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
                     return success;
                 }
                 else
                 {
                     // extracting the compressed tar file failed
-                    FileSystem.PurgeDir(tmpDir);
+                    try
+                    {
+                        FileSystem.PurgeDir(tmpDir);
+                    }
+                    catch (Exception)
+                    {
+                        // nothing
+                    }
                     return false;
                 }
             }
