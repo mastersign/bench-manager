@@ -218,6 +218,10 @@ namespace Mastersign.Bench
         {
             bool found;
             var value = InternalGetValue(group, name, out found, def);
+            if (value is bool)
+            {
+                return (bool)value;
+            }
             if (value is string)
             {
                 bool result;
