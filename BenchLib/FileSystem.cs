@@ -26,12 +26,14 @@ namespace Mastersign.Bench
             if (Directory.Exists(path))
             {
                 Debug.WriteLine("Cleaning directory: " + path);
+                File.SetAttributes(path, FileAttributes.Normal);
                 foreach (var dir in Directory.GetDirectories(path))
                 {
-                    Directory.Delete(dir, true);
+                    ForceDeleteDirectory(dir);
                 }
                 foreach (var file in Directory.GetFiles(path))
                 {
+                    File.SetAttributes(file, FileAttributes.Normal);
                     File.Delete(file);
                 }
             }
