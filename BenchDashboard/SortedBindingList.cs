@@ -143,7 +143,9 @@ namespace Mastersign.Bench.Dashboard
         {
             object xValue = m_propertyDescriptor.GetValue(x);
             object yValue = m_propertyDescriptor.GetValue(y);
-
+            if (xValue == null && yValue == null) return 0;
+            if (xValue == null) return -1;
+            if (yValue == null) return 1;
             return m_sortDirection * m_comparer.Compare(xValue, yValue);
         }
     }
