@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConEmu.WinForms;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -20,6 +21,9 @@ namespace Mastersign.Bench.Dashboard
 
         private readonly Dictionary<string, AppWrapper> appLookup = new Dictionary<string, AppWrapper>();
 
+        private ConEmuExecutionHost conHost;
+        private ConEmuControl conControl;
+
         public SetupForm(Core core)
         {
             this.core = core;
@@ -28,11 +32,13 @@ namespace Mastersign.Bench.Dashboard
             core.AppStateChanged += AppStateChangedHandler;
             core.BusyChanged += CoreBusyChangedHandler;
             InitializeComponent();
+            InitializeConsole();
             gridApps.AutoGenerateColumns = false;
         }
 
         private void SetupForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            DisposeConsole();
             core.ConfigReloaded -= ConfigReloadedHandler;
             core.AllAppStateChanged -= ConfigReloadedHandler;
             core.AppStateChanged -= AppStateChangedHandler;
@@ -88,6 +94,24 @@ namespace Mastersign.Bench.Dashboard
                 mi.Enabled = notBusy;
             }
             btnAuto.Enabled = notBusy;
+        }
+
+        private void InitializeConsole()
+        {
+            var c = new ConEmuControl();
+            c.Dock = DockStyle.Bottom;
+            c.Height = 200;
+            c.AutoStartInfo = null;
+            c.Visible = true;
+            Controls.Add(c);
+            conControl = c;
+            conHost = new ConEmuExecutionHost(conControl, core.Config.Apps[AppKeys.ConEmu].Exe);
+            core.ProcessExecutionHost = conHost;
+        }
+
+        private void DisposeConsole()
+        {
+            core.ProcessExecutionHost = new DefaultExecutionHost();
         }
 
         private void InitializeDownloadList()

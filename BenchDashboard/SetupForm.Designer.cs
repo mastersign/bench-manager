@@ -63,6 +63,7 @@
             this.miUninstall = new System.Windows.Forms.ToolStripMenuItem();
             this.miDownloadResource = new System.Windows.Forms.ToolStripMenuItem();
             this.miDeleteResource = new System.Windows.Forms.ToolStripMenuItem();
+            this.splitterConsole = new System.Windows.Forms.Splitter();
             this.downloadList = new Mastersign.Bench.Dashboard.DownloadList();
             this.menuStrip = new Mastersign.Bench.Dashboard.ImmediateMenuStrip();
             this.tsmSetup = new System.Windows.Forms.ToolStripMenuItem();
@@ -98,7 +99,7 @@
             // splitterBottom
             // 
             this.splitterBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.splitterBottom.Location = new System.Drawing.Point(0, 303);
+            this.splitterBottom.Location = new System.Drawing.Point(0, 298);
             this.splitterBottom.Name = "splitterBottom";
             this.splitterBottom.Size = new System.Drawing.Size(684, 5);
             this.splitterBottom.TabIndex = 0;
@@ -211,7 +212,7 @@
             this.lblTaskLabel.Location = new System.Drawing.Point(12, 8);
             this.lblTaskLabel.Margin = new System.Windows.Forms.Padding(3, 8, 3, 0);
             this.lblTaskLabel.Name = "lblTaskLabel";
-            this.lblTaskLabel.Size = new System.Drawing.Size(31, 13);
+            this.lblTaskLabel.Size = new System.Drawing.Size(32, 13);
             this.lblTaskLabel.TabIndex = 0;
             this.lblTaskLabel.Text = "Task:";
             // 
@@ -241,7 +242,7 @@
             this.gridApps.RowHeadersVisible = false;
             this.gridApps.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.gridApps.ShowEditingIcon = false;
-            this.gridApps.Size = new System.Drawing.Size(684, 170);
+            this.gridApps.Size = new System.Drawing.Size(684, 165);
             this.gridApps.TabIndex = 8;
             this.gridApps.VirtualMode = true;
             this.gridApps.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridApps_CellContentClick);
@@ -289,7 +290,7 @@
             this.colTyp.ReadOnly = true;
             this.colTyp.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.colTyp.ToolTipText = "The typ of the app.";
-            this.colTyp.Width = 48;
+            this.colTyp.Width = 49;
             // 
             // colActivated
             // 
@@ -323,7 +324,7 @@
             this.colVersion.Name = "colVersion";
             this.colVersion.ReadOnly = true;
             this.colVersion.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.colVersion.Width = 70;
+            this.colVersion.Width = 71;
             // 
             // colLauncher
             // 
@@ -422,6 +423,15 @@
             this.miDeleteResource.Text = "&Delete Resource";
             this.miDeleteResource.Click += new System.EventHandler(this.DeleteAppResourceHandler);
             // 
+            // splitterConsole
+            // 
+            this.splitterConsole.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.splitterConsole.Location = new System.Drawing.Point(0, 456);
+            this.splitterConsole.Name = "splitterConsole";
+            this.splitterConsole.Size = new System.Drawing.Size(684, 5);
+            this.splitterConsole.TabIndex = 9;
+            this.splitterConsole.TabStop = false;
+            // 
             // downloadList
             // 
             this.downloadList.AutoScroll = true;
@@ -429,7 +439,7 @@
             this.downloadList.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.downloadList.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.downloadList.Downloader = null;
-            this.downloadList.Location = new System.Drawing.Point(0, 308);
+            this.downloadList.Location = new System.Drawing.Point(0, 303);
             this.downloadList.Name = "downloadList";
             this.downloadList.Size = new System.Drawing.Size(684, 153);
             this.downloadList.TabIndex = 6;
@@ -614,6 +624,7 @@
             this.Controls.Add(this.panelStatus);
             this.Controls.Add(this.splitterBottom);
             this.Controls.Add(this.downloadList);
+            this.Controls.Add(this.splitterConsole);
             this.Controls.Add(this.menuStrip);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -687,5 +698,6 @@
         private System.Windows.Forms.Button btnAuto;
         private System.Windows.Forms.ToolStripMenuItem tsmiAuto;
         private System.Windows.Forms.ToolStripSeparator tsSeparatorDownloads;
+        private System.Windows.Forms.Splitter splitterConsole;
     }
 }
