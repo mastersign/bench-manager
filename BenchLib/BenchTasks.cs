@@ -137,14 +137,13 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-
         public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, string appId, string path, params string[] args)
         {
             var customScriptRunner = Path.Combine(config.GetStringValue(PropertyKeys.BenchScripts), "Run-CustomScript.ps1");
-            var exitCode = PowerShell.RunScript(new BenchEnvironment(config), execHost, config.BenchRootDir, customScriptRunner,
+            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost, config.BenchRootDir, customScriptRunner,
                 path, PowerShell.FormatArgumentList(args));
-            return exitCode != 0
-                ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.", Path.GetFileName(path)))
+            return result.ExitCode != 0
+                ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.\\n{1}", Path.GetFileName(path), result.Output))
                 : null;
         }
 
@@ -868,9 +867,10 @@ namespace Mastersign.Bench
             var svnZipExe = config.Apps[AppKeys.SevenZip].Exe;
             if (svnZipExe == null || !File.Exists(svnZipExe)) return false;
             var env = new BenchEnvironment(config);
-            var exitCode = execHost.RunProcess(env, targetDir, svnZipExe,
-                    CommandLine.FormatArgumentList("x", "-y", "-bd", "-o" + targetDir, archiveFile));
-            return exitCode == 0;
+            var result = execHost.RunProcess(env, targetDir, svnZipExe,
+                    CommandLine.FormatArgumentList("x", "-y", "-bd", "-o" + targetDir, archiveFile),
+                    ProcessMonitoring.ExitCode);
+            return result.ExitCode == 0;
         }
 
         private static bool ExtractMsiPackage(BenchConfiguration config, IProcessExecutionHost execHost,
@@ -879,9 +879,10 @@ namespace Mastersign.Bench
             var lessMsiExe = config.Apps[AppKeys.LessMSI].Exe;
             if (lessMsiExe == null || !File.Exists(lessMsiExe)) return false;
             var env = new BenchEnvironment(config);
-            var exitCode = execHost.RunProcess(env, targetDir, lessMsiExe,
-                CommandLine.FormatArgumentList("x", archiveFile, @".\"));
-            return exitCode == 0;
+            var result = execHost.RunProcess(env, targetDir, lessMsiExe,
+                CommandLine.FormatArgumentList("x", archiveFile, @".\"),
+                ProcessMonitoring.ExitCode);
+            return result.ExitCode == 0;
         }
 
         private static bool ExtractInnoSetup(BenchConfiguration config, IProcessExecutionHost execHost,
@@ -890,9 +891,10 @@ namespace Mastersign.Bench
             var innoUnpExe = config.Apps[AppKeys.InnoSetupUnpacker].Exe;
             if (innoUnpExe == null || !File.Exists(innoUnpExe)) return false;
             var env = new BenchEnvironment(config);
-            var exitCode = execHost.RunProcess(env, targetDir, innoUnpExe,
-                CommandLine.FormatArgumentList("-q", "-x", archiveFile));
-            return exitCode == 0;
+            var result = execHost.RunProcess(env, targetDir, innoUnpExe,
+                CommandLine.FormatArgumentList("-q", "-x", archiveFile),
+                ProcessMonitoring.ExitCode);
+            return result.ExitCode == 0;
         }
 
         public static AppTaskError InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
@@ -902,12 +904,14 @@ namespace Mastersign.Bench
             var packageName = app.Version != null
                 ? string.Format("{0}@{1}", app.PackageName, app.Version)
                 : app.PackageName;
-            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
-                CommandLine.FormatArgumentList("install", packageName, "--global"));
-            if (exitCode != 0)
+            var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
+                CommandLine.FormatArgumentList("install", packageName, "--global"),
+                ProcessMonitoring.ExitCodeAndOutput);
+            if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    "Installing the NPM package " + app.PackageName + " failed with exit code " + exitCode + ".");
+                    string.Format("Installing the NPM package {0} failed with exit code {1}:\n\n{2}", 
+                    app.PackageName, result.ExitCode, result.Output));
             }
             return null;
         }
@@ -927,13 +931,15 @@ namespace Mastersign.Bench
             if (app.IsInstalled) args.Add("--upgrade");
             args.Add("--quiet");
 
-            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
-                    CommandLine.FormatArgumentList(args.ToArray()));
+            var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
+                    CommandLine.FormatArgumentList(args.ToArray()),
+                    ProcessMonitoring.ExitCodeAndOutput);
 
-            if (exitCode != 0)
+            if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    "Installing the " + pyVer + " package " + app.PackageName + " failed with exit code " + exitCode + ".");
+                    string.Format("Installing the {0} package {1} failed with exit code {2}:\n\n{3}",
+                        pyVer, app.PackageName, result.ExitCode, result.Output));
             }
             return null;
         }
@@ -1118,12 +1124,13 @@ namespace Mastersign.Bench
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
             if (npmExe == null || !File.Exists(npmExe)) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
-            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
-                CommandLine.FormatArgumentList("uninstall", app.PackageName, "--global"));
-            if (exitCode != 0)
+            var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
+                CommandLine.FormatArgumentList("uninstall", app.PackageName, "--global"),
+                ProcessMonitoring.ExitCode);
+            if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    "Uninstalling the NPM package " + app.PackageName + " failed with exit code " + exitCode + ".");
+                    "Uninstalling the NPM package " + app.PackageName + " failed with exit code " + result.ExitCode + ".");
             }
             return null;
         }
@@ -1136,13 +1143,14 @@ namespace Mastersign.Bench
                 return new AppTaskError(app.ID, "The " + pyVer + " package manager PIP was not found.");
             }
 
-            var exitCode = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
-                    CommandLine.FormatArgumentList("uninstall", app.PackageName, "--yes", "--quiet"));
+            var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe,
+                    CommandLine.FormatArgumentList("uninstall", app.PackageName, "--yes", "--quiet"),
+                    ProcessMonitoring.ExitCode);
 
-            if (exitCode != 0)
+            if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    "Uninstalling the " + pyVer + " package " + app.PackageName + " failed with exit code " + exitCode + ".");
+                    "Uninstalling the " + pyVer + " package " + app.PackageName + " failed with exit code " + result.ExitCode + ".");
             }
             return null;
         }

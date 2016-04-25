@@ -19,7 +19,7 @@ namespace Mastersign.Bench
 
     public delegate void ProgressCallback(string info, bool errors, float progress);
 
-    public delegate void ProcessExitCallback(int exitCode);
+    public delegate void ProcessExitCallback(ProcessExecutionResult result);
 
     public delegate void BenchTask(IBenchManager man, ProgressCallback progressCb, AppTaskCallback endCb, ICollection<AppFacade> apps);
 }

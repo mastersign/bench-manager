@@ -14,7 +14,7 @@ namespace Mastersign.Bench.Dashboard
 
         public IUserInterface UI { get; private set; }
 
-        public IProcessExecutionHost ProcessExecutionHost { get; private set; }
+        public IProcessExecutionHost ProcessExecutionHost { get; set; }
 
         public BenchConfiguration Config { get; private set; }
 
@@ -546,7 +546,8 @@ namespace Mastersign.Bench.Dashboard
         {
             ProcessExecutionHost.StartProcess(Env, Config.BenchRootDir, exe,
                 CommandLine.FormatArgumentList(args),
-                exitCode => { });
+                result => { },
+                ProcessMonitoring.ExitCode);
         }
 
         public void ShowPathInExplorer(string path)
