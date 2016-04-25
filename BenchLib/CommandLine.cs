@@ -49,7 +49,8 @@ namespace Mastersign.Bench
         public static string EscapeArgument(string arg)
         {
             var s = Regex.Replace(arg.Trim('"'), @"(\\*)" + "\"", @"$1$1\" + "\"");
-            s = "\"" + Regex.Replace(s, @"(\\+)$", @"$1$1") + "\"";
+            s = Regex.Replace(s, @"(\\+)$", @"$1$1");
+            if (Regex.IsMatch(s, @"\s")) s = "\"" + s + "\"";
             return s;
         }
     }
