@@ -89,6 +89,7 @@ namespace Mastersign.Bench
                 var result = new List<string>();
                 foreach (var app in ActiveApps)
                 {
+                    if (!app.Register) continue;
                     foreach (var p in app.Path)
                     {
                         if (!result.Contains(p))
