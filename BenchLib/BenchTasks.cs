@@ -259,7 +259,7 @@ namespace Mastersign.Bench
             ICollection<AppFacade>[] taskApps, List<AppTaskError> collectedErrors,
             BenchTask[] tasks, int i)
         {
-            var taskProgress = i / tasks.Length;
+            var taskProgress = (float)i / tasks.Length;
             ProgressCallback pcb = (info, err, progress) =>
             {
                 if (progressCb != null)
