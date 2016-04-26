@@ -78,14 +78,14 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
-        private void DownloadEndedHandler(object sender, DownloadEndEventArgs e)
+        private void DownloadEndedHandler(object sender, DownloadEventArgs e)
         {
             if (InvokeRequired)
             {
-                Invoke((EventHandler<DownloadEndEventArgs>)DownloadEndedHandler, sender, e);
+                Invoke((EventHandler<DownloadEventArgs>)DownloadEndedHandler, sender, e);
                 return;
             }
-            if (!e.HasFailed)
+            if (e.Task.Success)
             {
                 Controls.Remove(downloadControls[e.Task]);
                 downloadControls.Remove(e.Task);
@@ -93,7 +93,7 @@ namespace Mastersign.Bench.Dashboard
             }
             else
             {
-                downloadControls[e.Task].ErrorMessage = e.ErrorMessage;
+                downloadControls[e.Task].ErrorMessage = e.Task.ErrorMessage;
             }
         }
 

@@ -29,7 +29,7 @@ namespace Mastersign.Bench
 
         public event EventHandler<DownloadProgressEventArgs> DownloadProgress;
 
-        public event EventHandler<DownloadEndEventArgs> DownloadEnded;
+        public event EventHandler<DownloadEventArgs> DownloadEnded;
 
         public event EventHandler WorkFinished;
 
@@ -97,13 +97,13 @@ namespace Mastersign.Bench
             }
         }
 
-        private void OnDownloadEnded(DownloadTask task, string errorMessage = null)
+        private void OnDownloadEnded(DownloadTask task)
         {
-            Debug.WriteLine("Raising event DownloadEnded for " + task.Id + ", Error=" + errorMessage ?? "None");
+            Debug.WriteLine("Raising event DownloadEnded for " + task.Id + ", Error=" + task.ErrorMessage ?? "None");
             var handler = DownloadEnded;
             if (handler != null)
             {
-                handler(this, new DownloadEndEventArgs(task, errorMessage));
+                handler(this, new DownloadEventArgs(task));
             }
         }
 
@@ -156,7 +156,7 @@ namespace Mastersign.Bench
             DownloadTask task = null;
             var wc = webClients[no] = new WebClient
             {
-                Proxy = new SchemeDispatchProxy(new Dictionary<string, IWebProxy> 
+                Proxy = new SchemeDispatchProxy(new Dictionary<string, IWebProxy>
                     {
                         {"http", HttpProxy},
                         {"https", HttpsProxy}
@@ -191,10 +191,10 @@ namespace Mastersign.Bench
                     }
                     if (e.Cancelled || IsDisposed)
                     {
-                        task.ErrorMessage = "Cancelled";
+                        task.ErrorMessage = "Canceled";
                         task.Success = false;
                         task.HasEnded = true;
-                        OnDownloadEnded(task, task.ErrorMessage);
+                        OnDownloadEnded(task);
                     }
                     else if (e.Error != null)
                     {
@@ -204,7 +204,7 @@ namespace Mastersign.Bench
                         if (task.FailedAttempts >= DownloadAttempts)
                         {
                             task.HasEnded = true;
-                            OnDownloadEnded(task, task.ErrorMessage);
+                            OnDownloadEnded(task);
                         }
                         else
                         {
@@ -274,7 +274,7 @@ namespace Mastersign.Bench
                     task.ErrorMessage = "Resolution of the URL failed.";
                     task.Success = false;
                     task.HasEnded = true;
-                    OnDownloadEnded(task, task.ErrorMessage);
+                    OnDownloadEnded(task);
                     downloadEvents[no].Set();
                 }
                 else
@@ -373,6 +373,24 @@ namespace Mastersign.Bench
                 }
             }
             return errorMessage;
+        }
+
+        public void CancelAll()
+        {
+            Debug.WriteLine("Canceling current downloads...");
+
+            while (queue.Count > 0)
+            {
+                var t = queue.Dequeue();
+                t.Success = false;
+                t.HasEnded = true;
+                t.ErrorMessage = "Canceled";
+                OnDownloadEnded(t);
+            }
+            for (int i = 0; i < ParallelDownloads; i++)
+            {
+                webClients[i].CancelAsync();
+            }
         }
 
         public bool IsDisposed { get; private set; }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security;
 
 namespace Mastersign.Bench
@@ -15,11 +16,8 @@ namespace Mastersign.Bench
 
     public delegate void DictionaryEntryHandler(string key, string value);
 
-    public delegate void AppTaskCallback(bool success, ICollection<AppTaskError> errors);
-
-    public delegate void ProgressCallback(string info, bool errors, float progress);
-
     public delegate void ProcessExitCallback(ProcessExecutionResult result);
 
-    public delegate void BenchTask(IBenchManager man, ProgressCallback progressCb, AppTaskCallback endCb, ICollection<AppFacade> apps);
+    public delegate void BenchTask(IBenchManager man, ICollection<AppFacade> apps,
+        Action<TaskInfo> notify, Cancelation cancelation);
 }

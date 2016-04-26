@@ -30,17 +30,4 @@ namespace Mastersign.Bench
             Percentage = percentage;
         }
     }
-
-    public class DownloadEndEventArgs : DownloadEventArgs
-    {
-        public string ErrorMessage { get; private set; }
-
-        public bool HasFailed { get { return ErrorMessage != null; } }
-
-        public DownloadEndEventArgs(DownloadTask task, string errorMessage = null)
-            : base(task)
-        {
-            ErrorMessage = errorMessage;
-        }
-    }
 }
