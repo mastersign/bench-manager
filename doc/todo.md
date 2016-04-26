@@ -3,8 +3,8 @@
 ## Basics
 
 * add support for custom uninstall scripts
-* add support for global custom `setup.ps1`
-* add support for global custom `env.ps1`
+* ~~add support for global custom `setup.ps1`~~
+* ~~add support for global custom `env.ps1`~~
 * add support for global custom `clean.ps1`
 * ~~add exception handling to all file system operations~~
 
