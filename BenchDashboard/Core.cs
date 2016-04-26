@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Mastersign.Bench.Dashboard
@@ -156,7 +157,30 @@ namespace Mastersign.Bench.Dashboard
             Reload();
         }
 
-        public void AutoSetup(ProgressCallback progressCb)
+        public Task<TaskResult> DoTaskAsync(string taskLabel, BenchTask action,
+            IBenchManager man, ICollection<AppFacade> apps,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            var t = new Task<TaskResult>(() =>
+            {
+                var infos = new List<TaskInfo>();
+                action(man, apps,
+                    info =>
+                    {
+                        infos.Add(info);
+                        if (notify != null)
+                        {
+                            notify(info);
+                        }
+                    },
+                    cancelation);
+                return new TaskResult(taskLabel, infos, cancelation.IsCanceled);
+            });
+            t.Start();
+            return t;
+        }
+
+        public void AutoSetup(Action<TaskInfo> notify, Cancelation cancelation)
         {
             if (Busy) throw new InvalidOperationException("The core is already busy.");
             Busy = true;
