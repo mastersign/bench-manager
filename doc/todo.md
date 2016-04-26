@@ -12,8 +12,8 @@
 ## Reporting
 
 * ~~Fix progress bar~~
-* Add app ID to progress to allow instant updates of individual apps
-* Add detailed exception info to `AppTaskError`
+* ~~Add app ID to progress to allow instant updates of individual apps~~
+* ~~Add detailed exception info to `AppTaskError`~~
 * Allow the user to inspect collected errors of the last action
 * Catch output of external processes during task execution
 * Write log for individual apps
@@ -21,14 +21,14 @@
 ## UX
 
 * ~~Integrated execution of command line processes via ConEmu embedded~~
-* Thorough checks for all tasks
-	+ Download Resource
-	+ Delete Resource
-	+ Install app
-	+ Uninstall app
-	+ Reinstall app
-	+ Upgrade app
-* Move checks into `AppFacade`
+* ~~Thorough checks for all tasks~~
+	+ ~~Download Resource~~
+	+ ~~Delete Resource~~
+	+ ~~Install app~~
+	+ ~~Uninstall app~~
+	+ ~~Reinstall app~~
+	+ ~~Upgrade app~~
+* ~~Move checks into `AppFacade`~~
 * Allow cancelation by user
 * Clean cancelation in case the BenchManager process is exited
 * Regard dependencies
