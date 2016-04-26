@@ -89,6 +89,10 @@ namespace Mastersign.Bench.Dashboard
             {
                 tsmi.Enabled = notBusy;
             }
+            foreach (ToolStripItem tsmi in tsmEdit.DropDownItems)
+            {
+                tsmi.Enabled = notBusy;
+            }
             foreach (ToolStripItem mi in ctxmAppActions.Items)
             {
                 mi.Enabled = notBusy;
