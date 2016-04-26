@@ -137,13 +137,20 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, string appId, string path, params string[] args)
+        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, 
+            string appId, string path, params string[] args)
         {
-            var customScriptRunner = Path.Combine(config.GetStringValue(PropertyKeys.BenchScripts), "Run-CustomScript.ps1");
-            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost, config.BenchRootDir, customScriptRunner,
+            var customScriptRunner = Path.Combine(
+                config.GetStringValue(PropertyKeys.BenchScripts), 
+                "Run-CustomScript.ps1");
+            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost, 
+                config.BenchRootDir, customScriptRunner,
                 path, PowerShell.FormatArgumentList(args));
             return result.ExitCode != 0
-                ? new AppTaskError(appId, string.Format("Executing custom script '{0}' failed.\\n{1}", Path.GetFileName(path), result.Output))
+                ? new AppTaskError(appId, 
+                    string.Format("Executing custom script '{0}' failed.\\n{1}", 
+                        Path.GetFileName(path), result.Output))
+                : null;
                 : null;
         }
 
@@ -152,7 +159,8 @@ namespace Mastersign.Bench
             return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
         }
 
-        public static Process StartProcess(BenchEnvironment env, string cwd, string exe, string arguments)
+        public static Process StartProcess(BenchEnvironment env, 
+            string cwd, string exe, string arguments)
         {
             if (!File.Exists(exe))
             {
@@ -169,7 +177,8 @@ namespace Mastersign.Bench
             return p;
         }
 
-        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, string appId, string[] args)
+        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, 
+            string appId, string[] args)
         {
             var app = config.Apps[appId];
             var exe = app.LauncherExecutable;
@@ -1066,7 +1075,9 @@ namespace Mastersign.Bench
                             errors.Add(error);
                             if (progressCb != null)
                             {
-                                progressCb(string.Format("Running the custom environment script for {0} failed.", app.ID), true, progress);
+                                progressCb(
+                                    string.Format("Running the custom environment script for {0} failed.", app.ID),
+                                    true, progress);
                             }
                             continue;
                         }
@@ -1120,22 +1131,28 @@ namespace Mastersign.Bench
             return null;
         }
 
-        public static AppTaskError UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
+        public static AppTaskError UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, 
+            AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
-            if (npmExe == null || !File.Exists(npmExe)) return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
+            if (npmExe == null || !File.Exists(npmExe))
+            {
+                return new AppTaskError(app.ID, "The NodeJS package manager was not found.");
+            }
             var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe,
                 CommandLine.FormatArgumentList("uninstall", app.PackageName, "--global"),
                 ProcessMonitoring.ExitCode);
             if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    "Uninstalling the NPM package " + app.PackageName + " failed with exit code " + result.ExitCode + ".");
+                    string.Format("Uninstalling the NPM package {0} failed with exit code {1}.",
+                        app.PackageName, result.ExitCode));
             }
             return null;
         }
 
-        public static AppTaskError UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
+        public static AppTaskError UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, 
+            PythonVersion pyVer, AppFacade app)
         {
             var pipExe = PipExe(config, pyVer);
             if (pipExe == null)
@@ -1150,7 +1167,8 @@ namespace Mastersign.Bench
             if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    "Uninstalling the " + pyVer + " package " + app.PackageName + " failed with exit code " + result.ExitCode + ".");
+                    string.Format("Uninstalling the {0} package {1} failed with exit code {2}.",
+                        pyVer, app.PackageName, result.ExitCode));
             }
             return null;
         }
