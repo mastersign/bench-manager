@@ -2,7 +2,8 @@
 
 ## Basics
 
-* add support for custom uninstall scripts
+* ~~add support for custom uninstall scripts~~  
+  _Existence of uninstall script inhibits default uninstall operation._
 * ~~add support for global custom `setup.ps1`~~
 * ~~add support for global custom `env.ps1`~~
 * add support for global custom `clean.ps1`
