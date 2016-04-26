@@ -151,12 +151,33 @@ namespace Mastersign.Bench
                     string.Format("Executing custom script '{0}' failed.\\n{1}", 
                         Path.GetFileName(path), result.Output))
                 : null;
+        }
+
+        public static AppTaskError RunGlobalCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, 
+            string path, params string[] args)
+        {
+            var customScriptRunner = Path.Combine(
+                config.GetStringValue(PropertyKeys.BenchScripts), 
+                "Run-CustomScript.ps1");
+            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost, 
+                config.BenchRootDir, customScriptRunner,
+                path, PowerShell.FormatArgumentList(args));
+            return result.ExitCode != 0
+                ? new AppTaskError(null, 
+                    string.Format("Executing custom script '{0}' failed.\\n{1}", 
+                    Path.GetFileName(path), result.Output))
                 : null;
         }
 
         private static string CustomScriptDir(BenchConfiguration config)
         {
             return Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), "apps");
+        }
+
+        private static string GetGlobalCustomScriptFile(BenchConfiguration config, string typ)
+        {
+            var path = Path.Combine(config.GetStringValue(PropertyKeys.CustomConfigDir), typ + ".ps1");
+            return File.Exists(path) ? path : null;
         }
 
         public static Process StartProcess(BenchEnvironment env, 
@@ -661,6 +682,25 @@ namespace Mastersign.Bench
                         progressCb("Setup environment for " + app.ID, errors.Count > 0, progress);
                     }
                 }
+
+                var globalEnvScript = GetGlobalCustomScriptFile(man.Config, "env");
+                if (globalEnvScript != null)
+                {
+                    if (progressCb != null)
+                    {
+                        progressCb("Executing global environment script.", errors.Count > 0, 1f);
+                    }
+                    var error = RunGlobalCustomScript(man.Config, man.ProcessExecutionHost, globalEnvScript);
+                    if (error != null)
+                    {
+                        errors.Add(error);
+                        if (progressCb != null)
+                        {
+                            progressCb("Executing global environment script failed.", true, 1f);
+                        }
+                    }
+                }
+
                 if (progressCb != null)
                 {
                     progressCb("Finished updating environment.", errors.Count > 0, 1f);
@@ -1085,6 +1125,25 @@ namespace Mastersign.Bench
 
                     app.DiscardCachedValues();
                 }
+
+                var globalCustomSetupScript = GetGlobalCustomScriptFile(man.Config, "setup");
+                if (globalCustomSetupScript != null)
+                {
+                    if (progressCb != null)
+                    {
+                        progressCb("Executing global custom setup script.", errors.Count > 0, 1f);
+                    }
+                    var error = RunGlobalCustomScript(man.Config, man.ProcessExecutionHost, globalCustomSetupScript);
+                    if (error != null)
+                    {
+                        errors.Add(error);
+                        if (progressCb != null)
+                        {
+                            progressCb("Execution of global custom setup script failed.", true, 1f);
+                        }
+                    }
+                }
+
                 if (progressCb != null)
                 {
                     progressCb("Finished installing apps.", errors.Count > 0, 1f);
