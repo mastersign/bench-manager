@@ -137,34 +137,34 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, 
+        public static AppTaskError RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost,
             string appId, string path, params string[] args)
         {
             var customScriptRunner = Path.Combine(
-                config.GetStringValue(PropertyKeys.BenchScripts), 
+                config.GetStringValue(PropertyKeys.BenchScripts),
                 "Run-CustomScript.ps1");
-            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost, 
+            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost,
                 config.BenchRootDir, customScriptRunner,
                 path, PowerShell.FormatArgumentList(args));
             return result.ExitCode != 0
-                ? new AppTaskError(appId, 
-                    string.Format("Executing custom script '{0}' failed.\\n{1}", 
+                ? new AppTaskError(appId,
+                    string.Format("Executing custom script '{0}' failed.\\n{1}",
                         Path.GetFileName(path), result.Output))
                 : null;
         }
 
-        public static AppTaskError RunGlobalCustomScript(BenchConfiguration config, IProcessExecutionHost execHost, 
+        public static AppTaskError RunGlobalCustomScript(BenchConfiguration config, IProcessExecutionHost execHost,
             string path, params string[] args)
         {
             var customScriptRunner = Path.Combine(
-                config.GetStringValue(PropertyKeys.BenchScripts), 
+                config.GetStringValue(PropertyKeys.BenchScripts),
                 "Run-CustomScript.ps1");
-            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost, 
+            var result = PowerShell.RunScript(new BenchEnvironment(config), execHost,
                 config.BenchRootDir, customScriptRunner,
                 path, PowerShell.FormatArgumentList(args));
             return result.ExitCode != 0
-                ? new AppTaskError(null, 
-                    string.Format("Executing custom script '{0}' failed.\\n{1}", 
+                ? new AppTaskError(null,
+                    string.Format("Executing custom script '{0}' failed.\\n{1}",
                     Path.GetFileName(path), result.Output))
                 : null;
         }
@@ -180,7 +180,7 @@ namespace Mastersign.Bench
             return File.Exists(path) ? path : null;
         }
 
-        public static Process StartProcess(BenchEnvironment env, 
+        public static Process StartProcess(BenchEnvironment env,
             string cwd, string exe, string arguments)
         {
             if (!File.Exists(exe))
@@ -198,7 +198,7 @@ namespace Mastersign.Bench
             return p;
         }
 
-        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env, 
+        public static Process LaunchApp(BenchConfiguration config, BenchEnvironment env,
             string appId, string[] args)
         {
             var app = config.Apps[appId];
@@ -387,7 +387,7 @@ namespace Mastersign.Bench
             var selectedApps = new List<AppFacade>();
             foreach (var app in apps)
             {
-                if (app.Typ == AppTyps.Default && app.HasResource && !app.IsResourceCached) selectedApps.Add(app);
+                if (app.CanDownloadResource) selectedApps.Add(app);
             }
 
             foreach (var app in selectedApps)
@@ -451,7 +451,7 @@ namespace Mastersign.Bench
                 var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
-                    if (app.HasResource && app.IsResourceCached) selectedApps.Add(app);
+                    if (app.CanDeleteResource) selectedApps.Add(app);
                 }
 
                 var errors = new List<AppTaskError>();
@@ -959,7 +959,7 @@ namespace Mastersign.Bench
             if (result.ExitCode != 0)
             {
                 return new AppTaskError(app.ID,
-                    string.Format("Installing the NPM package {0} failed with exit code {1}:\n\n{2}", 
+                    string.Format("Installing the NPM package {0} failed with exit code {1}:\n\n{2}",
                     app.PackageName, result.ExitCode, result.Output));
             }
             return null;
@@ -1002,10 +1002,7 @@ namespace Mastersign.Bench
                 var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
-                    if (!app.CanCheckInstallation || !app.IsInstalled || app.Force)
-                    {
-                        selectedApps.Add(app);
-                    }
+                    if (app.CanInstall) selectedApps.Add(app);
                 }
 
                 var errors = new List<AppTaskError>();
@@ -1190,7 +1187,7 @@ namespace Mastersign.Bench
             return null;
         }
 
-        public static AppTaskError UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, 
+        public static AppTaskError UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost,
             AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
@@ -1210,7 +1207,7 @@ namespace Mastersign.Bench
             return null;
         }
 
-        public static AppTaskError UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, 
+        public static AppTaskError UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost,
             PythonVersion pyVer, AppFacade app)
         {
             var pipExe = PipExe(config, pyVer);
@@ -1241,7 +1238,7 @@ namespace Mastersign.Bench
                 var selectedApps = new List<AppFacade>();
                 foreach (var app in apps)
                 {
-                    if (app.IsInstalled) selectedApps.Add(app);
+                    if (app.CanUninstall) selectedApps.Add(app);
                 }
                 selectedApps.Reverse();
 

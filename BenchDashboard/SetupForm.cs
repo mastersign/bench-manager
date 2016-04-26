@@ -405,20 +405,22 @@ namespace Mastersign.Bench.Dashboard
             contextApp = appWrapper.App;
 
             miInstall.Visible = contextApp.CanInstall;
-            miReinstall.Visible = contextApp.Typ == AppTyps.Default
-                && contextApp.CanCheckInstallation && contextApp.IsInstalled
-                && contextApp.HasResource;
-            miUpgrade.Visible = contextApp.Typ == AppTyps.Default
-                && contextApp.CanCheckInstallation && contextApp.IsInstalled
-                && contextApp.HasResource && !contextApp.IsVersioned;
-            miPackageUpgrade.Visible = contextApp.Typ != AppTyps.Default
-                && contextApp.CanCheckInstallation && contextApp.IsInstalled;
-            miUninstall.Visible = contextApp.CanCheckInstallation && contextApp.IsInstalled;
+            miReinstall.Visible = contextApp.CanReinstall;
+            miUpgrade.Visible = contextApp.CanUpgrade;
+            miPackageUpgrade.Visible = contextApp.IsInstalled && contextApp.IsManagedPackage;
+            miUninstall.Visible = contextApp.CanUninstall;
 
-            miDownloadResource.Visible = contextApp.HasResource && !contextApp.IsResourceCached;
-            miDeleteResource.Visible = contextApp.HasResource && contextApp.IsResourceCached;
+            miDownloadResource.Visible = contextApp.CanDownloadResource;
+            miDeleteResource.Visible = contextApp.CanDeleteResource;
 
-            tsSeparatorDownloads.Visible = miDownloadResource.Visible || miDeleteResource.Visible;
+            tsSeparatorDownloads.Visible = 
+                (miInstall.Visible
+                    || miReinstall.Visible
+                    || miUpgrade.Visible
+                    || miPackageUpgrade.Visible
+                    || miUninstall.Visible)
+                && (miDownloadResource.Visible 
+                    || miDeleteResource.Visible);
 
             e.ContextMenuStrip = ctxmAppActions;
         }

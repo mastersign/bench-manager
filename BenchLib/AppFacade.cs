@@ -70,6 +70,17 @@ namespace Mastersign.Bench
 
         public string Typ { get { return StringValue(PropertyKeys.AppTyp); } }
 
+        public bool IsManagedPackage
+        {
+            get
+            {
+                var typ = Typ;
+                return typ == AppTyps.NodePackage
+                        || typ == AppTyps.Python2Package
+                        || typ == AppTyps.Python3Package;
+            }
+        }
+
         public string Version { get { return StringValue(PropertyKeys.AppVersion); } }
 
         public bool IsVersioned
@@ -104,8 +115,6 @@ namespace Mastersign.Bench
 
         public bool IsDependency { get { return BoolValue(PropertyKeys.AppIsDependency); } }
 
-        public bool IsActive { get { return !IsDeactivated && (IsRequired || IsDependency || IsActivated); } }
-
         public string Url { get { return StringValue(PropertyKeys.AppUrl); } }
 
         public IDictionary<string, string> DownloadHeaders
@@ -136,13 +145,15 @@ namespace Mastersign.Bench
 
         public string Dir { get { return StringValue(PropertyKeys.AppDir); } }
 
+        public string Exe { get { return StringValue(PropertyKeys.AppExe); } }
+
+        public string SetupTestFile { get { return StringValue(PropertyKeys.AppSetupTestFile); } }
+
         public string[] Path
         {
             get { return ListValue(PropertyKeys.AppPath); }
             set { UpdateValue(PropertyKeys.AppPath, value); }
         }
-
-        public string Exe { get { return StringValue(PropertyKeys.AppExe); } }
 
         public bool Register { get { return BoolValue(PropertyKeys.AppRegister); } }
 
@@ -210,6 +221,8 @@ namespace Mastersign.Bench
 
         public string LauncherIcon { get { return StringValue(PropertyKeys.AppLauncherIcon); } }
 
+        #region File Discovery
+
         public string GetLauncherFile()
         {
             var launcher = Launcher;
@@ -235,7 +248,27 @@ namespace Mastersign.Bench
             return File.Exists(path) ? path : null;
         }
 
-        public string SetupTestFile { get { return StringValue(PropertyKeys.AppSetupTestFile); } }
+        #endregion
+
+        #region Status
+
+        public bool IsActive
+        {
+            get
+            {
+                return !IsDeactivated
+                    && (IsRequired || IsDependency || IsActivated);
+            }
+        }
+
+        public bool HasResource
+        {
+            get
+            {
+                return Typ == AppTyps.Default &&
+                    (ResourceFileName != null || ResourceArchiveName != null);
+            }
+        }
 
         public bool CanCheckInstallation
         {
@@ -245,15 +278,6 @@ namespace Mastersign.Bench
                     || Typ == AppTyps.NodePackage
                     || Typ == AppTyps.Python2Package
                     || Typ == AppTyps.Python3Package;
-            }
-        }
-
-        public bool CanInstall
-        {
-            get
-            {
-                return CanCheckInstallation && !IsInstalled
-                    || !CanCheckInstallation && GetCustomScriptFile("setup") != null;
             }
         }
 
@@ -292,15 +316,6 @@ namespace Mastersign.Bench
             {
                 if (!isInstalled.HasValue) isInstalled = GetIsInstalled();
                 return isInstalled.Value;
-            }
-        }
-
-        public bool HasResource
-        {
-            get
-            {
-                return Typ == AppTyps.Default &&
-                    (ResourceFileName != null || ResourceArchiveName != null);
             }
         }
 
@@ -574,6 +589,85 @@ namespace Mastersign.Bench
             }
         }
 
+        #endregion
+
+        #region Possible Actions
+
+        public bool CanDownloadResource { get { return HasResource && !IsResourceCached; } }
+
+        public bool CanDeleteResource { get { return HasResource && IsResourceCached; } }
+
+        public bool CanInstall
+        {
+            get
+            {
+                return CanCheckInstallation && (!IsInstalled || Force)
+                    || !CanCheckInstallation && GetCustomScriptFile("setup") != null;
+            }
+        }
+
+        public bool CanUninstall
+        {
+            get
+            {
+                return CanCheckInstallation && IsInstalled
+                    || !CanCheckInstallation && GetCustomScriptFile("remove") != null;
+            }
+        }
+
+        public bool CanReinstall
+        {
+            get
+            {
+                return CanCheckInstallation && IsInstalled
+                        && (!HasResource || IsResourceCached)
+                        && !IsManagedPackage
+                    || !CanCheckInstallation
+                        && GetCustomScriptFile("remove") != null
+                        && GetCustomScriptFile("setup") != null;
+            }
+        }
+
+        public bool CanUpgrade
+        {
+            get
+            {
+                return
+                    CanCheckInstallation && IsInstalled
+                        && HasResource && !IsVersioned
+                        && !IsManagedPackage
+                    || !CanCheckInstallation
+                        && HasResource
+                        && !IsManagedPackage
+                        && GetCustomScriptFile("remove") != null
+                        && GetCustomScriptFile("setup") != null;
+            }
+        }
+
+        public bool ShouldBeInstalled
+        {
+            get
+            {
+                return IsActive
+                  && (CanCheckInstallation && !IsInstalled
+                    || !CanCheckInstallation && GetCustomScriptFile("setup") != null);
+            }
+        }
+
+        public bool ShouldBeRemoved
+        {
+            get
+            {
+                return !IsActive
+                    && (CanCheckInstallation && IsInstalled
+                        || !CanCheckInstallation && GetCustomScriptFile("remove") != null);
+            }
+        }
+
+        #endregion
+
+        #region Configuration
+
         public void Activate()
         {
             AppIndex.SetGroupValue(AppName, PropertyKeys.AppIsActivated, true);
@@ -686,6 +780,8 @@ namespace Mastersign.Bench
                 return list;
             }
         }
+
+        #endregion
 
         public override string ToString()
         {
