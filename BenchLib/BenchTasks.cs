@@ -1258,26 +1258,34 @@ namespace Mastersign.Bench
                     {
                         progressCb(string.Format("Uninstalling app {0}.", app.ID), errors.Count > 0, progress);
                     }
-                    switch (app.Typ)
+                    var customScript = app.GetCustomScriptFile("remove");
+                    if (customScript != null)
                     {
-                        case AppTyps.Meta:
-                            error = UninstallGeneric(man.Config, app);
-                            break;
-                        case AppTyps.Default:
-                            error = UninstallGeneric(man.Config, app);
-                            break;
-                        case AppTyps.NodePackage:
-                            error = UninstallNodePackage(man.Config, man.ProcessExecutionHost, app);
-                            break;
-                        case AppTyps.Python2Package:
-                            error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
-                            break;
-                        case AppTyps.Python3Package:
-                            error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
-                            break;
-                        default:
-                            error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
-                            break;
+                        error = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customScript);
+                    }
+                    else
+                    {
+                        switch (app.Typ)
+                        {
+                            case AppTyps.Meta:
+                                error = UninstallGeneric(man.Config, app);
+                                break;
+                            case AppTyps.Default:
+                                error = UninstallGeneric(man.Config, app);
+                                break;
+                            case AppTyps.NodePackage:
+                                error = UninstallNodePackage(man.Config, man.ProcessExecutionHost, app);
+                                break;
+                            case AppTyps.Python2Package:
+                                error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
+                                break;
+                            case AppTyps.Python3Package:
+                                error = UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python3, app);
+                                break;
+                            default:
+                                error = new AppTaskError(app.ID, "Unknown app typ: '" + app.Typ + "'.");
+                                break;
+                        }
                     }
                     app.DiscardCachedValues();
                 }
