@@ -18,6 +18,8 @@ namespace Mastersign.Bench.Dashboard
     {
         private readonly Core core;
 
+        private SetupForm setupForm;
+
         public MainForm(Core core)
         {
             this.core = core;
@@ -112,8 +114,11 @@ namespace Mastersign.Bench.Dashboard
 
         private void SetupHandler(object sender, EventArgs e)
         {
-            new SetupForm(core).ShowDialog(this);
+            if (setupForm == null || setupForm.IsDisposed)
+            {
+                setupForm = new SetupForm(core);
+            }
+            if (!setupForm.Visible) setupForm.Show(this);
         }
-
     }
 }
