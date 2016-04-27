@@ -42,7 +42,7 @@ namespace Mastersign.Bench.Dashboard
         {
             DisposeConsole();
             core.ConfigReloaded -= ConfigReloadedHandler;
-            core.AllAppStateChanged -= ConfigReloadedHandler;
+            core.AllAppStateChanged -= AllAppStateChangedHandler;
             core.AppStateChanged -= AppStateChangedHandler;
             core.BusyChanged -= CoreBusyChangedHandler;
         }
@@ -51,11 +51,6 @@ namespace Mastersign.Bench.Dashboard
         {
             InitializeDownloadList();
             InitializeBounds();
-        }
-
-        private void SetupForm_Activated(object sender, EventArgs e)
-        {
-            Application.DoEvents();
             InitializeAppList();
         }
 
@@ -74,10 +69,23 @@ namespace Mastersign.Bench.Dashboard
             InitializeAppList();
         }
 
+        private void AllAppStateChangedHandler(object sender, EventArgs e)
+        {
+            foreach (var app in core.Config.Apps)
+            {
+                NotifyAppStateChange(app.ID);
+            }
+        }
+
         private void AppStateChangedHandler(object sender, AppEventArgs e)
         {
+            NotifyAppStateChange(e.ID);
+        }
+
+        private void NotifyAppStateChange(string appId)
+        {
             AppWrapper wrapper;
-            if (appLookup.TryGetValue(e.ID, out wrapper))
+            if (appLookup.TryGetValue(appId, out wrapper))
             {
                 wrapper.App.DiscardCachedValues();
                 wrapper.NotifyChanges();
@@ -244,15 +252,19 @@ namespace Mastersign.Bench.Dashboard
                 core.Config.GetStringValue(PropertyKeys.AppDeactivationFile));
         }
 
-        private void ProgressInfoHandler(string info, bool error, float progress)
+        private void TaskInfoHandler(TaskInfo info)
         {
             if (InvokeRequired)
             {
-                BeginInvoke((ProgressCallback)ProgressInfoHandler, info, error, progress);
+                BeginInvoke((Action<TaskInfo>)TaskInfoHandler, info);
                 return;
             }
-            lblInfo.Text = info;
-            UpdateProgressBar(progress);
+            lblInfo.Text = info.Message;
+            var progressInfo = info as TaskProgress;
+            if (progressInfo != null)
+            {
+                UpdateProgressBar(progressInfo.Progress);
+            }
         }
 
         private void AnnounceTask(string label)
@@ -260,112 +272,100 @@ namespace Mastersign.Bench.Dashboard
             lblTask.Text = label;
         }
 
-        private void AutoHandler(object sender, EventArgs e)
+        private async void AutoHandler(object sender, EventArgs e)
         {
             AnnounceTask("Automatic Setup");
-            core.AutoSetup(ProgressInfoHandler);
+            await core.AutoSetupAsync(TaskInfoHandler);
         }
 
-        private void DownloadAllHandler(object sender, EventArgs e)
+        private async void DownloadAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Download App Resources");
-            core.DownloadAppResources(ProgressInfoHandler);
+            await core.DownloadAppResourcesAsync(TaskInfoHandler);
         }
 
-        private void DeleteAllResourcesHandler(object sender, EventArgs e)
+        private async void DeleteAllResourcesHandler(object sender, EventArgs e)
         {
             AnnounceTask("Delete App Resources");
-            core.DeleteAppResources(ProgressInfoHandler);
+            await core.DeleteAppResourcesAsync(TaskInfoHandler);
         }
 
-        private void InstallAllHandler(object sender, EventArgs e)
+        private async void InstallAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Install Apps");
-            core.InstallApps(ProgressInfoHandler);
+            await core.InstallAppsAsync(TaskInfoHandler);
         }
 
-        private void UninstallAllHandler(object sender, EventArgs e)
+        private async void UninstallAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Uninstall Apps");
-            core.UninstallApps(ProgressInfoHandler);
+            await core.UninstallAppsAsync(TaskInfoHandler);
         }
 
-        private void ReinstallAllHandler(object sender, EventArgs e)
+        private async void ReinstallAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Reinstall Apps");
-            core.ReinstallApps(ProgressInfoHandler);
+            await core.ReinstallAppsAsync(TaskInfoHandler);
         }
 
-        private void UpgradeAllHandler(object sender, EventArgs e)
+        private async void UpgradeAllHandler(object sender, EventArgs e)
         {
             AnnounceTask("Upgrade Apps");
-            core.UpgradeApps(ProgressInfoHandler);
+            await core.UpgradeAppsAsync(TaskInfoHandler);
         }
 
-        private void UpdateEnvironment(object sender, EventArgs e)
+        private async void UpdateEnvironment(object sender, EventArgs e)
         {
             AnnounceTask("Update Environment");
-            core.UpdateEnvironment(ProgressInfoHandler);
+            await core.UpdateEnvironmentAsync(TaskInfoHandler);
         }
 
-        private void ActivateAppHandler(object sender, EventArgs e)
-        {
-            AnnounceTask("Activate App " + contextApp.ID);
-            contextApp = null;
-        }
-
-        private void DeactivateAppHandler(object sender, EventArgs e)
-        {
-            AnnounceTask("Deactivate App " + contextApp.ID);
-            contextApp = null;
-        }
-
-        private void InstallAppHandler(object sender, EventArgs e)
+        private async void InstallAppHandler(object sender, EventArgs e)
         {
             AnnounceTask("Install App " + contextApp.ID);
-            core.InstallApp(ProgressInfoHandler, contextApp.ID);
+            await core.InstallAppsAsync(TaskInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
-        private void ReinstallAppHandler(object sender, EventArgs e)
+        private async void ReinstallAppHandler(object sender, EventArgs e)
         {
             AnnounceTask("Reinstall App " + contextApp.ID);
-            core.ReinstallApp(ProgressInfoHandler, contextApp.ID);
+            await core.ReinstallAppsAsync(TaskInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
-        private void UpgradeAppHandler(object sender, EventArgs e)
+        private async void UpgradeAppHandler(object sender, EventArgs e)
         {
             AnnounceTask("Upgrade App " + contextApp.ID);
-            core.UpgradeApp(ProgressInfoHandler, contextApp.ID);
+            await core.UpgradeAppsAsync(TaskInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
-        private void UpgradePackageHandler(object sender, EventArgs e)
+        private async void UpgradePackageHandler(object sender, EventArgs e)
         {
             AnnounceTask("Upgrade App " + contextApp.ID);
-            core.UpgradeApp(ProgressInfoHandler, contextApp.ID);
+            await core.UpgradeAppsAsync(TaskInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
-        private void DownloadAppResourceHandler(object sender, EventArgs e)
+        private async void DownloadAppResourceHandler(object sender, EventArgs e)
         {
             AnnounceTask("Download App Resource for " + contextApp.ID);
-            core.DownloadAppResource(ProgressInfoHandler, contextApp.ID);
+            await core.DownloadAppResourcesAsync(contextApp.ID, TaskInfoHandler);
             contextApp = null;
         }
 
-        private void DeleteAppResourceHandler(object sender, EventArgs e)
+        private async void DeleteAppResourceHandler(object sender, EventArgs e)
         {
             AnnounceTask("Delete App Resource for " + contextApp.ID);
-            core.DeleteAppResource(ProgressInfoHandler, contextApp.ID);
+            await core.DeleteAppResourcesAsync(TaskInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
-        private void UninstallAppHandler(object sender, EventArgs e)
+        private async void UninstallAppHandler(object sender, EventArgs e)
         {
             AnnounceTask("Uninstall App " + contextApp.ID);
-            core.UninstallApp(ProgressInfoHandler, contextApp.ID);
+            await core.UninstallAppsAsync(TaskInfoHandler, contextApp.ID);
             contextApp = null;
         }
 
@@ -415,13 +415,13 @@ namespace Mastersign.Bench.Dashboard
             miDownloadResource.Visible = contextApp.CanDownloadResource;
             miDeleteResource.Visible = contextApp.CanDeleteResource;
 
-            tsSeparatorDownloads.Visible = 
+            tsSeparatorDownloads.Visible =
                 (miInstall.Visible
                     || miReinstall.Visible
                     || miUpgrade.Visible
                     || miPackageUpgrade.Visible
                     || miUninstall.Visible)
-                && (miDownloadResource.Visible 
+                && (miDownloadResource.Visible
                     || miDeleteResource.Visible);
 
             e.ContextMenuStrip = ctxmAppActions;

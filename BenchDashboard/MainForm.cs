@@ -86,12 +86,16 @@ namespace Mastersign.Bench.Dashboard
 
         private void ShellCmdHandler(object sender, EventArgs e)
         {
-            core.StartProcess(core.CmdPath);
+            new DefaultExecutionHost().StartProcess(core.Env,
+                core.Config.GetStringValue(PropertyKeys.ProjectRootDir),
+                core.CmdPath, "", result => { }, ProcessMonitoring.ExitCode);
         }
 
         private void ShellPowerShellHandler(object sender, EventArgs e)
         {
-            core.StartProcess(core.PowerShellPath);
+            new DefaultExecutionHost().StartProcess(core.Env,
+                core.Config.GetStringValue(PropertyKeys.ProjectRootDir),
+                core.PowerShellPath, "", result => { }, ProcessMonitoring.ExitCode);
         }
 
         private void ShellBashHandler(object sender, EventArgs e)
@@ -99,7 +103,9 @@ namespace Mastersign.Bench.Dashboard
             var bashPath = core.BashPath;
             if (File.Exists(bashPath))
             {
-                core.StartProcess(core.BashPath);
+                new DefaultExecutionHost().StartProcess(core.Env,
+                    core.Config.GetStringValue(PropertyKeys.ProjectRootDir),
+                    bashPath, "", result => { }, ProcessMonitoring.ExitCode);
             }
             else
             {

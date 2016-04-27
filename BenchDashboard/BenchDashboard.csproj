@@ -40,6 +40,9 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\bench.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ConEmu.WinForms, Version=1.0.0.0, Culture=neutral, PublicKeyToken=00340228797aafb8, processorArchitecture=MSIL">
       <HintPath>..\packages\ConEmu.Control.WinForms.1.0.20160407.0\lib\net40\ConEmu.WinForms.dll</HintPath>

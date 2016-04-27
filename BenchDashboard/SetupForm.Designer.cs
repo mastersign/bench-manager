@@ -91,6 +91,16 @@
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
+            // 
             // tsSeparatorDownloads
             // 
             this.tsSeparatorDownloads.Name = "tsSeparatorDownloads";
@@ -212,7 +222,7 @@
             this.lblTaskLabel.Location = new System.Drawing.Point(12, 8);
             this.lblTaskLabel.Margin = new System.Windows.Forms.Padding(3, 8, 3, 0);
             this.lblTaskLabel.Name = "lblTaskLabel";
-            this.lblTaskLabel.Size = new System.Drawing.Size(32, 13);
+            this.lblTaskLabel.Size = new System.Drawing.Size(31, 13);
             this.lblTaskLabel.TabIndex = 0;
             this.lblTaskLabel.Text = "Task:";
             // 
@@ -290,7 +300,7 @@
             this.colTyp.ReadOnly = true;
             this.colTyp.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.colTyp.ToolTipText = "The typ of the app.";
-            this.colTyp.Width = 49;
+            this.colTyp.Width = 48;
             // 
             // colActivated
             // 
@@ -324,7 +334,7 @@
             this.colVersion.Name = "colVersion";
             this.colVersion.ReadOnly = true;
             this.colVersion.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.colVersion.Width = 71;
+            this.colVersion.Width = 70;
             // 
             // colLauncher
             // 
@@ -482,11 +492,6 @@
             this.tsmiAuto.Text = "&Automatic Setup";
             this.tsmiAuto.Click += new System.EventHandler(this.AutoHandler);
             // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
-            // 
             // tsmiUpdateEnvironment
             // 
             this.tsmiUpdateEnvironment.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.updateenv_16;
@@ -526,11 +531,6 @@
             this.tsmiUninstallAll.Size = new System.Drawing.Size(184, 22);
             this.tsmiUninstallAll.Text = "U&ninstall Apps";
             this.tsmiUninstallAll.Click += new System.EventHandler(this.UninstallAllHandler);
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // tsmiDownloadAllResources
             // 
@@ -632,7 +632,6 @@
             this.Name = "SetupForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Bench - Setup";
-            this.Activated += new System.EventHandler(this.SetupForm_Activated);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SetupForm_FormClosed);
             this.Load += new System.EventHandler(this.SetupForm_Load);
             this.panelStatus.ResumeLayout(false);
