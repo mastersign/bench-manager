@@ -20,6 +20,7 @@ namespace Mastersign.Bench
             Timestamp = DateTime.Now;
             AppId = appId;
             Message = message;
+            ProcessOutput = processOutput;
         }
     }
 
