@@ -46,11 +46,11 @@ namespace Mastersign.Bench
             return string.Join(" ", list);
         }
 
-        public static string EscapeArgument(string arg)
+        public static string EscapeArgument(string arg, bool alwaysQuote = false)
         {
             var s = Regex.Replace(arg.Trim('"'), @"(\\*)" + "\"", @"$1$1\" + "\"");
             s = Regex.Replace(s, @"(\\+)$", @"$1$1");
-            if (Regex.IsMatch(s, @"\s")) s = "\"" + s + "\"";
+            if (alwaysQuote || Regex.IsMatch(s, @"\s")) s = "\"" + s + "\"";
             return s;
         }
     }

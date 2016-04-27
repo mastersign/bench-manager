@@ -14,12 +14,12 @@ namespace Mastersign.Bench
             }
         }
 
-        public static string FormatArgumentList(params string[] args)
+        public static string FormatStringList(params string[] args)
         {
             var list = new string[args.Length];
             for (int i = 0; i < args.Length; i++)
             {
-                list[i] = CommandLine.EscapeArgument(args[i]);
+                list[i] = CommandLine.EscapeArgument(args[i], true);
             }
             return "@(" + string.Join(", ", list) + ")";
         }
@@ -28,7 +28,7 @@ namespace Mastersign.Bench
         {
             var command = Convert.ToBase64String(Encoding.Unicode.GetBytes(
                 string.Format("{0} {1}", script, string.Join(" ", args))));
-            return execHost.RunProcess(env, cwd, PowerShell.Executable,
+            return execHost.RunProcess(env, cwd, Executable,
                 CommandLine.FormatArgumentList(
                     "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Unrestricted",
                     "-EncodedCommand", command),
