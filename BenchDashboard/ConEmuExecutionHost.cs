@@ -141,7 +141,10 @@ namespace Mastersign.Bench.Dashboard
             NotifyProcessStart();
             var session = StartProcess(startInfo);
             var sb = new StringBuilder();
-            session.AnsiStreamChunkReceived += (s, e) => sb.Append(e.GetMbcsText());
+            if (collectOutput)
+            {
+                session.AnsiStreamChunkReceived += (s, e) => sb.Append(e.GetMbcsText());
+            }
             var t = session.WaitForConsoleEmulatorCloseAsync();
             AsyncManager.StartTask(() =>
             {
