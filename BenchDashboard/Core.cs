@@ -27,6 +27,8 @@ namespace Mastersign.Bench.Dashboard
 
         private bool busy;
 
+        private Cancelation cancelation;
+
         public event EventHandler ConfigReloaded;
 
         public event EventHandler AllAppStateChanged;
@@ -34,6 +36,18 @@ namespace Mastersign.Bench.Dashboard
         public event EventHandler<AppEventArgs> AppStateChanged;
 
         public event EventHandler BusyChanged;
+
+        private Action<TaskInfo> CatchTaskInfos(Action<TaskInfo> notify)
+        {
+            return info =>
+            {
+                if (info.AppId != null)
+                {
+                    OnAppStateChanged(info.AppId);
+                }
+                if (notify != null) notify(info);
+            };
+        }
 
         public Core(string benchRoot)
         {
@@ -80,6 +94,8 @@ namespace Mastersign.Bench.Dashboard
                 }
             });
         }
+
+        public Cancelation Cancelation { get { return cancelation; } }
 
         private void OnConfigReloaded()
         {
@@ -157,378 +173,309 @@ namespace Mastersign.Bench.Dashboard
             Reload();
         }
 
-        public Task<TaskResult> DoTaskAsync(string taskLabel, BenchTask action,
-            IBenchManager man, ICollection<AppFacade> apps,
+        public Task<ActionResult> RunTaskAsync(BenchTaskForAll action,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
-            var t = new Task<TaskResult>(() =>
+            return Task.Run(() =>
             {
-                var infos = new List<TaskInfo>();
-                action(man, apps,
-                    info =>
-                    {
-                        infos.Add(info);
-                        if (notify != null)
-                        {
-                            notify(info);
-                        }
-                    },
-                    cancelation);
-                return new TaskResult(taskLabel, infos, cancelation.IsCanceled);
+                return action(this, CatchTaskInfos(notify), cancelation);
             });
-            t.Start();
-            return t;
         }
 
-        public void AutoSetup(Action<TaskInfo> notify, Cancelation cancelation)
+        public Task<ActionResult> RunTaskAsync(BenchTaskForOne action, string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-
-            var activeApps = Config.Apps.ActiveApps;
-            var inactiveApps = Config.Apps.InactiveApps;
-
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Installing Apps", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Installing Apps",
-                            BuildCombinedErrorMessage(
-                                "Installing the following apps failed:",
-                                "Installing the apps failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                },
-                new ICollection<AppFacade>[] { inactiveApps, activeApps },
-                BenchTasks.UninstallApps,
-                BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps,
-                BenchTasks.UpdateEnvironment);
+            return Task.Run(() =>
+            {
+                return action(this, appId, CatchTaskInfos(notify), cancelation);
+            });
         }
 
-        public void DownloadAppResources(ProgressCallback progressCb)
+        private void BeginAction()
         {
             if (Busy) throw new InvalidOperationException("The core is already busy.");
+            cancelation = new Cancelation();
             Busy = true;
-            BenchTasks.DownloadAppResources(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Downloading App Resources", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Downloading App Resources",
-                            BuildCombinedErrorMessage(
-                                "Downloading resources for the following apps failed:",
-                                "Downloading the app resources failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                });
         }
 
-        public void DownloadAppResource(ProgressCallback progressCb, string appId)
+        private void EndAction()
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.DownloadAppResources(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (!success)
-                    {
-                        UI.ShowWarning("Downloading App Resource",
-                            BuildCombinedErrorMessage(
-                                "Downloading app resource failed:",
-                                "Downloading the resource for app " + appId + " failed.",
-                                errors, 10));
-                    }
-                    OnAppStateChanged(appId);
-                },
-                appId);
+            Busy = false;
+            cancelation = null;
         }
 
-        public void DeleteAppResources(ProgressCallback progressCb)
+        public async Task<ActionResult> AutoSetupAsync(Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.DeleteAppResources(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Deleting App Resources", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Deleting App Resources",
-                            BuildCombinedErrorMessage(
-                                "Deleting resources for the following apps failed:",
-                                "Deleting the app resources failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                });
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoAutoSetup, notify, cancelation).ConfigureAwait(false);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Installing Apps", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Installing Apps",
+                    BuildCombinedErrorMessage(
+                        "Installing the following apps failed:",
+                        "Installing the apps failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
-        public void DeleteAppResource(ProgressCallback progressCb, string appId)
+        public async Task<ActionResult> DownloadAppResourcesAsync(Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.DeleteAppResources(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (!success)
-                    {
-                        UI.ShowWarning("Deleting App Resource",
-                            BuildCombinedErrorMessage(
-                                "Deleting app resource failed:",
-                                "Deleting the resource of app " + appId + " failed.",
-                                errors, 10));
-                    }
-                    OnAppStateChanged(appId);
-                },
-                appId);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoDownloadAppResources, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Downloading App Resources", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Downloading App Resources",
+                    BuildCombinedErrorMessage(
+                        "Downloading resources for the following apps failed:",
+                        "Downloading the app resources failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
-        public void InstallApps(ProgressCallback progressCb)
+        public async Task<ActionResult> DownloadAppResourcesAsync(string appId, Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Installing Apps", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Installing Apps",
-                            BuildCombinedErrorMessage(
-                                "Installing the following apps failed:",
-                                "Installing the apps failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                },
-                BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoDownloadAppResources, appId, notify, cancelation);
+            EndAction();
+            if (!result.Success)
+            {
+                UI.ShowWarning("Downloading App Resource",
+                    BuildCombinedErrorMessage(
+                        "Downloading app resource failed:",
+                        "Downloading the resource for app " + appId + " failed.",
+                        result.Errors, 10));
+            }
+            OnAppStateChanged(appId);
+            return result;
         }
 
-        public void InstallApp(ProgressCallback progressCb, string appId)
+        public async Task<ActionResult> DeleteAppResourcesAsync(Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (!success)
-                    {
-                        UI.ShowWarning("Installing App",
-                            BuildCombinedErrorMessage(
-                                "Installing the app failed:",
-                                "Installing the app " + appId + " failed.",
-                                errors, 10));
-                    }
-                    OnAppStateChanged(appId);
-                },
-                appId,
-                BenchTasks.DownloadAppResources,
-                BenchTasks.InstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoDeleteAppResources, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Deleting App Resources", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Deleting App Resources",
+                    BuildCombinedErrorMessage(
+                        "Deleting resources for the following apps failed:",
+                        "Deleting the app resources failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
-        public void ReinstallApps(ProgressCallback progressCb)
+        public async Task<ActionResult> DeleteAppResourcesAsync(Action<TaskInfo> notify, string appId)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Reinstalling Apps", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Reinstalling Apps",
-                            BuildCombinedErrorMessage(
-                                "Reinstalling the following apps failed:",
-                                "Reinstalling the apps failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                },
-                BenchTasks.DownloadAppResources,
-                BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoDeleteAppResources, appId, notify, cancelation);
+            EndAction();
+            if (!result.Success)
+            {
+                UI.ShowWarning("Deleting App Resource",
+                    BuildCombinedErrorMessage(
+                        "Deleting app resource failed:",
+                        "Deleting the resource of app " + appId + " failed.",
+                        result.Errors, 10));
+            }
+            OnAppStateChanged(appId);
+            return result;
         }
 
-        public void ReinstallApp(ProgressCallback progressCb, string appId)
+        public async Task<ActionResult> InstallAppsAsync(Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (!success)
-                    {
-                        UI.ShowWarning("Reinstall App",
-                            BuildCombinedErrorMessage(
-                                "Reinstalling the app failed:",
-                                "Reinstalling the app " + appId + " failed.",
-                                errors, 10));
-                    }
-                    OnAppStateChanged(appId);
-                },
-                appId,
-                BenchTasks.DownloadAppResources,
-                BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoInstallApps, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Installing Apps", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Installing Apps",
+                    BuildCombinedErrorMessage(
+                        "Installing the following apps failed:",
+                        "Installing the apps failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
-        public void UpgradeApps(ProgressCallback progressCb)
+        public async Task<ActionResult> InstallAppsAsync(Action<TaskInfo> notify, string appId)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Upgrading Apps", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Upgrading Apps",
-                            BuildCombinedErrorMessage(
-                                "Upgrading the following apps failed:",
-                                "Upgrading the apps failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                },
-                BenchTasks.DeleteAppResources,
-                BenchTasks.DownloadAppResources,
-                BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoInstallApps, appId, notify, cancelation);
+            EndAction();
+            if (!result.Success)
+            {
+                UI.ShowWarning("Installing App",
+                    BuildCombinedErrorMessage(
+                        "Installing the app failed:",
+                        "Installing the app " + appId + " failed.",
+                        result.Errors, 10));
+            }
+            OnAppStateChanged(appId);
+            return result;
         }
 
-        public void UpgradeApp(ProgressCallback progressCb, string appId)
+        public async Task<ActionResult> UninstallAppsAsync(Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (!success)
-                    {
-                        UI.ShowWarning("Upgrade App",
-                            BuildCombinedErrorMessage(
-                                "Upgrading the app failed:",
-                                "Upgrading the app " + appId + " failed.",
-                                errors, 10));
-                    }
-                    OnAppStateChanged(appId);
-                },
-                appId,
-                BenchTasks.DeleteAppResources,
-                BenchTasks.DownloadAppResources,
-                BenchTasks.UninstallApps,
-                BenchTasks.InstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoUninstallApps, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Uninstalling Apps", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Uninstalling Apps",
+                    BuildCombinedErrorMessage(
+                        "Uninstalling the following apps failed:",
+                        "Uninstalling the apps failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
-        public void UninstallApps(ProgressCallback progressCb)
+        public async Task<ActionResult> UninstallAppsAsync(Action<TaskInfo> notify, string appId)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Uninstalling Apps", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Uninstalling Apps",
-                            BuildCombinedErrorMessage(
-                                "Uninstalling the following apps failed:",
-                                "Uninstalling the apps failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                },
-                BenchTasks.UninstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoUninstallApps, appId, notify, cancelation);
+            EndAction();
+            if (!result.Success)
+            {
+                UI.ShowWarning("Uninstalling App",
+                    BuildCombinedErrorMessage(
+                        "Uninstalling the app failed:",
+                        "Uninstalling the app " + appId + " failed.",
+                        result.Errors, 10));
+            }
+            OnAppStateChanged(appId);
+            return result;
         }
 
-        public void UninstallApp(ProgressCallback progressCb, string appId)
+        public async Task<ActionResult> ReinstallAppsAsync(Action<TaskInfo> notify)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.RunTasks(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (!success)
-                    {
-                        UI.ShowWarning("Uninstalling App",
-                            BuildCombinedErrorMessage(
-                                "Uninstalling the app failed:",
-                                "Uninstalling the app " + appId + " failed.",
-                                errors, 10));
-                    }
-                    OnAppStateChanged(appId);
-                },
-                appId,
-                BenchTasks.UninstallApps);
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoReinstallApps, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Reinstalling Apps", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Reinstalling Apps",
+                    BuildCombinedErrorMessage(
+                        "Reinstalling the following apps failed:",
+                        "Reinstalling the apps failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
-        public void UpdateEnvironment(ProgressCallback progressCb)
+        public async Task<ActionResult> ReinstallAppsAsync(Action<TaskInfo> notify, string appId)
         {
-            if (Busy) throw new InvalidOperationException("The core is already busy.");
-            Busy = true;
-            BenchTasks.UpdateEnvironment(this, progressCb,
-                (success, errors) =>
-                {
-                    Busy = false;
-                    if (success)
-                    {
-                        UI.ShowInfo("Updating Environment", "Finished.");
-                    }
-                    else
-                    {
-                        UI.ShowWarning("Updating Environment",
-                            BuildCombinedErrorMessage(
-                                "Updating the bench environment for the following apps failed:",
-                                "Updating the bench environment failed.",
-                                errors, 10));
-                    }
-                    OnAllAppStateChanged();
-                });
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoReinstallApps, appId, notify, cancelation);
+            EndAction();
+            if (!result.Success)
+            {
+                UI.ShowWarning("Reinstall App",
+                    BuildCombinedErrorMessage(
+                        "Reinstalling the app failed:",
+                        "Reinstalling the app " + appId + " failed.",
+                        result.Errors, 10));
+            }
+            OnAppStateChanged(appId);
+            return result;
+        }
+
+        public async Task<ActionResult> UpgradeAppsAsync(Action<TaskInfo> notify)
+        {
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoUpgradeApps, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Upgrading Apps", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Upgrading Apps",
+                    BuildCombinedErrorMessage(
+                        "Upgrading the following apps failed:",
+                        "Upgrading the apps failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
+        }
+
+        public async Task<ActionResult> UpgradeAppsAsync(Action<TaskInfo> notify, string appId)
+        {
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoUpgradeApps, appId, notify, cancelation);
+            EndAction();
+            if (!result.Success)
+            {
+                UI.ShowWarning("Upgrade App",
+                    BuildCombinedErrorMessage(
+                        "Upgrading the app failed:",
+                        "Upgrading the app " + appId + " failed.",
+                        result.Errors, 10));
+            }
+            OnAppStateChanged(appId);
+            return result;
+        }
+
+        public async Task<ActionResult> UpdateEnvironmentAsync(Action<TaskInfo> notify)
+        {
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoUpdateEnvironment, notify, cancelation);
+            EndAction();
+            if (result.Success)
+            {
+                UI.ShowInfo("Updating Environment", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Updating Environment",
+                    BuildCombinedErrorMessage(
+                        "Updating the bench environment for the following apps failed:",
+                        "Updating the bench environment failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
         }
 
         private static string BuildCombinedErrorMessage(string infoWithErrors, string infoWithoutErrors,
-            IEnumerable<AppTaskError> errors, int maxLines)
+            IEnumerable<TaskInfo> errors, int maxLines)
         {
             var sb = new StringBuilder();
             var cnt = 0;
@@ -542,7 +489,7 @@ namespace Mastersign.Bench.Dashboard
                         sb.AppendLine("...");
                         break;
                     }
-                    sb.AppendLine(err.ToString());
+                    sb.AppendLine(err.Message);
                 }
             }
             return cnt > 0

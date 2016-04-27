@@ -20,4 +20,10 @@ namespace Mastersign.Bench
 
     public delegate void BenchTask(IBenchManager man, ICollection<AppFacade> apps,
         Action<TaskInfo> notify, Cancelation cancelation);
+
+    public delegate ActionResult BenchTaskForAll(IBenchManager man,
+        Action<TaskInfo> notify, Cancelation cancelation);
+
+    public delegate ActionResult BenchTaskForOne(IBenchManager man, string appId,
+        Action<TaskInfo> notify, Cancelation cancelation);
 }

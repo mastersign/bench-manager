@@ -150,7 +150,7 @@ namespace Mastersign.Bench
                 "Run-CustomScript.ps1");
             var result = PowerShell.RunScript(new BenchEnvironment(config), execHost,
                 config.BenchRootDir, customScriptRunner,
-                path, PowerShell.FormatArgumentList(args));
+                path, PowerShell.FormatStringList(args));
             if (result.ExitCode != 0)
             {
                 throw new ProcessExecutionFailedException("Executing custom script failed.",
@@ -171,7 +171,7 @@ namespace Mastersign.Bench
                 "Run-CustomScript.ps1");
             var result = PowerShell.RunScript(new BenchEnvironment(config), execHost,
                 config.BenchRootDir, customScriptRunner,
-                path, PowerShell.FormatArgumentList(args));
+                path, PowerShell.FormatStringList(args));
             if (result.ExitCode != 0)
             {
                 throw new ProcessExecutionFailedException("Executing global custom script failed.",
@@ -241,28 +241,197 @@ namespace Mastersign.Bench
             }
         }
 
+        #region Higher Order Actions
+
+        public static ActionResult DoAutoSetup(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new ICollection<AppFacade>[]
+                {
+                    man.Config.Apps.InactiveApps,
+                    man.Config.Apps.ActiveApps
+                },
+                notify, cancelation,
+
+                UninstallApps,
+                DownloadAppResources,
+                InstallApps,
+                UpdateEnvironment);
+        }
+
+        public static ActionResult DoDownloadAppResources(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                man.Config.Apps.ActiveApps,
+                notify, cancelation,
+                DownloadAppResources);
+        }
+
+        public static ActionResult DoDownloadAppResources(IBenchManager man,
+            string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                appId,
+                notify, cancelation,
+                DownloadAppResources);
+        }
+
+        public static ActionResult DoDeleteAppResources(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new List<AppFacade>(man.Config.Apps),
+                notify, cancelation,
+                DeleteAppResources);
+        }
+
+        public static ActionResult DoDeleteAppResources(IBenchManager man,
+            string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                appId,
+                notify, cancelation,
+                DeleteAppResources);
+        }
+
+        public static ActionResult DoInstallApps(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                man.Config.Apps.ActiveApps,
+                notify, cancelation,
+                DownloadAppResources,
+                InstallApps);
+        }
+
+        public static ActionResult DoInstallApps(IBenchManager man,
+            string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                appId,
+                notify, cancelation,
+                DownloadAppResources,
+                InstallApps);
+        }
+
+        public static ActionResult DoUninstallApps(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new List<AppFacade>(man.Config.Apps),
+                notify, cancelation,
+                UninstallApps);
+        }
+
+        public static ActionResult DoUninstallApps(IBenchManager man,
+            string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                appId,
+                notify, cancelation,
+                UninstallApps);
+        }
+
+        public static ActionResult DoReinstallApps(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                man.Config.Apps.ActiveApps,
+                notify, cancelation,
+                DownloadAppResources,
+                UninstallApps,
+                InstallApps);
+        }
+
+        public static ActionResult DoReinstallApps(IBenchManager man,
+            string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                appId,
+                notify, cancelation,
+                DownloadAppResources,
+                UninstallApps,
+                InstallApps);
+        }
+
+        public static ActionResult DoUpgradeApps(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            var upgradable = new List<AppFacade>();
+            foreach (var app in man.Config.Apps) if (app.CanUpgrade) upgradable.Add(app);
+
+            var activeApps = man.Config.Apps.ActiveApps;
+            return RunTasks(man,
+                new ICollection<AppFacade>[]
+                {
+                    upgradable,
+                    activeApps,
+                    upgradable,
+                    activeApps
+                },
+                notify, cancelation,
+                DeleteAppResources,
+                DownloadAppResources,
+                UninstallApps,
+                InstallApps);
+        }
+
+        public static ActionResult DoUpgradeApps(IBenchManager man,
+            string appId,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                appId,
+                notify, cancelation,
+                DeleteAppResources,
+                DownloadAppResources,
+                UninstallApps,
+                InstallApps);
+        }
+
+        public static ActionResult DoUpdateEnvironment(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                (ICollection<AppFacade>)null,
+                notify, cancelation,
+                UpdateEnvironment);
+        }
+
+        #endregion
+
         #region Task Composition
 
-        public static void RunTasks(IBenchManager man,
+        internal static ActionResult RunTasks(IBenchManager man,
             ICollection<AppFacade>[] taskApps,
             Action<TaskInfo> notify, Cancelation cancelation,
             params BenchTask[] tasks)
         {
-            if (tasks.Length == 0) return;
+            if (tasks.Length == 0) return new ActionResult();
+
+            var infos = new List<TaskInfo>();
             var errorIds = new List<string>();
             var taskProgress = 0f;
 
             Action<TaskInfo> myNotify = info =>
             {
-
                 if (info is TaskProgress)
                 {
                     info = ((TaskProgress)info).ScaleProgress(taskProgress, 1f / tasks.Length);
                 }
-                else if (info is TaskError && info.AppId != null && !errorIds.Contains(info.AppId))
+                if (info is TaskError && info.AppId != null && !errorIds.Contains(info.AppId))
                 {
                     errorIds.Add(info.AppId);
                 }
+                infos.Add(info);
+                notify(info);
             };
 
             for (int i = 0; i < tasks.Length; i++)
@@ -277,33 +446,28 @@ namespace Mastersign.Bench
                 tasks[i](man, apps, myNotify, cancelation);
             }
             notify(new TaskProgress("Finished.", 1f));
+
+            if (logger != null) logger.Dispose();
+
+            return new ActionResult(infos, cancelation.IsCanceled);
         }
 
-        public static void RunTasks(IBenchManager man,
-            Action<TaskInfo> notify, Cancelation cancelation,
-            params BenchTask[] tasks)
-        {
-            RunTasks(man,
-                new ICollection<AppFacade>[] { new List<AppFacade>(man.Config.Apps.ActiveApps) },
-                notify, cancelation, tasks);
-        }
-
-        public static void RunTasks(IBenchManager man,
+        internal static ActionResult RunTasks(IBenchManager man,
             ICollection<AppFacade> apps,
             Action<TaskInfo> notify, Cancelation cancelation,
             params BenchTask[] tasks)
         {
-            RunTasks(man,
+            return RunTasks(man,
                 new ICollection<AppFacade>[] { apps },
                 notify, cancelation, tasks);
         }
 
-        public static void RunTasks(IBenchManager man,
+        internal static ActionResult RunTasks(IBenchManager man,
             string appId,
             Action<TaskInfo> notify, Cancelation cancelation,
             params BenchTask[] tasks)
         {
-            RunTasks(man,
+            return RunTasks(man,
                 new[] { man.Config.Apps[appId] },
                 notify, cancelation, tasks);
         }
@@ -319,7 +483,7 @@ namespace Mastersign.Bench
 
         #region Download App Resources
 
-        public static void DownloadAppResources(IBenchManager man, ICollection<AppFacade> apps,
+        internal static void DownloadAppResources(IBenchManager man, ICollection<AppFacade> apps,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
             var targetDir = man.Config.GetStringValue(PropertyKeys.DownloadDir);
@@ -404,24 +568,11 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void DownloadAppResources(IBenchManager man,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            DownloadAppResources(man, man.Config.Apps.ActiveApps, notify, cancelation);
-        }
-
-        public static void DownloadAppResources(IBenchManager man,
-            string appId,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            DownloadAppResources(man, new[] { man.Config.Apps[appId] }, notify, cancelation);
-        }
-
         #endregion
 
         #region Delete App Resources
 
-        public static void DeleteAppResources(IBenchManager man,
+        internal static void DeleteAppResources(IBenchManager man,
             ICollection<AppFacade> apps,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
@@ -466,29 +617,16 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void DeleteAppResources(IBenchManager man,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            DeleteAppResources(man, new List<AppFacade>(man.Config.Apps), notify, cancelation);
-        }
-
-        public static void DeleteAppResources(IBenchManager man,
-            string appId,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            DeleteAppResources(man, new[] { man.Config.Apps[appId] }, notify, cancelation);
-        }
-
         #endregion
 
         #region Setup Environment
 
-        public static void CleanExecutionProxies(BenchConfiguration config)
+        private static void CleanExecutionProxies(BenchConfiguration config)
         {
             FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.AppAdornmentBaseDir));
         }
 
-        public static void CreateExecutionProxies(BenchConfiguration config, AppFacade app)
+        private static void CreateExecutionProxies(BenchConfiguration config, AppFacade app)
         {
             var adornedExePaths = app.AdornedExecutables;
             if (adornedExePaths.Length > 0)
@@ -505,7 +643,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void CleanLaunchers(BenchConfiguration config)
+        private static void CleanLaunchers(BenchConfiguration config)
         {
             FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherDir));
             FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherScriptDir));
@@ -529,7 +667,7 @@ namespace Mastersign.Bench
             FileSystem.CreateShortcut(shortcut, target, null, config.BenchRootDir, icon);
         }
 
-        public static void CreateActionLaunchers(BenchConfiguration config)
+        private static void CreateActionLaunchers(BenchConfiguration config)
         {
             CreateBenchDashboardLauncher(config);
 
@@ -539,7 +677,7 @@ namespace Mastersign.Bench
             CreateActionLauncher(config, "Bourne Again Shell", "bench-bash", @"%SystemRoot%\System32\imageres.dll,89");
         }
 
-        public static void CreateLauncher(BenchConfiguration config, AppFacade app)
+        private static void CreateLauncher(BenchConfiguration config, AppFacade app)
         {
             var label = app.Launcher;
             if (label == null) return;
@@ -569,7 +707,7 @@ namespace Mastersign.Bench
                 FileSystem.ShortcutWindowStyle.Minimized);
         }
 
-        public static void UpdateEnvironment(IBenchManager man,
+        internal static void UpdateEnvironment(IBenchManager man,
             ICollection<AppFacade> _,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
@@ -688,12 +826,6 @@ namespace Mastersign.Bench
             {
                 notify(new TaskProgress("Finished updating environment.", 1f));
             }
-        }
-
-        public static void UpdateEnvironment(IBenchManager man,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            UpdateEnvironment(man, null, notify, cancelation);
         }
 
         #endregion
@@ -876,7 +1008,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
+        private static void InstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
             if (npmExe == null || !File.Exists(npmExe))
@@ -897,7 +1029,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
+        private static void InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
         {
             var pipExe = PipExe(config, pyVer);
             if (pipExe == null)
@@ -923,7 +1055,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void InstallApps(IBenchManager man,
+        internal static void InstallApps(IBenchManager man,
             ICollection<AppFacade> apps,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
@@ -933,9 +1065,7 @@ namespace Mastersign.Bench
                 if (app.CanInstall) selectedApps.Add(app);
             }
 
-            var errors = new List<AppTaskError>();
             var cnt = 0;
-
             foreach (var app in selectedApps)
             {
                 if (cancelation.IsCanceled) break;
@@ -973,6 +1103,13 @@ namespace Mastersign.Bench
                         default:
                             throw new ArgumentOutOfRangeException("Invalid app typ '" + app.Typ + "' for app " + app.ID + ".");
                     }
+                }
+                catch (ProcessExecutionFailedException e)
+                {
+                    notify(new TaskError(
+                        string.Format("Installing app {0} failed: {1}.", app.ID, e.Message),
+                        app.ID, e.ProcessOutput, e));
+                    continue;
                 }
                 catch (Exception e)
                 {
@@ -1048,6 +1185,7 @@ namespace Mastersign.Bench
                     }
                 }
 
+                notify(new TaskProgress(string.Format("Finished installing app {0}.", app.ID), progress, app.ID));
                 app.DiscardCachedValues();
             }
 
@@ -1073,24 +1211,11 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void InstallApps(IBenchManager man,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            InstallApps(man, man.Config.Apps.ActiveApps, notify, cancelation);
-        }
-
-        public static void InstallApp(IBenchManager man,
-            string appId,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            InstallApps(man, new[] { man.Config.Apps[appId] }, notify, cancelation);
-        }
-
         #endregion
 
         #region Uninstall App
 
-        public static void UninstallGeneric(BenchConfiguration config, AppFacade app)
+        private static void UninstallGeneric(BenchConfiguration config, AppFacade app)
         {
             var appDir = app.Dir;
             if (appDir != null)
@@ -1099,7 +1224,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost,
+        private static void UninstallNodePackage(BenchConfiguration config, IProcessExecutionHost execHost,
             AppFacade app)
         {
             var npmExe = config.Apps[AppKeys.Npm].Exe;
@@ -1118,7 +1243,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost,
+        private static void UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost,
             PythonVersion pyVer, AppFacade app)
         {
             var pipExe = PipExe(config, pyVer);
@@ -1139,7 +1264,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void UninstallApps(IBenchManager man,
+        internal static void UninstallApps(IBenchManager man,
             ICollection<AppFacade> apps,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
@@ -1150,9 +1275,7 @@ namespace Mastersign.Bench
             }
             selectedApps.Reverse();
 
-            var errors = new List<AppTaskError>();
             var cnt = 0;
-
             foreach (var app in selectedApps)
             {
                 if (cancelation.IsCanceled) break;
@@ -1161,7 +1284,7 @@ namespace Mastersign.Bench
 
                 notify(new TaskProgress(
                     string.Format("Uninstalling app {0}.", app.ID),
-                    progress));
+                    progress, app.ID));
                 var customScript = app.GetCustomScriptFile("remove");
                 try
                 {
@@ -1198,7 +1321,9 @@ namespace Mastersign.Bench
                     notify(new TaskError(
                         string.Format("Uninstalling the app {0} failed.", app.ID),
                         app.ID, null, e));
+                    continue;
                 }
+                notify(new TaskProgress(string.Format("Finished uninstalling app {0}.", app.ID), progress, app.ID));
                 app.DiscardCachedValues();
             }
 
@@ -1208,7 +1333,7 @@ namespace Mastersign.Bench
             }
         }
 
-        public static void UninstallApps(IBenchManager man,
+        internal static void UninstallApps(IBenchManager man,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
             notify(new TaskProgress("Uninstalling alls apps.", 0f));
@@ -1230,13 +1355,6 @@ namespace Mastersign.Bench
                     notify(new TaskProgress("Finished uninstalling alls apps.", 1f));
                 }
             }
-        }
-
-        public static void UninstallApp(IBenchManager man,
-            string appId,
-            Action<TaskInfo> notify, Cancelation cancelation)
-        {
-            UninstallApps(man, new[] { man.Config.Apps[appId] }, notify, cancelation);
         }
 
         #endregion

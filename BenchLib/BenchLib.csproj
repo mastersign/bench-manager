@@ -50,7 +50,6 @@
     <Compile Include="AppIndexValueResolver.cs" />
     <Compile Include="AppKeys.cs" />
     <Compile Include="AppStatusIcon.cs" />
-    <Compile Include="AppTaskError.cs" />
     <Compile Include="AppTyps.cs" />
     <Compile Include="BenchConfiguration.cs" />
     <Compile Include="BenchEnvironment.cs" />

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public class TaskResult
+    public class ActionResult
     {
         public bool Success { get; private set; }
 
@@ -14,9 +14,8 @@ namespace Mastersign.Bench
 
         public TaskInfo[] Infos { get; private set; }
 
-        public TaskResult(string taskLabel, IEnumerable<TaskInfo> infos = null, bool canceled = false)
+        public ActionResult(IEnumerable<TaskInfo> infos = null, bool canceled = false)
         {
-            if (taskLabel == null) throw new ArgumentNullException("taskLabel");
             if (infos == null) throw new ArgumentNullException("infos");
 
             var infoList = new List<TaskInfo>();
