@@ -68,6 +68,7 @@
     <Compile Include="GroupedVariableResolver.cs" />
     <Compile Include="IBenchManager.cs" />
     <Compile Include="IProcessExecutionHost.cs" />
+    <Compile Include="LogLevels.cs" />
     <Compile Include="PowerShell.cs" />
     <Compile Include="ProcessExecutionFailedException.cs" />
     <Compile Include="PythonVersion.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="SurroundedHtmlLinkUrlResolver.cs" />
     <Compile Include="AsyncManager.cs" />
     <Compile Include="TaskInfo.cs" />
+    <Compile Include="TaskInfoLogger.cs" />
     <Compile Include="TaskResult.cs" />
     <Compile Include="UrlPattern.cs" />
     <Compile Include="HtmlLinkUrlResolver.cs" />

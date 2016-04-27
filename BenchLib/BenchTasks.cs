@@ -416,6 +416,15 @@ namespace Mastersign.Bench
         {
             if (tasks.Length == 0) return new ActionResult();
 
+            var logLevel = LogLevels.GuessLevel(man.Config.GetStringValue(PropertyKeys.LogLevel));
+            TaskInfoLogger logger = null;
+            if (logLevel != LogLevels.None)
+            {
+                logger = new TaskInfoLogger(
+                    man.Config.GetStringValue(PropertyKeys.LogDir),
+                    logLevel == LogLevels.Info);
+            }
+
             var infos = new List<TaskInfo>();
             var errorIds = new List<string>();
             var taskProgress = 0f;
@@ -431,6 +440,10 @@ namespace Mastersign.Bench
                     errorIds.Add(info.AppId);
                 }
                 infos.Add(info);
+                if (logger != null)
+                {
+                    logger.Log(info);
+                }
                 notify(info);
             };
 
