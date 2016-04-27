@@ -1,4 +1,6 @@
-﻿using ConEmu.WinForms;
+﻿extern alias v40async;
+using v40async::ConEmu.WinForms;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
