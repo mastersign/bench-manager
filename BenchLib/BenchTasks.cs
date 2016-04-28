@@ -526,7 +526,7 @@ namespace Mastersign.Bench
                 {
                     notify(new TaskProgress(
                         string.Format("Finished download for {0}.", e.Task.Id),
-                        (float)finished / tasks.Count));
+                        (float)finished / tasks.Count, e.Task.Id));
                 }
             };
 
