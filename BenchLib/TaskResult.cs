@@ -20,6 +20,7 @@ namespace Mastersign.Bench
 
             var infoList = new List<TaskInfo>();
             var appList = new List<string>();
+            Canceled = canceled;
             Success = true;
             foreach(var info in infos ?? new TaskInfo[0])
             {

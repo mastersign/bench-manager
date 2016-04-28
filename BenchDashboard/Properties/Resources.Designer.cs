@@ -103,6 +103,16 @@ namespace Mastersign.Bench.Dashboard.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap cancelled_48 {
+            get {
+                object obj = ResourceManager.GetObject("cancelled_48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap clear_16 {
             get {
                 object obj = ResourceManager.GetObject("clear_16", resourceCulture);
@@ -156,6 +166,16 @@ namespace Mastersign.Bench.Dashboard.Properties {
         internal static System.Drawing.Bitmap download_16 {
             get {
                 object obj = ResourceManager.GetObject("download_16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap error_48 {
+            get {
+                object obj = ResourceManager.GetObject("error_48", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -243,6 +263,26 @@ namespace Mastersign.Bench.Dashboard.Properties {
         /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ok_48 {
+            get {
+                object obj = ResourceManager.GetObject("ok_48", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap progress_36_animation {
+            get {
+                object obj = ResourceManager.GetObject("progress_36_animation", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap reinstall_16 {
             get {
                 object obj = ResourceManager.GetObject("reinstall_16", resourceCulture);
@@ -256,6 +296,36 @@ namespace Mastersign.Bench.Dashboard.Properties {
         internal static System.Drawing.Bitmap setup_16 {
             get {
                 object obj = ResourceManager.GetObject("setup_16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap stop_16 {
+            get {
+                object obj = ResourceManager.GetObject("stop_16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap stop_32 {
+            get {
+                object obj = ResourceManager.GetObject("stop_32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap stop_36_animation {
+            get {
+                object obj = ResourceManager.GetObject("stop_36_animation", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -316,6 +386,26 @@ namespace Mastersign.Bench.Dashboard.Properties {
         internal static System.Drawing.Bitmap warning_16 {
             get {
                 object obj = ResourceManager.GetObject("warning_16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap warning_36_animation {
+            get {
+                object obj = ResourceManager.GetObject("warning_36_animation", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap warning_48 {
+            get {
+                object obj = ResourceManager.GetObject("warning_48", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

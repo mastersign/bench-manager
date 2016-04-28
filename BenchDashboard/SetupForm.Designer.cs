@@ -35,6 +35,7 @@
             this.tsSeparatorDownloads = new System.Windows.Forms.ToolStripSeparator();
             this.splitterBottom = new System.Windows.Forms.Splitter();
             this.panelStatus = new System.Windows.Forms.Panel();
+            this.picState = new System.Windows.Forms.PictureBox();
             this.btnAuto = new System.Windows.Forms.Button();
             this.lblPending = new System.Windows.Forms.Label();
             this.lblPendlingLabel = new System.Windows.Forms.Label();
@@ -45,6 +46,16 @@
             this.lblTask = new System.Windows.Forms.Label();
             this.lblTaskLabel = new System.Windows.Forms.Label();
             this.gridApps = new System.Windows.Forms.DataGridView();
+            this.colIcon = new System.Windows.Forms.DataGridViewImageColumn();
+            this.colIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colTyp = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colActivated = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colExcluded = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.colStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colVersion = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colLauncher = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colComment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ctxmAppActions = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.miInstall = new System.Windows.Forms.ToolStripMenuItem();
             this.miReinstall = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,33 +84,14 @@
             this.tsmView = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRefreshView = new System.Windows.Forms.ToolStripMenuItem();
-            this.colIcon = new System.Windows.Forms.DataGridViewImageColumn();
-            this.colIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colID = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTyp = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colActivated = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.colExcluded = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.colStatus = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colVersion = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colLauncher = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colComment = new System.Windows.Forms.DataGridViewTextBoxColumn();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.panelStatus.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picState)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridApps)).BeginInit();
             this.ctxmAppActions.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // tsSeparatorDownloads
             // 
@@ -118,6 +110,7 @@
             // panelStatus
             // 
             this.panelStatus.BackColor = System.Drawing.SystemColors.Control;
+            this.panelStatus.Controls.Add(this.picState);
             this.panelStatus.Controls.Add(this.btnAuto);
             this.panelStatus.Controls.Add(this.lblPending);
             this.panelStatus.Controls.Add(this.lblPendlingLabel);
@@ -133,13 +126,23 @@
             this.panelStatus.Size = new System.Drawing.Size(684, 109);
             this.panelStatus.TabIndex = 7;
             // 
+            // picState
+            // 
+            this.picState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.picState.Location = new System.Drawing.Point(623, 12);
+            this.picState.Name = "picState";
+            this.picState.Size = new System.Drawing.Size(48, 48);
+            this.picState.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            this.picState.TabIndex = 9;
+            this.picState.TabStop = false;
+            // 
             // btnAuto
             // 
             this.btnAuto.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAuto.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.do_32;
-            this.btnAuto.Location = new System.Drawing.Point(625, 68);
+            this.btnAuto.Location = new System.Drawing.Point(623, 69);
             this.btnAuto.Name = "btnAuto";
-            this.btnAuto.Size = new System.Drawing.Size(43, 35);
+            this.btnAuto.Size = new System.Drawing.Size(49, 32);
             this.btnAuto.TabIndex = 8;
             this.btnAuto.UseVisualStyleBackColor = true;
             this.btnAuto.Click += new System.EventHandler(this.AutoHandler);
@@ -150,7 +153,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblPending.Location = new System.Drawing.Point(69, 79);
             this.lblPending.Name = "lblPending";
-            this.lblPending.Size = new System.Drawing.Size(546, 13);
+            this.lblPending.Size = new System.Drawing.Size(546, 15);
             this.lblPending.TabIndex = 7;
             this.lblPending.Text = "Nothing";
             // 
@@ -171,7 +174,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressBar.Location = new System.Drawing.Point(72, 50);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(543, 13);
+            this.progressBar.Size = new System.Drawing.Size(541, 13);
             this.progressBar.TabIndex = 5;
             // 
             // lblProgressLabel
@@ -258,6 +261,109 @@
             this.gridApps.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridApps_CellContentClick);
             this.gridApps.ColumnHeaderMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.gridApps_ColumnHeaderMouseClick);
             this.gridApps.RowContextMenuStripNeeded += new System.Windows.Forms.DataGridViewRowContextMenuStripNeededEventHandler(this.gridApps_RowContextMenuStripNeeded);
+            // 
+            // colIcon
+            // 
+            this.colIcon.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.colIcon.DataPropertyName = "StatusIcon";
+            this.colIcon.Frozen = true;
+            this.colIcon.HeaderText = "";
+            this.colIcon.Name = "colIcon";
+            this.colIcon.ReadOnly = true;
+            this.colIcon.Width = 32;
+            // 
+            // colIndex
+            // 
+            this.colIndex.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.colIndex.DataPropertyName = "Index";
+            this.colIndex.Frozen = true;
+            this.colIndex.HeaderText = "Order";
+            this.colIndex.Name = "colIndex";
+            this.colIndex.ReadOnly = true;
+            this.colIndex.ToolTipText = "The index number from the app registry.";
+            this.colIndex.Width = 62;
+            // 
+            // colID
+            // 
+            this.colID.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.colID.DataPropertyName = "ID";
+            this.colID.Frozen = true;
+            this.colID.HeaderText = "ID";
+            this.colID.Name = "colID";
+            this.colID.ReadOnly = true;
+            this.colID.ToolTipText = "The ID of the app.";
+            this.colID.Width = 43;
+            // 
+            // colTyp
+            // 
+            this.colTyp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.colTyp.DataPropertyName = "Typ";
+            this.colTyp.HeaderText = "Typ";
+            this.colTyp.Name = "colTyp";
+            this.colTyp.ReadOnly = true;
+            this.colTyp.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.colTyp.ToolTipText = "The typ of the app.";
+            this.colTyp.Width = 48;
+            // 
+            // colActivated
+            // 
+            this.colActivated.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            this.colActivated.DataPropertyName = "IsActive";
+            this.colActivated.FalseValue = "inactive";
+            this.colActivated.HeaderText = "Active";
+            this.colActivated.IndeterminateValue = "implicit";
+            this.colActivated.Name = "colActivated";
+            this.colActivated.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.colActivated.ThreeState = true;
+            this.colActivated.ToolTipText = "States whether the app is activated by the user or not.";
+            this.colActivated.TrueValue = "active";
+            this.colActivated.Width = 62;
+            // 
+            // colExcluded
+            // 
+            this.colExcluded.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
+            this.colExcluded.DataPropertyName = "IsDeactivated";
+            this.colExcluded.HeaderText = "Deactivated";
+            this.colExcluded.Name = "colExcluded";
+            this.colExcluded.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.colExcluded.ToolTipText = "States whether the app is deactivated by the user.";
+            this.colExcluded.Width = 92;
+            // 
+            // colStatus
+            // 
+            this.colStatus.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.colStatus.DataPropertyName = "ShortStatus";
+            this.colStatus.HeaderText = "Status";
+            this.colStatus.Name = "colStatus";
+            this.colStatus.ReadOnly = true;
+            this.colStatus.Width = 64;
+            // 
+            // colVersion
+            // 
+            this.colVersion.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.colVersion.DataPropertyName = "Version";
+            this.colVersion.HeaderText = "Version";
+            this.colVersion.Name = "colVersion";
+            this.colVersion.ReadOnly = true;
+            this.colVersion.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.colVersion.Width = 70;
+            // 
+            // colLauncher
+            // 
+            this.colLauncher.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.colLauncher.DataPropertyName = "Launcher";
+            this.colLauncher.HeaderText = "Launcher";
+            this.colLauncher.Name = "colLauncher";
+            this.colLauncher.ReadOnly = true;
+            this.colLauncher.Width = 79;
+            // 
+            // colComment
+            // 
+            this.colComment.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.colComment.DataPropertyName = "LongStatus";
+            this.colComment.HeaderText = "Comment";
+            this.colComment.Name = "colComment";
+            this.colComment.ReadOnly = true;
             // 
             // ctxmAppActions
             // 
@@ -389,6 +495,11 @@
             this.tsmiAuto.Text = "&Automatic Setup";
             this.tsmiAuto.Click += new System.EventHandler(this.AutoHandler);
             // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
+            // 
             // tsmiUpdateEnvironment
             // 
             this.tsmiUpdateEnvironment.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.updateenv_16;
@@ -428,6 +539,11 @@
             this.tsmiUninstallAll.Size = new System.Drawing.Size(184, 22);
             this.tsmiUninstallAll.Text = "U&ninstall Apps";
             this.tsmiUninstallAll.Click += new System.EventHandler(this.UninstallAllHandler);
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // tsmiDownloadAllResources
             // 
@@ -512,109 +628,6 @@
             this.tsmiRefreshView.Text = "&Reload Configuration";
             this.tsmiRefreshView.Click += new System.EventHandler(this.RefreshViewHandler);
             // 
-            // colIcon
-            // 
-            this.colIcon.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.colIcon.DataPropertyName = "StatusIcon";
-            this.colIcon.Frozen = true;
-            this.colIcon.HeaderText = "";
-            this.colIcon.Name = "colIcon";
-            this.colIcon.ReadOnly = true;
-            this.colIcon.Width = 32;
-            // 
-            // colIndex
-            // 
-            this.colIndex.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colIndex.DataPropertyName = "Index";
-            this.colIndex.Frozen = true;
-            this.colIndex.HeaderText = "Order";
-            this.colIndex.Name = "colIndex";
-            this.colIndex.ReadOnly = true;
-            this.colIndex.ToolTipText = "The index number from the app registry.";
-            this.colIndex.Width = 62;
-            // 
-            // colID
-            // 
-            this.colID.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colID.DataPropertyName = "ID";
-            this.colID.Frozen = true;
-            this.colID.HeaderText = "ID";
-            this.colID.Name = "colID";
-            this.colID.ReadOnly = true;
-            this.colID.ToolTipText = "The ID of the app.";
-            this.colID.Width = 43;
-            // 
-            // colTyp
-            // 
-            this.colTyp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colTyp.DataPropertyName = "Typ";
-            this.colTyp.HeaderText = "Typ";
-            this.colTyp.Name = "colTyp";
-            this.colTyp.ReadOnly = true;
-            this.colTyp.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.colTyp.ToolTipText = "The typ of the app.";
-            this.colTyp.Width = 48;
-            // 
-            // colActivated
-            // 
-            this.colActivated.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            this.colActivated.DataPropertyName = "IsActive";
-            this.colActivated.FalseValue = "inactive";
-            this.colActivated.HeaderText = "Active";
-            this.colActivated.IndeterminateValue = "implicit";
-            this.colActivated.Name = "colActivated";
-            this.colActivated.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.colActivated.ThreeState = true;
-            this.colActivated.ToolTipText = "States whether the app is activated by the user or not.";
-            this.colActivated.TrueValue = "active";
-            this.colActivated.Width = 62;
-            // 
-            // colExcluded
-            // 
-            this.colExcluded.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.ColumnHeader;
-            this.colExcluded.DataPropertyName = "IsDeactivated";
-            this.colExcluded.HeaderText = "Deactivated";
-            this.colExcluded.Name = "colExcluded";
-            this.colExcluded.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.colExcluded.ToolTipText = "States whether the app is deactivated by the user.";
-            this.colExcluded.Width = 92;
-            // 
-            // colStatus
-            // 
-            this.colStatus.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colStatus.DataPropertyName = "ShortStatus";
-            this.colStatus.HeaderText = "Status";
-            this.colStatus.Name = "colStatus";
-            this.colStatus.ReadOnly = true;
-            this.colStatus.Width = 64;
-            // 
-            // colVersion
-            // 
-            this.colVersion.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colVersion.DataPropertyName = "Version";
-            this.colVersion.HeaderText = "Version";
-            this.colVersion.Name = "colVersion";
-            this.colVersion.ReadOnly = true;
-            this.colVersion.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.colVersion.Width = 70;
-            // 
-            // colLauncher
-            // 
-            this.colLauncher.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.colLauncher.DataPropertyName = "Launcher";
-            this.colLauncher.HeaderText = "Launcher";
-            this.colLauncher.Name = "colLauncher";
-            this.colLauncher.ReadOnly = true;
-            this.colLauncher.Width = 79;
-            // 
-            // colComment
-            // 
-            this.colComment.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colComment.DataPropertyName = "LongStatus";
-            this.colComment.HeaderText = "Comment";
-            this.colComment.Name = "colComment";
-            this.colComment.ReadOnly = true;
-            // 
             // SetupForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -636,6 +649,7 @@
             this.Load += new System.EventHandler(this.SetupForm_Load);
             this.panelStatus.ResumeLayout(false);
             this.panelStatus.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picState)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridApps)).EndInit();
             this.ctxmAppActions.ResumeLayout(false);
             this.menuStrip.ResumeLayout(false);
@@ -698,5 +712,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colVersion;
         private System.Windows.Forms.DataGridViewTextBoxColumn colLauncher;
         private System.Windows.Forms.DataGridViewTextBoxColumn colComment;
+        private System.Windows.Forms.PictureBox picState;
     }
 }

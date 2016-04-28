@@ -59,6 +59,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionState.cs" />
     <Compile Include="AppEventArgs.cs" />
     <Compile Include="AppLauncherControl.cs">
       <SubType>UserControl</SubType>
@@ -174,16 +175,25 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\cached_16.png" />
+    <None Include="Resources\cancelled_48.png" />
     <Content Include="Resources\clear_16.png" />
+    <None Include="Resources\warning_36_animation.gif" />
+    <None Include="Resources\warning_48.png" />
     <EmbeddedResource Include="Resources\ConEmu.xml" />
     <Content Include="Resources\deletedownload_16.png" />
     <Content Include="Resources\download_16.png" />
     <Content Include="Resources\do_16.png" />
     <Content Include="Resources\do_32.png" />
+    <None Include="Resources\error_48.png" />
     <Content Include="Resources\install_16.png" />
     <Content Include="Resources\none_16.png" />
+    <None Include="Resources\ok_48.png" />
+    <None Include="Resources\progress_36_animation.gif" />
     <Content Include="Resources\purge_16.png" />
     <Content Include="Resources\reinstall_16.png" />
+    <None Include="Resources\stop_32.png" />
+    <None Include="Resources\stop_16.png" />
+    <None Include="Resources\stop_36_animation.gif" />
     <Content Include="Resources\task_16.png" />
     <Content Include="Resources\tolerated_16.png" />
     <Content Include="Resources\uninstall_16.png" />

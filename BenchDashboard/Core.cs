@@ -27,6 +27,8 @@ namespace Mastersign.Bench.Dashboard
 
         private bool busy;
 
+        private ActionState actionState;
+
         private Cancelation cancelation;
 
         public event EventHandler ConfigReloaded;
@@ -37,6 +39,8 @@ namespace Mastersign.Bench.Dashboard
 
         public event EventHandler BusyChanged;
 
+        public event EventHandler ActionStateChanged;
+
         private Action<TaskInfo> CatchTaskInfos(Action<TaskInfo> notify)
         {
             return info =>
@@ -45,6 +49,7 @@ namespace Mastersign.Bench.Dashboard
                 {
                     OnAppStateChanged(info.AppId);
                 }
+                if (info is TaskError) ActionState = ActionState.BusyWithErrors;
                 if (notify != null) notify(info);
             };
         }
@@ -88,10 +93,27 @@ namespace Mastersign.Bench.Dashboard
             SyncWithGui(() =>
             {
                 var handler = BusyChanged;
-                if (handler != null)
-                {
-                    handler(this, EventArgs.Empty);
-                }
+                if (handler != null) handler(this, EventArgs.Empty);
+            });
+        }
+
+        public ActionState ActionState
+        {
+            get { return actionState; }
+            set
+            {
+                if (value == actionState) return;
+                actionState = value;
+                OnActionStateChanged();
+            }
+        }
+
+        private void OnActionStateChanged()
+        {
+            SyncWithGui(() =>
+            {
+                var handler = ActionStateChanged;
+                if (handler != null) handler(this, EventArgs.Empty);
             });
         }
 
@@ -195,12 +217,25 @@ namespace Mastersign.Bench.Dashboard
         {
             if (Busy) throw new InvalidOperationException("The core is already busy.");
             cancelation = new Cancelation();
+            cancelation.Canceled += CancelationCanceledHandler;
             Busy = true;
+            ActionState = ActionState.BusyWithoutErrors;
         }
 
-        private void EndAction()
+        private void CancelationCanceledHandler(object sender, EventArgs e)
+        {
+            ActionState = ActionState.BusyCanceled;
+        }
+
+        private void EndAction(bool success)
         {
             Busy = false;
+            cancelation.Canceled -= CancelationCanceledHandler;
+            ActionState = cancelation.IsCanceled
+                ? ActionState.Canceled
+                : success
+                    ? ActionState.FinishedWithoutErrors
+                    : ActionState.FinishedWithErrors;
             cancelation = null;
         }
 
@@ -208,8 +243,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoAutoSetup, notify, cancelation).ConfigureAwait(false);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Installing Apps", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Installing Apps", "Finished.");
             }
@@ -229,8 +268,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoDownloadAppResources, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Downloading App Resources", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Downloading App Resources", "Finished.");
             }
@@ -250,7 +293,7 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoDownloadAppResources, appId, notify, cancelation);
-            EndAction();
+            EndAction(result.Success);
             if (!result.Success)
             {
                 UI.ShowWarning("Downloading App Resource",
@@ -267,8 +310,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoDeleteAppResources, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Deleting App Resources", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Deleting App Resources", "Finished.");
             }
@@ -288,7 +335,7 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoDeleteAppResources, appId, notify, cancelation);
-            EndAction();
+            EndAction(result.Success);
             if (!result.Success)
             {
                 UI.ShowWarning("Deleting App Resource",
@@ -305,8 +352,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoInstallApps, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Installing Apps", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Installing Apps", "Finished.");
             }
@@ -326,7 +377,7 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoInstallApps, appId, notify, cancelation);
-            EndAction();
+            EndAction(result.Success);
             if (!result.Success)
             {
                 UI.ShowWarning("Installing App",
@@ -343,8 +394,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoUninstallApps, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Uninstalling Apps", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Uninstalling Apps", "Finished.");
             }
@@ -364,7 +419,7 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoUninstallApps, appId, notify, cancelation);
-            EndAction();
+            EndAction(result.Success);
             if (!result.Success)
             {
                 UI.ShowWarning("Uninstalling App",
@@ -381,8 +436,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoReinstallApps, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Reinstalling Apps", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Reinstalling Apps", "Finished.");
             }
@@ -402,7 +461,7 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoReinstallApps, appId, notify, cancelation);
-            EndAction();
+            EndAction(result.Success);
             if (!result.Success)
             {
                 UI.ShowWarning("Reinstall App",
@@ -419,8 +478,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoUpgradeApps, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Upgrading Apps", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Upgrading Apps", "Finished.");
             }
@@ -440,7 +503,7 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoUpgradeApps, appId, notify, cancelation);
-            EndAction();
+            EndAction(result.Success);
             if (!result.Success)
             {
                 UI.ShowWarning("Upgrade App",
@@ -457,8 +520,12 @@ namespace Mastersign.Bench.Dashboard
         {
             BeginAction();
             var result = await RunTaskAsync(BenchTasks.DoUpdateEnvironment, notify, cancelation);
-            EndAction();
-            if (result.Success)
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Updating Environment", "Canceled.");
+            }
+            else if (result.Success)
             {
                 UI.ShowInfo("Updating Environment", "Finished.");
             }

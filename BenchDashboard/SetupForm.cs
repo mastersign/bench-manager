@@ -10,6 +10,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Mastersign.Bench.Dashboard.Properties;
 
 namespace Mastersign.Bench.Dashboard
 {
@@ -33,6 +34,7 @@ namespace Mastersign.Bench.Dashboard
             core.AllAppStateChanged += ConfigReloadedHandler;
             core.AppStateChanged += AppStateChangedHandler;
             core.BusyChanged += CoreBusyChangedHandler;
+            core.ActionStateChanged += CoreActionStateChangedHandler;
             InitializeComponent();
             InitializeConsole();
             gridApps.AutoGenerateColumns = false;
@@ -144,7 +146,37 @@ namespace Mastersign.Bench.Dashboard
             {
                 mi.Enabled = notBusy;
             }
-            btnAuto.Enabled = notBusy;
+            btnAuto.Image = notBusy
+                            ? Resources.do_32
+                            : Resources.stop_32;
+        }
+
+        private void CoreActionStateChangedHandler(object sender, EventArgs e)
+        {
+            switch (core.ActionState)
+            {
+                case ActionState.BusyWithoutErrors:
+                    picState.Image = Resources.progress_36_animation;
+                    break;
+                case ActionState.BusyCanceled:
+                    picState.Image = Resources.stop_36_animation;
+                    break;
+                case ActionState.BusyWithErrors:
+                    picState.Image = Resources.warning_36_animation;
+                    break;
+                case ActionState.FinishedWithoutErrors:
+                    picState.Image = Resources.ok_48;
+                    break;
+                case ActionState.FinishedWithErrors:
+                    picState.Image = Resources.warning_48;
+                    break;
+                case ActionState.Canceled:
+                    picState.Image = Resources.cancelled_48;
+                    break;
+                default:
+                    picState.Image = null;
+                    break;
+            }
         }
 
         private void InitializeConsole()
@@ -314,8 +346,16 @@ namespace Mastersign.Bench.Dashboard
 
         private async void AutoHandler(object sender, EventArgs e)
         {
-            AnnounceTask("Automatic Setup");
-            await core.AutoSetupAsync(TaskInfoHandler);
+            if (!core.Busy)
+            {
+                AnnounceTask("Automatic Setup");
+                await core.AutoSetupAsync(TaskInfoHandler);
+            }
+            else
+            {
+                var cancelation = core.Cancelation;
+                if (cancelation != null) cancelation.Cancel();
+            }
         }
 
         private async void DownloadAllHandler(object sender, EventArgs e)
