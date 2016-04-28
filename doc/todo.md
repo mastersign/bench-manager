@@ -35,6 +35,7 @@
 	+ Uninstall all responsibilities before uninstalling an app
 	  (with the exception of execution environments like NodeJS and Python)
 	+ inform the user when installing / uninstalling recursively
+* About dialog with acknowledgments
 
 ## Command Line Interface
 
