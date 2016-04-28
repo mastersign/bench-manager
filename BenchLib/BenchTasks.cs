@@ -400,7 +400,7 @@ namespace Mastersign.Bench
             Action<TaskInfo> notify, Cancelation cancelation)
         {
             return RunTasks(man,
-                (ICollection<AppFacade>)null,
+                new AppFacade[0],
                 notify, cancelation,
                 UpdateEnvironment);
         }
