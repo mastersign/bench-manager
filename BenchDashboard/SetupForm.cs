@@ -145,6 +145,7 @@ namespace Mastersign.Bench.Dashboard
                 foreach (var app in core.Config.Apps)
                 {
                     cnt++;
+                    app.LoadCachedValues();
                     var wrapper = new AppWrapper(app, cnt);
                     list.Add(wrapper);
                     appLookup[app.ID] = wrapper;
