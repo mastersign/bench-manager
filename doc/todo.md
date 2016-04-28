@@ -30,10 +30,10 @@
 * ~~Move checks into `AppFacade`~~
 * Allow cancelation by user
 * Clean cancelation in case the BenchManager process is exited
-* Regard dependencies
-	+ Install all dependencies recursively before installing an app
-	+ Uninstall all responsibilities before uninstalling an app
-	  (with the exception of execution environments like NodeJS and Python)
+* ~~Regard dependencies~~
+	+ ~~Install all dependencies recursively before installing an app~~
+	+ ~~Uninstall all responsibilities before uninstalling an app
+	  (with the exception of execution environments like NodeJS and Python)~~
 	+ inform the user when installing / uninstalling recursively
 * About dialog with acknowledgments
 
