@@ -1078,6 +1078,21 @@ namespace Mastersign.Bench
                 if (app.CanInstall) selectedApps.Add(app);
             }
 
+            try
+            {
+                FileSystem.AsureDir(
+                    man.Config.GetStringValue(PropertyKeys.LauncherScriptDir));
+                FileSystem.AsureDir(
+                    man.Config.GetStringValue(PropertyKeys.LauncherDir));
+                FileSystem.AsureDir(
+                    man.Config.GetStringValue(PropertyKeys.AppAdornmentBaseDir));
+            }
+            catch (Exception e)
+            {
+                notify(new TaskError("Preparing directories failed.", null, null, e));
+                return;
+            }
+
             var cnt = 0;
             foreach (var app in selectedApps)
             {
