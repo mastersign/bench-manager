@@ -97,16 +97,6 @@ namespace Mastersign.Bench
             set { UpdateValue(PropertyKeys.AppDependencies, value); }
         }
 
-        public void AddDependency(string app)
-        {
-            Dependencies = AddToSet(Dependencies, app);
-        }
-
-        public void RemoveDependency(string app)
-        {
-            Dependencies = RemoveFromSet(Dependencies, app);
-        }
-
         public bool IsActivated { get { return BoolValue(PropertyKeys.AppIsActivated); } }
 
         public bool IsDeactivated { get { return BoolValue(PropertyKeys.AppIsDeactivated); } }
@@ -708,6 +698,11 @@ namespace Mastersign.Bench
             SetupAutoDependencies();
             SetupAdornmentForRegistryIsolation();
             SetupAdornmentPath();
+        }
+
+        public void AddDependency(string app)
+        {
+            Dependencies = AddToSet(Dependencies, app);
         }
 
         private void SetupAutoDependencies()
