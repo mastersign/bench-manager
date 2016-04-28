@@ -469,6 +469,7 @@ namespace Mastersign.Bench.Dashboard
 
         private void gridApps_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (core.Busy) return;
             if (e.ColumnIndex < 0 || e.RowIndex < 0) return;
             var col = gridApps.Columns[e.ColumnIndex];
             if (col == colActivated || col == colExcluded)
