@@ -572,6 +572,9 @@ namespace Mastersign.Bench
             }
             else
             {
+                notify(new TaskProgress(
+                    string.Format("Queued {0} downloads.", tasks.Count),
+                    0f));
                 endEvent.WaitOne();
             }
 
