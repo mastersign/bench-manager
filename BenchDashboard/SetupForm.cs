@@ -52,6 +52,7 @@ namespace Mastersign.Bench.Dashboard
             InitializeDownloadList();
             InitializeBounds();
             InitializeAppList();
+            UpdatePendingCounts();
         }
 
         private void InitializeBounds()
@@ -67,6 +68,7 @@ namespace Mastersign.Bench.Dashboard
         private void ConfigReloadedHandler(object sender, EventArgs e)
         {
             InitializeAppList();
+            UpdatePendingCounts();
         }
 
         private void AllAppStateChangedHandler(object sender, EventArgs e)
@@ -75,11 +77,13 @@ namespace Mastersign.Bench.Dashboard
             {
                 NotifyAppStateChange(app.ID);
             }
+            UpdatePendingCounts();
         }
 
         private void AppStateChangedHandler(object sender, AppEventArgs e)
         {
             NotifyAppStateChange(e.ID);
+            UpdatePendingCounts();
         }
 
         private void NotifyAppStateChange(string appId)
@@ -90,6 +94,39 @@ namespace Mastersign.Bench.Dashboard
                 wrapper.App.DiscardCachedValues();
                 wrapper.NotifyChanges();
             }
+        }
+
+        private void UpdatePendingCounts()
+        {
+            var pendingDownloads = 0;
+            var pendingInstalls = 0;
+            var pendingUninstalls = 0;
+            foreach (var app in core.Config.Apps)
+            {
+                if (app.IsActive && app.CanDownloadResource) pendingDownloads++;
+                if (app.IsActive && app.CanInstall) pendingInstalls++;
+                if (!app.IsActive && app.CanUninstall) pendingUninstalls++;
+            }
+            var list = new List<string>();
+            if (pendingUninstalls > 0)
+            {
+                list.Add(string.Format("{0} {1}",
+                    pendingUninstalls,
+                    pendingUninstalls == 1 ? "Uninstall" : "Uninstalls"));
+            }
+            if (pendingDownloads > 0)
+            {
+                list.Add(string.Format("{0} {1}",
+                    pendingDownloads,
+                    pendingDownloads == 1 ? "Download" : "Downloads"));
+            }
+            if (pendingInstalls > 0)
+            {
+                list.Add(string.Format("{0} {1}",
+                    pendingInstalls,
+                    pendingInstalls == 1 ? "Install" : "Installs"));
+            }
+            lblPending.Text = list.Count > 0 ? string.Join(", ", list) : "Nothing";
         }
 
         private void CoreBusyChangedHandler(object sender, EventArgs e)
