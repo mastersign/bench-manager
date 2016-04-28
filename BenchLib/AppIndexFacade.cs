@@ -9,6 +9,19 @@ namespace Mastersign.Bench
     {
         private readonly IConfiguration AppIndex;
 
+        private Dictionary<string, AppFacade> cache = new Dictionary<string, AppFacade>();
+
+        private AppFacade GetAppFacade(string appName)
+        {
+            AppFacade app;
+            if (!cache.TryGetValue(appName, out app))
+            {
+                app = new AppFacade(AppIndex, appName);
+                cache.Add(appName, app);
+            }
+            return app;
+        }
+
         public AppIndexFacade(IConfiguration appIndex)
         {
             AppIndex = appIndex;
@@ -16,7 +29,7 @@ namespace Mastersign.Bench
 
         public AppFacade this[string appName]
         {
-            get { return Exists(appName) ? new AppFacade(AppIndex, appName) : null; }
+            get { return Exists(appName) ? GetAppFacade(appName) : null; }
         }
 
         public bool Exists(string appName)
@@ -30,7 +43,7 @@ namespace Mastersign.Bench
             var result = new List<AppFacade>();
             foreach (var appName in appNames)
             {
-                result.Add(new AppFacade(AppIndex, appName));
+                result.Add(GetAppFacade(appName));
             }
             return result.ToArray();
         }
@@ -42,7 +55,7 @@ namespace Mastersign.Bench
                 var result = new List<AppFacade>();
                 foreach (var appName in AppIndex.Groups())
                 {
-                    var app = new AppFacade(AppIndex, appName);
+                    var app = GetAppFacade(appName);
                     if (app.IsActive)
                     {
                         result.Add(app);
@@ -59,7 +72,7 @@ namespace Mastersign.Bench
                 var result = new List<AppFacade>();
                 foreach (var appName in AppIndex.Groups())
                 {
-                    var app = new AppFacade(AppIndex, appName);
+                    var app = GetAppFacade(appName);
                     if (!app.IsActive)
                     {
                         result.Add(app);
@@ -73,7 +86,7 @@ namespace Mastersign.Bench
         {
             foreach (var appName in AppIndex.Groups())
             {
-                yield return new AppFacade(AppIndex, appName);
+                yield return GetAppFacade(appName);
             }
         }
 
