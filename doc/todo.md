@@ -28,7 +28,8 @@
 	+ ~~Reinstall app~~
 	+ ~~Upgrade app~~
 * ~~Move checks into `AppFacade`~~
-* Allow cancelation by user
+* ~~Allow cancelation by user~~3
+* Prevent setup window from closing until cancelation is through
 * Clean cancelation in case the BenchManager process is exited
 * ~~Regard dependencies~~
 	+ ~~Install all dependencies recursively before installing an app~~
