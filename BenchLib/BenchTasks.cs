@@ -507,6 +507,13 @@ namespace Mastersign.Bench
             var errorCnt = 0;
             var endEvent = new ManualResetEvent(false);
 
+            EventHandler<DownloadEventArgs> downloadStartedHandler = (o, e) =>
+            {
+                notify(new TaskProgress(
+                    string.Format("Started download for {0} ...", e.Task.Id),
+                    (float)finished / tasks.Count, e.Task.Id, e.Task.Url.ToString()));
+            };
+
             EventHandler<DownloadEventArgs> downloadEndedHandler = (o, e) =>
             {
                 finished++;
@@ -535,6 +542,7 @@ namespace Mastersign.Bench
                 notify(new TaskProgress("Finished downloads.", 1f));
                 endEvent.Set();
             });
+            man.Downloader.DownloadStarted += downloadStartedHandler;
             man.Downloader.DownloadEnded += downloadEndedHandler;
             man.Downloader.WorkFinished += workFinishedHandler;
 
