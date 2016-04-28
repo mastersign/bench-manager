@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mastersign.Bench
 {
-    public abstract class TaskInfo
+    public class TaskInfo
     {
         public DateTime Timestamp { get; private set; }
 
@@ -12,15 +12,15 @@ namespace Mastersign.Bench
 
         public string Message { get; private set; }
 
-        public string ProcessOutput { get; private set; }
+        public string DetailedMessage { get; private set; }
 
-        protected TaskInfo(string message, string appId, string processOutput)
+        public TaskInfo(string message, string appId = null, string detailedMessage = null)
         {
             if (message == null) throw new ArgumentNullException("message");
             Timestamp = DateTime.Now;
             AppId = appId;
             Message = message;
-            ProcessOutput = processOutput;
+            DetailedMessage = detailedMessage;
         }
     }
 
@@ -28,8 +28,8 @@ namespace Mastersign.Bench
     {
         public float Progress { get; private set; }
 
-        public TaskProgress(string message, float progress, string appId = null, string processOutput = null)
-            : base(message, appId, processOutput)
+        public TaskProgress(string message, float progress, string appId = null, string detailedMessage = null)
+            : base(message, appId, detailedMessage)
         {
             Progress = progress;
         }
@@ -40,7 +40,7 @@ namespace Mastersign.Bench
                 Message,
                 globalBase + Progress * factor,
                 AppId,
-                ProcessOutput);
+                DetailedMessage);
         }
     }
 
@@ -48,8 +48,8 @@ namespace Mastersign.Bench
     {
         public Exception Exception { get; private set; }
 
-        public TaskError(string message, string appId = null, string processOutput = null, Exception exception = null)
-            : base(message, appId, processOutput)
+        public TaskError(string message, string appId = null, string detailedMessage = null, Exception exception = null)
+            : base(message, appId, detailedMessage)
         {
             Exception = exception;
         }
