@@ -170,6 +170,8 @@ namespace Mastersign.Bench.Dashboard
 
         private void UpdateProgressBar(float progress)
         {
+            if (float.IsNaN(progress) || float.IsInfinity(progress)) progress = 0f;
+            progress = Math.Min(1f, Math.Max(0f, progress));
             progressBar.Value = progressBar.Minimum + (int)((progressBar.Maximum - progressBar.Minimum) * progress);
         }
 
