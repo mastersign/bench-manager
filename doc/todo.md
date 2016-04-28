@@ -14,7 +14,6 @@
 * ~~Fix progress bar~~
 * ~~Add app ID to progress to allow instant updates of individual apps~~
 * ~~Add detailed exception info to `AppTaskError`~~
-* Allow the user to inspect collected errors of the last action
 * ~~Catch output of external processes during task execution~~
 * ~~Write log for individual apps~~
 
@@ -39,15 +38,15 @@
 
 ## Command Line Interface
 
-* clean-up `bench-ctl` and PS actions
+* ~~clean-up `bench-ctl` and PS actions~~
 
 ## Bootstrapping
 
 * clear setup dialog for first configuration
+* find elegant way to incorporate BenchManager binaries and libraries 
 * alternative setup strategy without BenchManager (pure command line setup)
 * make git SSH support optional
 * make git optional
-* find elegant way to incorporate BenchManager binaries and libraries 
 
 ## Documentation
 
