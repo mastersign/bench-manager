@@ -539,7 +539,6 @@ namespace Mastersign.Bench
                 {
                     app.DiscardCachedValues();
                 }
-                notify(new TaskProgress("Finished downloads.", 1f));
                 endEvent.Set();
             });
             man.Downloader.DownloadStarted += downloadStartedHandler;
