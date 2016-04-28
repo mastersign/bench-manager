@@ -422,7 +422,7 @@ namespace Mastersign.Bench
             {
                 logger = new TaskInfoLogger(
                     man.Config.GetStringValue(PropertyKeys.LogDir),
-                    logLevel == LogLevels.Info);
+                    logLevel == LogLevels.Error);
             }
 
             var infos = new List<TaskInfo>();
