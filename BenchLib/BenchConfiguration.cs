@@ -103,6 +103,7 @@ namespace Mastersign.Bench
 
             AutomaticConfiguration();
             AutomaticActivation();
+            RecordResponsibilities();
         }
 
         private void AutomaticConfiguration()
@@ -153,6 +154,14 @@ namespace Mastersign.Bench
                     Debug.WriteLine(string.Format("Deactivating app '{0}'", appName));
                     Apps[appName].Deactivate();
                 }
+            }
+        }
+
+        private void RecordResponsibilities()
+        {
+            foreach(var app in Apps)
+            {
+                app.TrackResponsibilities();
             }
         }
 

@@ -32,6 +32,13 @@ namespace Mastersign.Bench
             get { return Exists(appName) ? GetAppFacade(appName) : null; }
         }
 
+        public ICollection<AppFacade> GetApps(IEnumerable<string> appNames)
+        {
+            var result = new List<AppFacade>();
+            foreach (var appName in appNames) result.Add(GetAppFacade(appName));
+            return result;
+        }
+
         public bool Exists(string appName)
         {
             return AppIndex.ContainsGroup(appName);

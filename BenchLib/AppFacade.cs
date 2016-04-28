@@ -97,6 +97,12 @@ namespace Mastersign.Bench
             set { UpdateValue(PropertyKeys.AppDependencies, value); }
         }
 
+        public string[] Responsibilities
+        {
+            get { return ListValue(PropertyKeys.AppResponsibilities); }
+            set { UpdateValue(PropertyKeys.AppResponsibilities, value); }
+        }
+
         public bool IsActivated { get { return BoolValue(PropertyKeys.AppIsActivated); } }
 
         public bool IsDeactivated { get { return BoolValue(PropertyKeys.AppIsDeactivated); } }
@@ -210,6 +216,44 @@ namespace Mastersign.Bench
         public string[] LauncherArguments { get { return ListValue(PropertyKeys.AppLauncherArguments); } }
 
         public string LauncherIcon { get { return StringValue(PropertyKeys.AppLauncherIcon); } }
+
+        #region Recursive Discovery
+
+        public IList<string> FindAllDependencies()
+        {
+            return FindAppsRecursively(PropertyKeys.AppDependencies);
+        }
+
+        public IList<string> FindAllResponsibilities()
+        {
+            return FindAppsRecursively(PropertyKeys.AppResponsibilities);
+        }
+
+        private IList<string> FindAppsRecursively(string listPropertyName)
+        {
+            // HashSet<string> would be more appropriate, but it is not contained in .NET 2.0
+            var hashset = new Dictionary<string, bool>();
+            hashset.Add(ID, false);
+            TrackIdList(ID, listPropertyName, hashset);
+            var result = new List<string>();
+            foreach (var appName in AppIndex.Groups())
+            {
+                if (hashset.ContainsKey(appName)) result.Add(appName);
+            }
+            return result;
+        }
+
+        private void TrackIdList(string appName, string listPropertyName, IDictionary<string, bool> hashset)
+        {
+            foreach (var dependency in AppIndex.GetStringListGroupValue(appName, listPropertyName))
+            {
+                if (hashset.ContainsKey(dependency)) continue;
+                hashset.Add(dependency, true);
+                TrackIdList(dependency, listPropertyName, hashset);
+            }
+        }
+
+        #endregion
 
         #region File Discovery
 
@@ -700,7 +744,7 @@ namespace Mastersign.Bench
             SetupAdornmentPath();
         }
 
-        public void AddDependency(string app)
+        private void AddDependency(string app)
         {
             Dependencies = AddToSet(Dependencies, app);
         }
@@ -718,6 +762,16 @@ namespace Mastersign.Bench
                 case AppTyps.Python3Package:
                     AddDependency(AppKeys.Python3);
                     break;
+            }
+        }
+
+        public void TrackResponsibilities()
+        {
+            foreach (var dependency in Dependencies)
+            {
+                var oldSet = AppIndex.GetStringListGroupValue(dependency, PropertyKeys.AppResponsibilities);
+                var newSet = AddToSet(oldSet, ID);
+                AppIndex.SetGroupValue(dependency, PropertyKeys.AppResponsibilities, newSet);
             }
         }
 

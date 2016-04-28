@@ -312,8 +312,11 @@ namespace Mastersign.Bench
             string appId,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
+            var app = man.Config.Apps[appId];
+            if (app == null) throw new ArgumentException("App not found: " + appId, "appId");
+            var dependencies = man.Config.Apps.GetApps(app.FindAllDependencies());
             return RunTasks(man,
-                appId,
+                dependencies,
                 notify, cancelation,
                 DownloadAppResources,
                 InstallApps);
@@ -332,8 +335,11 @@ namespace Mastersign.Bench
             string appId,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
+            var app = man.Config.Apps[appId];
+            if (app == null) throw new ArgumentException("App not found: " + appId, "appId");
+            var responsibilities = man.Config.Apps.GetApps(app.FindAllResponsibilities());
             return RunTasks(man,
-                appId,
+                responsibilities,
                 notify, cancelation,
                 UninstallApps);
         }
@@ -353,8 +359,17 @@ namespace Mastersign.Bench
             string appId,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
+            var app = man.Config.Apps[appId];
+            if (app == null) throw new ArgumentException("App not found: " + appId, "appId");
+            var dependencies = man.Config.Apps.GetApps(app.FindAllDependencies());
+            var responsibilities = man.Config.Apps.GetApps(app.FindAllResponsibilities());
             return RunTasks(man,
-                appId,
+                new ICollection<AppFacade>[]
+                {
+                    dependencies,
+                    responsibilities,
+                    dependencies
+                },
                 notify, cancelation,
                 DownloadAppResources,
                 UninstallApps,
@@ -387,8 +402,18 @@ namespace Mastersign.Bench
             string appId,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
+            var app = man.Config.Apps[appId];
+            if (app == null) throw new ArgumentException("App not found: " + appId, "appId");
+            var dependencies = man.Config.Apps.GetApps(app.FindAllDependencies());
+            var responsibilities = man.Config.Apps.GetApps(app.FindAllResponsibilities());
             return RunTasks(man,
-                appId,
+                new ICollection<AppFacade>[]
+                {
+                    new [] { app },
+                    dependencies,
+                    responsibilities,
+                    dependencies
+                },
                 notify, cancelation,
                 DeleteAppResources,
                 DownloadAppResources,
