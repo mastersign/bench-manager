@@ -50,6 +50,7 @@
       <Aliases>v40async</Aliases>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -118,6 +119,9 @@
     <Compile Include="Vendor\IconExtractor\IconExtractor.cs" />
     <Compile Include="Vendor\IconExtractor\IconUtil.cs" />
     <Compile Include="Vendor\IconExtractor\NativeMethods.cs" />
+    <Compile Include="Vendor\MarkdownSharp\IExtensionInterface.cs" />
+    <Compile Include="Vendor\MarkdownSharp\Markdown.cs" />
+    <Compile Include="Vendor\MarkdownSharp\MarkdownOptions.cs" />
     <Compile Include="WinFormsUserInterface.cs" />
     <EmbeddedResource Include="AppLauncherControl.resx">
       <DependentUpon>AppLauncherControl.cs</DependentUpon>
