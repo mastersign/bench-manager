@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
             System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+            System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SetupForm));
             this.tsSeparatorDownloads = new System.Windows.Forms.ToolStripSeparator();
             this.splitterBottom = new System.Windows.Forms.Splitter();
@@ -82,11 +83,13 @@
             this.tsmiEditActivationList = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditDeactivationList = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmView = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowAppIndex = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowCustomAppIndex = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRefreshView = new System.Windows.Forms.ToolStripMenuItem();
-            this.tsmiShowAppRepo = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.panelStatus.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picState)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.gridApps)).BeginInit();
@@ -103,6 +106,11 @@
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
             toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(202, 6);
             // 
             // tsSeparatorDownloads
             // 
@@ -608,12 +616,28 @@
             // tsmView
             // 
             this.tsmView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiShowAppRepo,
+            this.tsmiShowAppIndex,
+            this.tsmiShowCustomAppIndex,
+            toolStripSeparator1,
             this.tsmiAlwaysShowDownloads,
             this.tsmiRefreshView});
             this.tsmView.Name = "tsmView";
             this.tsmView.Size = new System.Drawing.Size(44, 20);
             this.tsmView.Text = "&View";
+            // 
+            // tsmiShowAppIndex
+            // 
+            this.tsmiShowAppIndex.Name = "tsmiShowAppIndex";
+            this.tsmiShowAppIndex.Size = new System.Drawing.Size(205, 22);
+            this.tsmiShowAppIndex.Text = "A&pp Repository";
+            this.tsmiShowAppIndex.Click += new System.EventHandler(this.ShowAppIndexHandler);
+            // 
+            // tsmiShowCustomAppIndex
+            // 
+            this.tsmiShowCustomAppIndex.Name = "tsmiShowCustomAppIndex";
+            this.tsmiShowCustomAppIndex.Size = new System.Drawing.Size(205, 22);
+            this.tsmiShowCustomAppIndex.Text = "&Custom Apps";
+            this.tsmiShowCustomAppIndex.Click += new System.EventHandler(this.ShowCustomAppIndexHandler);
             // 
             // tsmiAlwaysShowDownloads
             // 
@@ -629,13 +653,6 @@
             this.tsmiRefreshView.Size = new System.Drawing.Size(205, 22);
             this.tsmiRefreshView.Text = "&Reload Configuration";
             this.tsmiRefreshView.Click += new System.EventHandler(this.RefreshViewHandler);
-            // 
-            // tsmiShowAppRepo
-            // 
-            this.tsmiShowAppRepo.Name = "tsmiShowAppRepo";
-            this.tsmiShowAppRepo.Size = new System.Drawing.Size(205, 22);
-            this.tsmiShowAppRepo.Text = "A&pp Repository";
-            this.tsmiShowAppRepo.Click += new System.EventHandler(this.tsmiShowAppRepo_Click);
             // 
             // SetupForm
             // 
@@ -722,6 +739,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colLauncher;
         private System.Windows.Forms.DataGridViewTextBoxColumn colComment;
         private System.Windows.Forms.PictureBox picState;
-        private System.Windows.Forms.ToolStripMenuItem tsmiShowAppRepo;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowAppIndex;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowCustomAppIndex;
     }
 }

@@ -527,9 +527,18 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
-        private void tsmiShowAppRepo_Click(object sender, EventArgs e)
+        private void ShowAppIndexHandler(object sender, EventArgs e)
         {
+            var viewer = new MarkdownViewer(core);
+            viewer.LoadMarkdown(core.Config.GetStringValue(PropertyKeys.AppIndexFile), "App Repository");
+            viewer.Show(core.GuiContext);
+        }
 
+        private void ShowCustomAppIndexHandler(object sender, EventArgs e)
+        {
+            var viewer = new MarkdownViewer(core);
+            viewer.LoadMarkdown(core.Config.GetStringValue(PropertyKeys.CustomAppIndexFile), "Custom Apps");
+            viewer.Show(core.GuiContext);
         }
     }
 }
