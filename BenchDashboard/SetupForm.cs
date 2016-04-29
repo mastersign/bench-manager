@@ -526,5 +526,10 @@ namespace Mastersign.Bench.Dashboard
                 }
             }
         }
+
+        private void tsmiShowAppRepo_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

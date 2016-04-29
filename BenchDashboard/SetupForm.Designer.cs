@@ -84,6 +84,7 @@
             this.tsmView = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRefreshView = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiShowAppRepo = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.panelStatus.SuspendLayout();
@@ -92,6 +93,16 @@
             this.ctxmAppActions.SuspendLayout();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // tsSeparatorDownloads
             // 
@@ -495,11 +506,6 @@
             this.tsmiAuto.Text = "&Automatic Setup";
             this.tsmiAuto.Click += new System.EventHandler(this.AutoHandler);
             // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
-            // 
             // tsmiUpdateEnvironment
             // 
             this.tsmiUpdateEnvironment.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.updateenv_16;
@@ -539,11 +545,6 @@
             this.tsmiUninstallAll.Size = new System.Drawing.Size(184, 22);
             this.tsmiUninstallAll.Text = "U&ninstall Apps";
             this.tsmiUninstallAll.Click += new System.EventHandler(this.UninstallAllHandler);
-            // 
-            // toolStripSeparator3
-            // 
-            toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
             // 
             // tsmiDownloadAllResources
             // 
@@ -607,6 +608,7 @@
             // tsmView
             // 
             this.tsmView.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsmiShowAppRepo,
             this.tsmiAlwaysShowDownloads,
             this.tsmiRefreshView});
             this.tsmView.Name = "tsmView";
@@ -627,6 +629,13 @@
             this.tsmiRefreshView.Size = new System.Drawing.Size(205, 22);
             this.tsmiRefreshView.Text = "&Reload Configuration";
             this.tsmiRefreshView.Click += new System.EventHandler(this.RefreshViewHandler);
+            // 
+            // tsmiShowAppRepo
+            // 
+            this.tsmiShowAppRepo.Name = "tsmiShowAppRepo";
+            this.tsmiShowAppRepo.Size = new System.Drawing.Size(205, 22);
+            this.tsmiShowAppRepo.Text = "A&pp Repository";
+            this.tsmiShowAppRepo.Click += new System.EventHandler(this.tsmiShowAppRepo_Click);
             // 
             // SetupForm
             // 
@@ -713,5 +722,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colLauncher;
         private System.Windows.Forms.DataGridViewTextBoxColumn colComment;
         private System.Windows.Forms.PictureBox picState;
+        private System.Windows.Forms.ToolStripMenuItem tsmiShowAppRepo;
     }
 }
