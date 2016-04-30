@@ -150,7 +150,7 @@ namespace Mastersign.Bench
                 "Run-CustomScript.ps1");
             var result = PowerShell.RunScript(new BenchEnvironment(config), execHost,
                 config.BenchRootDir, customScriptRunner,
-                path, PowerShell.FormatStringList(args));
+                CommandLine.EscapeArgument(path), PowerShell.FormatStringList(args));
             if (result.ExitCode != 0)
             {
                 throw new ProcessExecutionFailedException("Executing custom script failed.",
@@ -171,7 +171,7 @@ namespace Mastersign.Bench
                 "Run-CustomScript.ps1");
             var result = PowerShell.RunScript(new BenchEnvironment(config), execHost,
                 config.BenchRootDir, customScriptRunner,
-                path, PowerShell.FormatStringList(args));
+                CommandLine.EscapeArgument(path), PowerShell.FormatStringList(args));
             if (result.ExitCode != 0)
             {
                 throw new ProcessExecutionFailedException("Executing global custom script failed.",

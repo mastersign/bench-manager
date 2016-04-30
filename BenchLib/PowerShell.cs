@@ -27,7 +27,7 @@ namespace Mastersign.Bench
         public static ProcessExecutionResult RunScript(BenchEnvironment env, IProcessExecutionHost execHost, string cwd, string script, params string[] args)
         {
             var command = Convert.ToBase64String(Encoding.Unicode.GetBytes(
-                string.Format("{0} {1}", script, string.Join(" ", args))));
+                string.Format("& \"{0}\" {1}", script, string.Join(" ", args))));
             return execHost.RunProcess(env, cwd, Executable,
                 CommandLine.FormatArgumentList(
                     "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Unrestricted",
