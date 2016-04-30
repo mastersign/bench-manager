@@ -983,7 +983,13 @@ namespace Mastersign.Bench
                 try
                 {
                     Run7zExtract(config, execHost, archiveFile, tmpDir);
-                    // extracting the compressed file succeeded, extracting tar
+                }
+                catch (ProcessExecutionFailedException)
+                {
+                    // ignore warnings during tar extraction
+                }
+                try
+                {
                     var tarFile = Path.Combine(tmpDir, Path.GetFileNameWithoutExtension(archiveFile));
                     Run7zExtract(config, execHost, tarFile, targetDir);
                 }
