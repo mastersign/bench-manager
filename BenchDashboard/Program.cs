@@ -30,6 +30,17 @@ namespace Mastersign.Bench.Dashboard
                     MessageBoxIcon.Warning);
                 return 1;
             }
+            if (!Directory.Exists(rootPath))
+            {
+                MessageBox.Show(
+                    "Initialization failed. Root path of bench not found."
+                    + Environment.NewLine + Environment.NewLine
+                    + rootPath,
+                    "Bench",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return 1;
+            }
             Core = new Core(rootPath);
 
             var mainForm = new MainForm(Core);
