@@ -39,6 +39,8 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +81,36 @@
     <Compile Include="TaskInfo.cs" />
     <Compile Include="TaskInfoLogger.cs" />
     <Compile Include="TaskResult.cs" />
+    <Compile Include="UI\ExistingConfigStepControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\ExistingConfigStepControl.Designer.cs">
+      <DependentUpon>ExistingConfigStepControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\InitializeWizzardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\InitializeWizzardForm.Designer.cs">
+      <DependentUpon>InitializeWizzardForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\ProxyStepControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\ProxyStepControl.Designer.cs">
+      <DependentUpon>ProxyStepControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\UserIdentificationStepControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\UserIdentificationStepControl.Designer.cs">
+      <DependentUpon>UserIdentificationStepControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\WizzardStepControlBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\WizzardStepControlBase.Designer.cs">
+      <DependentUpon>WizzardStepControlBase.cs</DependentUpon>
+    </Compile>
     <Compile Include="UrlPattern.cs" />
     <Compile Include="HtmlLinkUrlResolver.cs" />
     <Compile Include="IConfiguration.cs" />
@@ -114,6 +146,23 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="UI\ExistingConfigStepControl.resx">
+      <DependentUpon>ExistingConfigStepControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\InitializeWizzardForm.resx">
+      <DependentUpon>InitializeWizzardForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\ProxyStepControl.resx">
+      <DependentUpon>ProxyStepControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\UserIdentificationStepControl.resx">
+      <DependentUpon>UserIdentificationStepControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\WizzardStepControlBase.resx">
+      <DependentUpon>WizzardStepControlBase.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
