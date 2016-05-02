@@ -20,17 +20,19 @@ namespace Mastersign.Bench
 
         public bool WithAppIndex { get; private set; }
         public bool WithCustomConfiguration { get; private set; }
+        public bool WithSiteConfiguration { get; private set; }
 
         public BenchConfiguration(string benchRootDir)
-            : this(benchRootDir, true, true)
+            : this(benchRootDir, true, true, true)
         {
         }
 
-        public BenchConfiguration(string benchRootDir, bool loadAppIndex, bool loadCustomConfiguration)
+        public BenchConfiguration(string benchRootDir, bool loadAppIndex, bool loadCustomConfiguration, bool loadSiteConfiguration)
         {
             BenchRootDir = benchRootDir;
             WithAppIndex = loadAppIndex;
             WithCustomConfiguration = loadCustomConfiguration;
+            WithSiteConfiguration = loadSiteConfiguration;
             AddResolver(new GroupedVariableResolver(this));
             AddResolver(new VariableResolver(this));
             AddResolver(new PathResolver(IsPathProperty, GetBaseForPathProperty));
@@ -64,6 +66,20 @@ namespace Mastersign.Bench
                     {
                         Debug.WriteLine("Reading custom configuration ...");
                         parser.Parse(customConfigStream);
+                    }
+                }
+            }
+
+            if (loadSiteConfiguration)
+            {
+                var siteConfigFile = GetStringValue(PropertyKeys.SiteConfigFile);
+                Debug.WriteLine("Looking for site config file: " + siteConfigFile);
+                if (File.Exists(siteConfigFile))
+                {
+                    using (var siteConfigStream = File.OpenRead(siteConfigFile))
+                    {
+                        Debug.WriteLine("Reading site configuration ...");
+                        parser.Parse(siteConfigStream);
                     }
                 }
             }
@@ -200,7 +216,8 @@ namespace Mastersign.Bench
 
         public BenchConfiguration Reload()
         {
-            return new BenchConfiguration(BenchRootDir, WithAppIndex, WithCustomConfiguration);
+            return new BenchConfiguration(BenchRootDir,
+                WithAppIndex, WithCustomConfiguration, WithSiteConfiguration);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Mastersign.Bench
             SetupStore setupStore,
             IUserInterface ui)
         {
-            var cfg = new BenchConfiguration(benchRootDir, false, true);
+            var cfg = new BenchConfiguration(benchRootDir, false, true, true);
 
             var customConfigDir = cfg.GetStringValue(PropertyKeys.CustomConfigDir);
             FileSystem.AsureDir(customConfigDir);
@@ -41,7 +41,7 @@ namespace Mastersign.Bench
                 ui.EditTextFile(customConfigFile,
                     "Adapt the custom configuration to your preferences.");
 
-                cfg = new BenchConfiguration(benchRootDir, false, true);
+                cfg = new BenchConfiguration(benchRootDir, false, true, true);
             }
             else
             {
@@ -90,7 +90,7 @@ namespace Mastersign.Bench
                 File.Copy(deactivationTemplateFile, deactivationFile, false);
             }
 
-            return new BenchConfiguration(benchRootDir, true, true);
+            return new BenchConfiguration(benchRootDir, true, true, true);
         }
 
         public static Downloader InitializeDownloader(BenchConfiguration config)
