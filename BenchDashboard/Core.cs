@@ -11,8 +11,6 @@ namespace Mastersign.Bench.Dashboard
 {
     public class Core : IDisposable, IBenchManager
     {
-        public SetupStore SetupStore { get; private set; }
-
         public IUserInterface UI { get; private set; }
 
         public IProcessExecutionHost ProcessExecutionHost { get; set; }
@@ -60,8 +58,6 @@ namespace Mastersign.Bench.Dashboard
         {
             Debug.WriteLine("Initializing UI Core for Bench...");
             UI = new WinFormsUserInterface();
-            SetupStore = new SetupStore();
-            Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
             Config = new BenchConfiguration(benchRoot, true, true, true);
             Env = new BenchEnvironment(Config);
             Downloader = BenchTasks.InitializeDownloader(Config);

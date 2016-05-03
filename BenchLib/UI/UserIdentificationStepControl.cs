@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace Mastersign.Bench.UI
 {
-    public partial class UserIdentificationStepControl : WizzardStepControlBase
+    public partial class UserIdentificationStepControl : WizzardStepControl
     {
         public UserIdentificationStepControl()
         {
@@ -16,13 +16,13 @@ namespace Mastersign.Bench.UI
             InitializeComponent();
         }
 
-        public string Username
+        public string UserName
         {
             get { return txtUsername.Text; }
             set { txtUsername.Text = value; }
         }
 
-        public string Email
+        public string UserEmail
         {
             get { return txtEmail.Text; }
             set { txtEmail.Text = value; }

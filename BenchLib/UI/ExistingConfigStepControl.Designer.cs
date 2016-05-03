@@ -37,6 +37,7 @@
             // radNoExistingConfig
             // 
             this.radNoExistingConfig.AutoSize = true;
+            this.radNoExistingConfig.Checked = true;
             this.radNoExistingConfig.Location = new System.Drawing.Point(15, 15);
             this.radNoExistingConfig.Name = "radNoExistingConfig";
             this.radNoExistingConfig.Size = new System.Drawing.Size(245, 17);
@@ -52,7 +53,6 @@
             this.radExistingConfigInGitRepo.Name = "radExistingConfigInGitRepo";
             this.radExistingConfigInGitRepo.Size = new System.Drawing.Size(209, 17);
             this.radExistingConfigInGitRepo.TabIndex = 1;
-            this.radExistingConfigInGitRepo.TabStop = true;
             this.radExistingConfigInGitRepo.Text = "Existing configuration in a Git repository";
             this.radExistingConfigInGitRepo.UseVisualStyleBackColor = true;
             this.radExistingConfigInGitRepo.CheckedChanged += new System.EventHandler(this.radExistingConfigInGitRepo_CheckedChanged);

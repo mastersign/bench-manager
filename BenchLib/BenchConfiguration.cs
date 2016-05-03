@@ -17,6 +17,7 @@ namespace Mastersign.Bench
         private readonly AppIndexFacade appIndexFacade;
 
         public string BenchRootDir { get; private set; }
+        private string siteConfigFileName; // cached to prevent overriding by custom configuration
 
         public bool WithAppIndex { get; private set; }
         public bool WithCustomConfiguration { get; private set; }
@@ -56,6 +57,8 @@ namespace Mastersign.Bench
                 parser.Parse(configStream);
             }
 
+            siteConfigFileName = GetStringValue(PropertyKeys.SiteConfigFileName);
+
             if (loadCustomConfiguration)
             {
                 var customConfigFile = GetStringValue(PropertyKeys.CustomConfigFile);
@@ -72,13 +75,13 @@ namespace Mastersign.Bench
 
             if (loadSiteConfiguration)
             {
-                var siteConfigFile = GetStringValue(PropertyKeys.SiteConfigFile);
-                Debug.WriteLine("Looking for site config file: " + siteConfigFile);
-                if (File.Exists(siteConfigFile))
+                Debug.WriteLine("Looking for site config file(s): " + siteConfigFileName);
+                var siteConfigFiles = FindSiteConfigFiles(benchRootDir, siteConfigFileName);
+                foreach(var file in siteConfigFiles)
                 {
-                    using (var siteConfigStream = File.OpenRead(siteConfigFile))
+                    using (var siteConfigStream = File.OpenRead(file))
                     {
-                        Debug.WriteLine("Reading site configuration ...");
+                        Debug.WriteLine("Reading site configuration '" + file + "' ...");
                         parser.Parse(siteConfigStream);
                     }
                 }
@@ -120,6 +123,25 @@ namespace Mastersign.Bench
             AutomaticConfiguration();
             AutomaticActivation();
             RecordResponsibilities();
+        }
+
+        private static string[] FindSiteConfigFiles(string benchRootDir, string fileName)
+        {
+            var results = new List<string>();
+            var searchPath = benchRootDir;
+            while (!string.IsNullOrEmpty(searchPath))
+            {
+                var testPath = Path.Combine(searchPath, fileName);
+                if (File.Exists(testPath)) results.Add(testPath);
+                searchPath = Path.GetDirectoryName(searchPath);
+            }
+            results.Reverse();
+            return results.ToArray();
+        }
+
+        public string[] FindSiteConfigFiles()
+        {
+            return FindSiteConfigFiles(BenchRootDir, siteConfigFileName);
         }
 
         private void AutomaticConfiguration()

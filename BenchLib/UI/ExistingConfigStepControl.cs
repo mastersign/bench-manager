@@ -8,12 +8,13 @@ using System.Windows.Forms;
 
 namespace Mastersign.Bench.UI
 {
-    public partial class ExistingConfigStepControl : WizzardStepControlBase
+    public partial class ExistingConfigStepControl : WizzardStepControl
     {
         public ExistingConfigStepControl()
         {
             Description = "Choose pre-existing configuration...";
             InitializeComponent();
+            UpdateControls();
         }
 
         public bool IsConfigGitRepoExisting
@@ -40,8 +41,14 @@ namespace Mastersign.Bench.UI
 
         private void radExistingConfigInGitRepo_CheckedChanged(object sender, EventArgs e)
         {
-            lblConfigGitRepo.Enabled = radExistingConfigInGitRepo.Checked;
-            txtConfigGitRepo.Enabled = radExistingConfigInGitRepo.Checked;
+            UpdateControls();
+        }
+
+        private void UpdateControls()
+        {
+            var existingConfigInGitRepo = radExistingConfigInGitRepo.Checked;
+            lblConfigGitRepo.Enabled = existingConfigInGitRepo;
+            txtConfigGitRepo.Enabled = existingConfigInGitRepo;
         }
     }
 }

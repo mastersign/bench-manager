@@ -32,6 +32,7 @@
             System.Windows.Forms.Label lblEmail;
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.txtEmail = new System.Windows.Forms.TextBox();
+            this.lblDescription = new System.Windows.Forms.Label();
             lblUserName = new System.Windows.Forms.Label();
             lblEmail = new System.Windows.Forms.Label();
             this.SuspendLayout();
@@ -39,16 +40,16 @@
             // lblUserName
             // 
             lblUserName.AutoSize = true;
-            lblUserName.Location = new System.Drawing.Point(15, 18);
+            lblUserName.Location = new System.Drawing.Point(15, 53);
             lblUserName.Name = "lblUserName";
-            lblUserName.Size = new System.Drawing.Size(55, 13);
+            lblUserName.Size = new System.Drawing.Size(60, 13);
             lblUserName.TabIndex = 0;
-            lblUserName.Text = "&Username";
+            lblUserName.Text = "&User Name";
             // 
             // lblEmail
             // 
             lblEmail.AutoSize = true;
-            lblEmail.Location = new System.Drawing.Point(15, 44);
+            lblEmail.Location = new System.Drawing.Point(15, 79);
             lblEmail.Name = "lblEmail";
             lblEmail.Size = new System.Drawing.Size(32, 13);
             lblEmail.TabIndex = 1;
@@ -58,24 +59,36 @@
             // 
             this.txtUsername.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtUsername.Location = new System.Drawing.Point(76, 15);
+            this.txtUsername.Location = new System.Drawing.Point(81, 50);
             this.txtUsername.Name = "txtUsername";
-            this.txtUsername.Size = new System.Drawing.Size(373, 20);
+            this.txtUsername.Size = new System.Drawing.Size(368, 20);
             this.txtUsername.TabIndex = 2;
             // 
             // txtEmail
             // 
             this.txtEmail.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtEmail.Location = new System.Drawing.Point(76, 41);
+            this.txtEmail.Location = new System.Drawing.Point(81, 76);
             this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(373, 20);
+            this.txtEmail.Size = new System.Drawing.Size(368, 20);
             this.txtEmail.TabIndex = 3;
+            // 
+            // lblDescription
+            // 
+            this.lblDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblDescription.Location = new System.Drawing.Point(15, 12);
+            this.lblDescription.Name = "lblDescription";
+            this.lblDescription.Size = new System.Drawing.Size(434, 31);
+            this.lblDescription.TabIndex = 4;
+            this.lblDescription.Text = "These values are used to configure Git and to provide your ID as environment vari" +
+    "ables in the bench environment.";
             // 
             // UserIdentificationStepControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.lblDescription);
             this.Controls.Add(this.txtEmail);
             this.Controls.Add(this.txtUsername);
             this.Controls.Add(lblEmail);
@@ -90,5 +103,6 @@
 
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.TextBox txtEmail;
+        private System.Windows.Forms.Label lblDescription;
     }
 }

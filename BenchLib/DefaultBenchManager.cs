@@ -18,6 +18,8 @@ namespace Mastersign.Bench
 
         public bool Verbose { get; set; }
 
+        private static readonly object consoleSyncHandle = new object();
+
         public DefaultBenchManager(BenchConfiguration config)
         {
             Config = config;
@@ -33,25 +35,28 @@ namespace Mastersign.Bench
 
             if (!Verbose && err == null) return;
 
-            if (err != null) Console.ForegroundColor = ConsoleColor.Red;
-
-            Console.WriteLine(
-                "[{0}] ({1}) {2}",
-                info is TaskError ? "ERROR" : "INFO",
-                info.AppId ?? "global",
-                info.Message);
-
-            if (info.DetailedMessage != null)
+            lock (consoleSyncHandle)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine(info.DetailedMessage);
+                if (err != null) Console.ForegroundColor = ConsoleColor.Red;
+
+                Console.WriteLine(
+                    "[{0}] ({1}) {2}",
+                    info is TaskError ? "ERROR" : "INFO",
+                    info.AppId ?? "global",
+                    info.Message);
+
+                if (info.DetailedMessage != null)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine(info.DetailedMessage);
+                }
+                if (err != null && err.Exception != null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(err.Exception.ToString());
+                }
+                Console.ResetColor();
             }
-            if (err != null && err.Exception != null)
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine(err.Exception.ToString());
-            }
-            Console.ResetColor();
         }
 
         private bool RunAction(BenchTaskForAll action)

@@ -1,6 +1,6 @@
 ﻿namespace Mastersign.Bench.UI
 {
-    partial class WizzardStepControlBase
+    partial class WizzardStepControl
     {
         /// <summary> 
         /// Erforderliche Designervariable.

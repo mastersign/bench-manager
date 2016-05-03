@@ -10,6 +10,7 @@ namespace Mastersign.Bench
     {
         private const string PatternTemplate = @"^{0}\s+((?:~~)?)\s*{1}\s*:\s*{2}\s*\1\s*$";
         private const string PropertyTemplate = @"* {0}: `{1}`";
+        private const string UnquotedPropertyTemplate = @"* {0}: {1}";
 
         public static void UpdateFile(string file, IDictionary<string, string> dict)
         {
@@ -32,7 +33,7 @@ namespace Mastersign.Bench
             }
             if (!found)
             {
-                lines.Add(string.Format(PropertyTemplate, key, value));
+                lines.Add(FormatLine(key, value));
             }
         }
 
@@ -48,10 +49,17 @@ namespace Mastersign.Bench
 
             if (pattern.IsMatch(line))
             {
-                line = string.Format(PropertyTemplate, key, value);
+                line = FormatLine(key, value);
                 return true;
             }
             return false;
+        }
+
+        private static string FormatLine(string key, string value)
+        {
+            return string.Format(
+                value.Contains("`") ? UnquotedPropertyTemplate : PropertyTemplate,
+                key, value);
         }
     }
 }

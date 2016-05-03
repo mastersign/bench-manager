@@ -21,8 +21,9 @@ namespace Mastersign.Bench
         public const string CustomConfigDir = "CustomConfigDir";
         public const string CustomConfigFile = "CustomConfigFile";
         public const string CustomConfigTemplateFile = "CustomConfigTemplateFile";
-
-        public const string SiteConfigFile = "SiteConfigFile";
+        public const string CustomConfigRepository = "CustomConfigRepository";
+        public const string SiteConfigFileName = "SiteConfigFileName";
+        public const string SiteConfigTemplateFile = "SiteConfigTemplateFile";
 
         public const string AppIndexFile = "AppIndexFile";
         public const string CustomAppIndexFile = "CustomAppIndexFile";
@@ -31,6 +32,12 @@ namespace Mastersign.Bench
         public const string AppActivationTemplateFile = "AppActivationTemplateFile";
         public const string AppDeactivationFile = "AppDeactivationFile";
         public const string AppDeactivationTemplateFile = "AppDeactivationTemplateFile";
+
+        public const string WizzardEditCustomConfigBeforeSetup = "WizzardEditCustomConfigBeforeSetup";
+        public const string WizzardStartAutoSetup = "WizzardStartAutoSetup";
+
+        public const string ConEmuConfigFile = "ConEmuConfigFile";
+        public const string ConEmuConfigTemplateFile = "ConEmuConfigTemplateFile";
 
         public const string TempDir = "TempDir";
         public const string DownloadDir = "DownloadDir";

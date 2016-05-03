@@ -32,6 +32,14 @@ namespace Mastersign.Bench.Dashboard
             InitializeStatusStrip();
         }
 
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            if (core.SetupOnStartup)
+            {
+                SetupHandler(this, EventArgs.Empty);
+            }
+        }
+
         private void AppStateChangedHandler(object sender, EventArgs e)
         {
             InitializeAppLauncherList();
@@ -126,5 +134,6 @@ namespace Mastersign.Bench.Dashboard
             }
             if (!setupForm.Visible) setupForm.Show(this);
         }
+
     }
 }

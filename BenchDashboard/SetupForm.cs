@@ -30,9 +30,9 @@ namespace Mastersign.Bench.Dashboard
         public SetupForm(Core core)
         {
             this.core = core;
-            core.ConfigReloaded += ConfigReloadedHandler;
-            core.AllAppStateChanged += ConfigReloadedHandler;
-            core.AppStateChanged += AppStateChangedHandler;
+            core.ConfigReloaded += CoreConfigReloadedHandler;
+            core.AllAppStateChanged += CoreAllAppStateChangedHandler;
+            core.AppStateChanged += CoreAppStateChangedHandler;
             core.BusyChanged += CoreBusyChangedHandler;
             core.ActionStateChanged += CoreActionStateChangedHandler;
             InitializeComponent();
@@ -43,10 +43,11 @@ namespace Mastersign.Bench.Dashboard
         private void SetupForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             DisposeConsole();
-            core.ConfigReloaded -= ConfigReloadedHandler;
-            core.AllAppStateChanged -= AllAppStateChangedHandler;
-            core.AppStateChanged -= AppStateChangedHandler;
+            core.ConfigReloaded -= CoreConfigReloadedHandler;
+            core.AllAppStateChanged -= CoreAllAppStateChangedHandler;
+            core.AppStateChanged -= CoreAppStateChangedHandler;
             core.BusyChanged -= CoreBusyChangedHandler;
+            core.ActionStateChanged -= CoreActionStateChangedHandler;
         }
 
         private void SetupForm_Load(object sender, EventArgs e)
@@ -73,13 +74,13 @@ namespace Mastersign.Bench.Dashboard
             SetBounds(x, y, w, h);
         }
 
-        private void ConfigReloadedHandler(object sender, EventArgs e)
+        private void CoreConfigReloadedHandler(object sender, EventArgs e)
         {
             InitializeAppList();
             UpdatePendingCounts();
         }
 
-        private void AllAppStateChangedHandler(object sender, EventArgs e)
+        private void CoreAllAppStateChangedHandler(object sender, EventArgs e)
         {
             foreach (var app in core.Config.Apps)
             {
@@ -88,7 +89,7 @@ namespace Mastersign.Bench.Dashboard
             UpdatePendingCounts();
         }
 
-        private void AppStateChangedHandler(object sender, AppEventArgs e)
+        private void CoreAppStateChangedHandler(object sender, AppEventArgs e)
         {
             NotifyAppStateChange(e.ID);
             UpdatePendingCounts();

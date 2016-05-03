@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.Data;
 using System.Text;
 using System.Windows.Forms;
 
 namespace Mastersign.Bench.UI
 {
-    public partial class InitializeWizzardForm : Form
+    public partial class WizzardStepControl : UserControl
     {
-        public InitializeWizzardForm()
+        public string Description { get; protected set; }
+
+        public WizzardStepControl()
         {
             InitializeComponent();
-            picIcon.Image = new Icon(Icon, new Size(48, 48)).ToBitmap();
         }
     }
 }

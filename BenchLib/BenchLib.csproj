@@ -81,17 +81,24 @@
     <Compile Include="TaskInfo.cs" />
     <Compile Include="TaskInfoLogger.cs" />
     <Compile Include="TaskResult.cs" />
+    <Compile Include="UI\AdvancedStepControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\AdvancedStepControl.Designer.cs">
+      <DependentUpon>AdvancedStepControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\ExistingConfigStepControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="UI\ExistingConfigStepControl.Designer.cs">
       <DependentUpon>ExistingConfigStepControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\InitializeWizzardForm.cs">
+    <Compile Include="UI\InitializeConfigTask.cs" />
+    <Compile Include="UI\WizzardForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\InitializeWizzardForm.Designer.cs">
-      <DependentUpon>InitializeWizzardForm.cs</DependentUpon>
+    <Compile Include="UI\WizzardForm.Designer.cs">
+      <DependentUpon>WizzardForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\ProxyStepControl.cs">
       <SubType>UserControl</SubType>
@@ -105,12 +112,13 @@
     <Compile Include="UI\UserIdentificationStepControl.Designer.cs">
       <DependentUpon>UserIdentificationStepControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\WizzardStepControlBase.cs">
+    <Compile Include="UI\WizzardStepControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\WizzardStepControlBase.Designer.cs">
-      <DependentUpon>WizzardStepControlBase.cs</DependentUpon>
+    <Compile Include="UI\WizzardStepControl.Designer.cs">
+      <DependentUpon>WizzardStepControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\WizzardTask.cs" />
     <Compile Include="UrlPattern.cs" />
     <Compile Include="HtmlLinkUrlResolver.cs" />
     <Compile Include="IConfiguration.cs" />
@@ -131,7 +139,6 @@
     <Compile Include="GroupedPropertyCollection.cs" />
     <Compile Include="PropertyKeys.cs" />
     <Compile Include="ResolvingPropertyCollection.cs" />
-    <Compile Include="SetupStore.cs" />
     <Compile Include="IUserInterface.cs" />
     <Compile Include="VariableResolver.cs" />
     <Compile Include="Windows\ClrInfo.cs" />
@@ -148,11 +155,14 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="UI\AdvancedStepControl.resx">
+      <DependentUpon>AdvancedStepControl.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\ExistingConfigStepControl.resx">
       <DependentUpon>ExistingConfigStepControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\InitializeWizzardForm.resx">
-      <DependentUpon>InitializeWizzardForm.cs</DependentUpon>
+    <EmbeddedResource Include="UI\WizzardForm.resx">
+      <DependentUpon>WizzardForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\ProxyStepControl.resx">
       <DependentUpon>ProxyStepControl.cs</DependentUpon>
@@ -160,8 +170,8 @@
     <EmbeddedResource Include="UI\UserIdentificationStepControl.resx">
       <DependentUpon>UserIdentificationStepControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\WizzardStepControlBase.resx">
-      <DependentUpon>WizzardStepControlBase.cs</DependentUpon>
+    <EmbeddedResource Include="UI\WizzardStepControl.resx">
+      <DependentUpon>WizzardStepControl.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

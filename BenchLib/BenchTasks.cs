@@ -7,48 +7,113 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Mastersign.Bench.UI;
 
 namespace Mastersign.Bench
 {
     public static class BenchTasks
     {
-        public static BenchConfiguration PrepareConfiguration(
-            string benchRootDir,
-            SetupStore setupStore,
-            IUserInterface ui)
+        public static BenchConfiguration InitializeSiteConfiguration(string benchRootDir)
         {
-            var cfg = new BenchConfiguration(benchRootDir, false, true, true);
+            var cfg = new BenchConfiguration(benchRootDir, false, false, false);
 
-            var customConfigDir = cfg.GetStringValue(PropertyKeys.CustomConfigDir);
-            FileSystem.AsureDir(customConfigDir);
-
+            var siteConfigFiles = cfg.FindSiteConfigFiles();
             var customConfigFile = cfg.GetStringValue(PropertyKeys.CustomConfigFile);
-            var customConfigFileExists = File.Exists(customConfigFile);
 
-            if (!customConfigFileExists)
+            var initSiteConfig = siteConfigFiles.Length == 0;
+            var initCustomConfig = !File.Exists(customConfigFile);
+
+            var defaultSiteConfigFile = Path.Combine(benchRootDir,
+                cfg.GetStringValue(PropertyKeys.SiteConfigFileName));
+            if (initSiteConfig)
             {
-                var customConfigTemplateFile = cfg.GetStringValue(PropertyKeys.CustomConfigTemplateFile);
-                File.Copy(customConfigTemplateFile, customConfigFile, false);
-
-                setupStore.UserInfo = ui.ReadUserInfo("Please enter the name and email of your developer identity.");
-                setupStore.ProxyInfo = BenchProxyInfo.SystemDefault;
-
-                var updates = new Dictionary<string, string>();
-                setupStore.UserInfo.Transfer(updates);
-                setupStore.ProxyInfo.Transfer(updates);
-                MarkdownHelper.UpdateFile(customConfigFile, updates);
-
-                ui.EditTextFile(customConfigFile,
-                    "Adapt the custom configuration to your preferences.");
-
-                cfg = new BenchConfiguration(benchRootDir, false, true, true);
+                File.Copy(cfg.GetStringValue(PropertyKeys.SiteConfigTemplateFile),
+                    defaultSiteConfigFile);
             }
-            else
+
+            if (initSiteConfig || initCustomConfig)
             {
-                setupStore.UserInfo = new BenchUserInfo(
-                    cfg.GetStringValue(PropertyKeys.UserName),
-                    cfg.GetStringValue(PropertyKeys.UserEmail));
+                var wizzardTask = new InitializeConfigTask(cfg,
+                    initSiteConfig, initCustomConfig);
+                if (!WizzardForm.ShowWizzard(wizzardTask))
+                {
+                    return null;
+                }
             }
+
+            var resultCfg = new BenchConfiguration(benchRootDir, true, false, true);
+
+            // transfer intermediate results from wizzard to following initialization steps
+            foreach (var key in new[]
+                {
+                    PropertyKeys.CustomConfigRepository,
+                    PropertyKeys.WizzardEditCustomConfigBeforeSetup,
+                    PropertyKeys.WizzardStartAutoSetup
+                })
+            {
+                resultCfg.SetValue(key, cfg.GetValue(key));
+            }
+
+            return resultCfg;
+        }
+
+        /// <remarks>
+        /// Precondition: Git must be set up.
+        /// </remarks>
+        public static BenchConfiguration InitializeCustomConfiguration(IBenchManager man)
+        {
+            var customConfigDir = man.Config.GetStringValue(PropertyKeys.CustomConfigDir);
+            var customConfigFile = man.Config.GetStringValue(PropertyKeys.CustomConfigFile);
+
+            if (!File.Exists(customConfigFile))
+            {
+                var repo = man.Config.GetStringValue(PropertyKeys.CustomConfigRepository);
+                if (repo != null)
+                {
+                    // assure no config directoryx exist for git clone
+                    if (Directory.Exists(customConfigDir))
+                    {
+                        FileSystem.PurgeDir(customConfigDir);
+                    }
+                    // assure the parent directory exists
+                    if (!Directory.Exists(Path.GetDirectoryName(customConfigDir)))
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(customConfigDir));
+                    }
+                    // clone the existing config
+                    var result = man.ProcessExecutionHost.RunProcess(man.Env, man.Config.BenchRootDir,
+                        man.Config.Apps[AppKeys.Git].Exe,
+                        CommandLine.FormatArgumentList("clone", repo, customConfigDir),
+                        ProcessMonitoring.ExitCodeAndOutput);
+                    if (result.ExitCode != 0)
+                    {
+                        man.UI.ShowError("Cloning Custom Configuration",
+                            "Executing Git failed: "
+                            + Environment.NewLine + Environment.NewLine
+                            + result.Output);
+                        return null;
+                    }
+                }
+                else
+                {
+                    if (!Directory.Exists(customConfigDir))
+                    {
+                        Directory.CreateDirectory(customConfigDir);
+                    }
+
+                    var customConfigTemplateFile = man.Config.GetStringValue(PropertyKeys.CustomConfigTemplateFile);
+                    File.Copy(customConfigTemplateFile, customConfigFile, false);
+                }
+
+                if (man.Config.GetBooleanValue(PropertyKeys.WizzardEditCustomConfigBeforeSetup))
+                {
+                    Thread.Sleep(500);
+                    man.UI.EditTextFile(customConfigDir,
+                        "Adapt the custom configuration before starting the final setup.");
+                }
+            }
+
+            var cfg = new BenchConfiguration(man.Config.BenchRootDir, false, true, true);
 
             var homeDir = cfg.GetStringValue(PropertyKeys.HomeDir);
             FileSystem.AsureDir(homeDir);
@@ -56,18 +121,10 @@ namespace Mastersign.Bench
             FileSystem.AsureDir(Path.Combine(homeDir, "Documents"));
             FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.AppDataDir));
             FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.LocalAppDataDir));
-
-            var privateKeyFile = Path.Combine(homeDir,
-                Path.Combine(".ssh", "id_rsa"));
-            if (!File.Exists(privateKeyFile))
-            {
-                setupStore.SshPrivateKeyPassword = ui.ReadPassword(
-                    "Enter the Password for the private key of the RSA key pair.");
-            }
-
             FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.TempDir));
             FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.DownloadDir));
             FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.LibDir));
+            FileSystem.AsureDir(cfg.GetStringValue(PropertyKeys.ProjectRootDir));
 
             var customAppIndexFile = cfg.GetStringValue(PropertyKeys.CustomAppIndexFile);
             if (!File.Exists(customAppIndexFile))
@@ -75,13 +132,11 @@ namespace Mastersign.Bench
                 var customAppIndexTemplateFile = cfg.GetStringValue(PropertyKeys.CustomAppIndexTemplateFile);
                 File.Copy(customAppIndexTemplateFile, customAppIndexFile, false);
             }
-
             var activationFile = cfg.GetStringValue(PropertyKeys.AppActivationFile);
             if (!File.Exists(activationFile))
             {
                 var activationTemplateFile = cfg.GetStringValue(PropertyKeys.AppActivationTemplateFile);
                 File.Copy(activationTemplateFile, activationFile, false);
-                //ui.EditTextFile(activationFile, "Activate some of the included apps.");
             }
             var deactivationFile = cfg.GetStringValue(PropertyKeys.AppDeactivationFile);
             if (!File.Exists(deactivationFile))
@@ -89,8 +144,14 @@ namespace Mastersign.Bench
                 var deactivationTemplateFile = cfg.GetStringValue(PropertyKeys.AppDeactivationTemplateFile);
                 File.Copy(deactivationTemplateFile, deactivationFile, false);
             }
+            var conEmuConfigFile = cfg.GetStringValue(PropertyKeys.ConEmuConfigFile);
+            if (!File.Exists(conEmuConfigFile))
+            {
+                var conEmuConfigTemplateFile = cfg.GetStringValue(PropertyKeys.ConEmuConfigTemplateFile);
+                File.Copy(conEmuConfigTemplateFile, conEmuConfigFile, false);
+            }
 
-            return new BenchConfiguration(benchRootDir, true, true, true);
+            return new BenchConfiguration(man.Config.BenchRootDir, true, true, true);
         }
 
         public static Downloader InitializeDownloader(BenchConfiguration config)
@@ -704,6 +765,7 @@ namespace Mastersign.Bench
             FileSystem.CreateShortcut(benchDashboardShortcut, benchDashboard,
                 string.Format("-root \"{0}\"", config.BenchRootDir), config.BenchRootDir,
                 benchDashboard);
+            File.Copy(benchDashboardShortcut, Path.Combine(config.BenchRootDir, Path.GetFileName(benchDashboardShortcut)), true);
         }
 
         private static void CreateActionLauncher(BenchConfiguration config, string label, string action, string icon)

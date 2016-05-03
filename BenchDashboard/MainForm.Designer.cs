@@ -166,6 +166,7 @@
             this.MinimumSize = new System.Drawing.Size(216, 128);
             this.Name = "MainForm";
             this.Text = "Bench";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.statusStrip.ResumeLayout(false);
             this.statusStrip.PerformLayout();
             this.panelTop.ResumeLayout(false);
