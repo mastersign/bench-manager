@@ -6,7 +6,8 @@
   _Existence of uninstall script inhibits default uninstall operation._
 * ~~add support for global custom `setup.ps1`~~
 * ~~add support for global custom `env.ps1`~~
-* add support for global custom `clean.ps1`
+* ~~add support for global custom `clean.ps1`~~  
+  _undefined objective_
 * ~~add exception handling to all file system operations~~
 
 ## Reporting
@@ -55,6 +56,7 @@
   _removed SSH key generation from initialization process_
 * ~~make Git optional~~  
   _probably not possible_
+* make the Bench root folder a working copy after initialization
 
 ## Documentation
 
