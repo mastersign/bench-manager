@@ -8,6 +8,23 @@ namespace Mastersign.Bench.Windows
 {
     public static class ClrInfo
     {
+        public static bool IsVersionSupported(Version v)
+        {
+            foreach (var version in GetInstalledVersions())
+            {
+                if (version.Major > v.Major) return true;
+                if (version.Major == v.Major)
+                {
+                    if (version.Minor > v.Minor) return true;
+                    if (version.Minor == v.Minor)
+                    {
+                        if (version.Build >= v.Build) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         #region Reading installed .NET version from registry
 
         // https://msdn.microsoft.com/en-us/library/hh925568.aspx
@@ -29,7 +46,7 @@ namespace Mastersign.Bench.Windows
                         if (install != "" && name != "")
                         {
                             var v = new Version(name);
-                            //if (!versions.Contains(v)) 
+                            //if (!versions.Contains(v))
                             versions.Add(v);
                         }
                         if (name != "")
@@ -74,7 +91,7 @@ namespace Mastersign.Bench.Windows
             }
         }
 
-        // Checking the version using >= will enable forward compatibility, 
+        // Checking the version using >= will enable forward compatibility,
         // however you should always compile your code on newer versions of
         // the framework to ensure your app works the same.
         private static Version CheckFor4xVersion(int releaseKey)
