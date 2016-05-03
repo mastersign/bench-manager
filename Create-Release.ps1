@@ -4,14 +4,22 @@ $msbuild = "$env:SystemRoot\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
 $solutionFile = "BenchManager.sln"
 $mode = "Release"
 $releaseDir = "$myDir\release"
-$tagedZipFile = "$releaseDir\BenchManager_$([DateTime]::Now.ToString("yyyy-MM-dd")).zip"
 $releaseFile = "$releaseDir\BenchManager.zip"
+
+$tagedZipFile = "$releaseDir\BenchManager_$([DateTime]::Now.ToString("yyyy-MM-dd")).zip"
+$suffix = 0
+while (Test-Path $tagedZipFile)
+{
+    $suffix++
+    $tagedZipFile = "$releaseDir\BenchManager_$([DateTime]::Now.ToString("yyyy-MM-dd"))_$suffix.zip"
+}
 
 cd $myDir
 
 & $msbuild $solutionFile /v:minimal /p:Configuration=$mode
 
-if ($LastExitCode -ne 0) {
+if ($LastExitCode -ne 0)
+{
     Write-Error "Build the solution failed."
     return
 }
