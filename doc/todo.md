@@ -37,6 +37,7 @@
 	  (with the exception of execution environments like NodeJS and Python)~~
 	+ inform the user when installing / uninstalling recursively
 * About dialog with acknowledgments
+* Markdown editor with preview and index
 
 ## Command Line Interface
 
@@ -44,11 +45,16 @@
 
 ## Bootstrapping
 
-* clear setup dialog for first configuration
-* find elegant way to incorporate BenchManager binaries and libraries 
-* alternative setup strategy without BenchManager (pure command line setup)
-* make git SSH support optional
-* make git optional
+* ~~clear setup dialog for first configuration~~  
+  _Implemented initialization wizzard~~
+* ~~find elegant way to incorporate BenchManager binaries and libraries~~  
+  _Download tagged release ZIP from GitHub_
+* ~~alternative setup strategy without BenchManager (pure command line setup)~~  
+  _Just provide site and custom config and call `bench-ctl setup`_
+* ~~make Git SSH support optional~~  
+  _removed SSH key generation from initialization process_
+* ~~make Git optional~~  
+  _probably not possible_
 
 ## Documentation
 
