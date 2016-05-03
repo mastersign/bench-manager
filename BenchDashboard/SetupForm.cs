@@ -55,6 +55,12 @@ namespace Mastersign.Bench.Dashboard
             InitializeBounds();
             InitializeAppList();
             UpdatePendingCounts();
+
+            if (core.SetupOnStartup)
+            {
+                core.SetupOnStartup = false;
+                AutoHandler(this, EventArgs.Empty);
+            }
         }
 
         private void InitializeBounds()

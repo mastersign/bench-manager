@@ -25,6 +25,8 @@ namespace Mastersign.Bench.Dashboard
 
         public Control GuiContext { get; set; }
 
+        public bool SetupOnStartup { get; set; }
+
         private bool busy;
 
         private ActionState actionState;
@@ -60,6 +62,7 @@ namespace Mastersign.Bench.Dashboard
             UI = new WinFormsUserInterface();
             SetupStore = new SetupStore();
             Config = BenchTasks.PrepareConfiguration(benchRoot, SetupStore, UI);
+            Config = new BenchConfiguration(benchRoot, true, true, true);
             Env = new BenchEnvironment(Config);
             Downloader = BenchTasks.InitializeDownloader(Config);
             ProcessExecutionHost = new DefaultExecutionHost();

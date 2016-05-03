@@ -42,6 +42,7 @@ namespace Mastersign.Bench.Dashboard
                 return 1;
             }
             Core = new Core(rootPath);
+            Core.SetupOnStartup = IsImmediateSetupRequested(args);
 
             var mainForm = new MainForm(Core);
             Core.GuiContext = mainForm;
@@ -67,6 +68,15 @@ namespace Mastersign.Bench.Dashboard
             var codeBase = new Uri(assemblyName.CodeBase).LocalPath;
             var rootPath = Path.GetFullPath(Path.Combine(Path.Combine(Path.GetDirectoryName(codeBase), ".."), ".."));
             return File.Exists(Path.Combine(rootPath, @"res\apps.md")) ? rootPath : null;
+        }
+
+        private static bool IsImmediateSetupRequested(string[] args)
+        {
+            foreach(var arg in args)
+            {
+                if (arg == "-setup") return true;
+            }
+            return false;
         }
 
         public static Core Core { get; private set; }
