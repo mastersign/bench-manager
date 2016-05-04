@@ -57,7 +57,8 @@
   _removed SSH key generation from initialization process_
 * ~~make Git optional~~  
   _probably not possible_
-* make the Bench root folder a working copy after initialization
+* ~~make the Bench root folder a working copy after initialization~~  
+  _Is covered in `git.setup.ps1`_
 
 ## Documentation
 
