@@ -61,6 +61,15 @@ namespace Mastersign.Bench.Dashboard.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        /// </summary>
+        internal static string acknowledgements {
+            get {
+                return ResourceManager.GetString("acknowledgements", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap apps {
@@ -221,6 +230,25 @@ namespace Mastersign.Bench.Dashboard.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        /// </summary>
+        internal static string licenses {
+            get {
+                return ResourceManager.GetString("licenses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap logo_64 {
+            get {
+                object obj = ResourceManager.GetObject("logo_64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die abbr,address,article,aside,audio,b,blockquote,body,canvas,caption,cite,code,dd,del,details,dfn,div,dl,dt,em,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,html,i,iframe,img,ins,kbd,label,legend,li,mark,menu,nav,object,ol,p,pre,q,samp,section,small,span,strong,sub,summary,sup,table,tbody,td,tfoot,th,thead,time,tr,ul,var,video{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent;color:inherit;font-family:inherit}body{line-height:100%;backg [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         internal static string MarkdownViewerStyle {
@@ -236,11 +264,13 @@ namespace Mastersign.Bench.Dashboard.Properties {
         ///    &lt;meta charset=&quot;utf-8&quot; /&gt;
         ///    &lt;title&gt;$TITLE$&lt;/title&gt;
         ///    &lt;style type=&quot;text/css&quot;&gt;
-        ///$CSS$
+        ///        $CSS$
         ///    &lt;/style&gt;
         ///&lt;/head&gt;
         ///&lt;body&gt;
-        ///$CONTENT$
+        ///    &lt;div id=&quot;frame&quot;&gt;
+        ///        $CONTENT$
+        ///    &lt;/div&gt;
         ///&lt;/body&gt;
         ///&lt;/html&gt; ähnelt.
         /// </summary>

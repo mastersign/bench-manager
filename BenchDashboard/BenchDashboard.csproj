@@ -60,6 +60,12 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutDialog.Designer.cs">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="ActionState.cs" />
     <Compile Include="AppEventArgs.cs" />
     <Compile Include="AppLauncherControl.cs">
@@ -129,6 +135,9 @@
     <Compile Include="Vendor\MarkdownSharp\Markdown.cs" />
     <Compile Include="Vendor\MarkdownSharp\MarkdownOptions.cs" />
     <Compile Include="WinFormsUserInterface.cs" />
+    <EmbeddedResource Include="AboutDialog.resx">
+      <DependentUpon>AboutDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="AppLauncherControl.resx">
       <DependentUpon>AppLauncherControl.cs</DependentUpon>
     </EmbeddedResource>
@@ -187,6 +196,8 @@
     <None Include="Resources\missing_app.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="acknowledgements.txt" />
+    <None Include="licenses.txt" />
     <Content Include="Resources\cached_16.png" />
     <None Include="Resources\cancelled_48.png" />
     <Content Include="Resources\clear_16.png" />
@@ -199,6 +210,7 @@
     <Content Include="Resources\do_32.png" />
     <None Include="Resources\error_48.png" />
     <Content Include="Resources\install_16.png" />
+    <Content Include="Resources\logo_64.png" />
     <Content Include="Resources\MarkdownViewerTemplate.html" />
     <Content Include="Resources\none_16.png" />
     <None Include="Resources\ok_48.png" />

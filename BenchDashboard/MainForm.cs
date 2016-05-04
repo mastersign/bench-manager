@@ -40,6 +40,19 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (core.Busy)
+            {
+                core.Cancelation.Cancel();
+                e.Cancel = true;
+                MessageBox.Show(this,
+                    "You can not close this window until the current running setup action has ended. The action has been requested to cancel.",
+                    "Closing Setup Window",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
         private void AppStateChangedHandler(object sender, EventArgs e)
         {
             InitializeAppLauncherList();
@@ -135,17 +148,9 @@ namespace Mastersign.Bench.Dashboard
             if (!setupForm.Visible) setupForm.Show(this);
         }
 
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void AboutHandler(object sender, EventArgs e)
         {
-            if (core.Busy)
-            {
-                core.Cancelation.Cancel();
-                e.Cancel = true;
-                MessageBox.Show(this,
-                    "You can not close this window until the current running setup action has ended. The action has been requested to cancel.",
-                    "Closing Setup Window",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            new AboutDialog().ShowDialog(this);
         }
     }
 }

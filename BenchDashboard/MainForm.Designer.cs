@@ -42,6 +42,7 @@
             this.btnSetup = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.appLauncherList = new Mastersign.Bench.Dashboard.AppLauncherControl();
+            this.btnAbout = new System.Windows.Forms.Button();
             this.statusStrip.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.SuspendLayout();
@@ -87,6 +88,7 @@
             // 
             // panelTop
             // 
+            this.panelTop.Controls.Add(this.btnAbout);
             this.panelTop.Controls.Add(this.btnShellBash);
             this.panelTop.Controls.Add(this.btnShellPowerShell);
             this.panelTop.Controls.Add(this.btnShellCmd);
@@ -134,7 +136,7 @@
             // 
             this.btnSetup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSetup.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.setup_16;
-            this.btnSetup.Location = new System.Drawing.Point(369, 2);
+            this.btnSetup.Location = new System.Drawing.Point(335, 2);
             this.btnSetup.Margin = new System.Windows.Forms.Padding(2);
             this.btnSetup.Name = "btnSetup";
             this.btnSetup.Size = new System.Drawing.Size(29, 25);
@@ -151,6 +153,18 @@
             this.appLauncherList.Name = "appLauncherList";
             this.appLauncherList.Size = new System.Drawing.Size(400, 310);
             this.appLauncherList.TabIndex = 3;
+            // 
+            // btnAbout
+            // 
+            this.btnAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAbout.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.info_16;
+            this.btnAbout.Location = new System.Drawing.Point(368, 2);
+            this.btnAbout.Margin = new System.Windows.Forms.Padding(2);
+            this.btnAbout.Name = "btnAbout";
+            this.btnAbout.Size = new System.Drawing.Size(29, 25);
+            this.btnAbout.TabIndex = 4;
+            this.toolTip.SetToolTip(this.btnAbout, "Bench Info");
+            this.btnAbout.Click += new System.EventHandler(this.AboutHandler);
             // 
             // MainForm
             // 
@@ -190,6 +204,7 @@
         private System.Windows.Forms.Button btnShellPowerShell;
         private System.Windows.Forms.Button btnShellBash;
         private System.Windows.Forms.ToolTip toolTip;
+        private System.Windows.Forms.Button btnAbout;
     }
 }
 
