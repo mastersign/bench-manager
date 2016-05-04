@@ -24,15 +24,15 @@ namespace Mastersign.Bench
             return "@(" + string.Join(", ", list) + ")";
         }
 
-        public static ProcessExecutionResult RunScript(BenchEnvironment env, IProcessExecutionHost execHost, string cwd, string script, params string[] args)
+        public static ProcessExecutionResult RunScript(BenchEnvironment env, IProcessExecutionHost execHost, ProcessMonitoring monitoring, string cwd, string script, params string[] args)
         {
             var command = Convert.ToBase64String(Encoding.Unicode.GetBytes(
                 string.Format("& \"{0}\" {1}", script, string.Join(" ", args))));
             return execHost.RunProcess(env, cwd, Executable,
                 CommandLine.FormatArgumentList(
-                    "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Unrestricted",
+                    "-ExecutionPolicy", "Unrestricted", "-NoLogo", "-NoProfile", "-OutputFormat", "Text",
                     "-EncodedCommand", command),
-                ProcessMonitoring.ExitCodeAndOutput);
+                monitoring);
         }
     }
 }
