@@ -671,6 +671,7 @@
             this.Name = "SetupForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Bench - Setup";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SetupForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SetupForm_FormClosed);
             this.Load += new System.EventHandler(this.SetupForm_Load);
             this.panelStatus.ResumeLayout(false);

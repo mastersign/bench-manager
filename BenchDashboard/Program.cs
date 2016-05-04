@@ -49,10 +49,20 @@ namespace Mastersign.Bench.Dashboard
             var ui = Core.UI as WinFormsUserInterface;
             if (ui != null) ui.ParentWindow = mainForm;
 
+            Application.ApplicationExit += ApplicationExitHandler;
             Application.Run(mainForm);
 
             Core.Dispose();
             return 0;
+        }
+
+        private static void ApplicationExitHandler(object sender, EventArgs e)
+        {
+            var cancelation = Core.Cancelation;
+            if (cancelation != null)
+            {
+                cancelation.Cancel();
+            }
         }
 
         private static string GetBenchRoot(string[] args)

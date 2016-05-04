@@ -547,5 +547,21 @@ namespace Mastersign.Bench.Dashboard
             viewer.LoadMarkdown(core.Config.GetStringValue(PropertyKeys.CustomAppIndexFile), "Custom Apps");
             viewer.Show(core.GuiContext);
         }
+
+        private void SetupForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (core.Busy)
+            {
+                e.Cancel = true;
+                if (e.CloseReason == CloseReason.UserClosing)
+                {
+                    core.Cancelation.Cancel();
+                    MessageBox.Show(this,
+                        "You can not close this window until the current running setup action has ended. The action has been requested to cancel.",
+                        "Closing Setup Window",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+        }
     }
 }
