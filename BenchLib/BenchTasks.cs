@@ -199,7 +199,7 @@ namespace Mastersign.Bench
                 }),
                 new Regex(@"\<span\s[^\>]*class=""direct-link""[^\>]*\>(.*?)\</span\>"));
 
-        public static void RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost,
+        public static string RunCustomScript(BenchConfiguration config, IProcessExecutionHost execHost,
             string appId, string path, params string[] args)
         {
             if (!File.Exists(path))
@@ -218,9 +218,10 @@ namespace Mastersign.Bench
                     path + " " + CommandLine.FormatArgumentList(args),
                     result.ExitCode, result.Output);
             }
+            return result.Output;
         }
 
-        public static void RunGlobalCustomScript(BenchConfiguration config, IProcessExecutionHost execHost,
+        public static string RunGlobalCustomScript(BenchConfiguration config, IProcessExecutionHost execHost,
             string path, params string[] args)
         {
             if (!File.Exists(path))
@@ -239,6 +240,7 @@ namespace Mastersign.Bench
                     path + " " + CommandLine.FormatArgumentList(args),
                     result.ExitCode, result.Output);
             }
+            return result.Output;
         }
 
         private static string CustomScriptDir(BenchConfiguration config)
@@ -899,9 +901,13 @@ namespace Mastersign.Bench
                 var envScript = app.GetCustomScriptFile("env");
                 if (envScript != null)
                 {
+                    notify(new TaskProgress(
+                       string.Format("Running custom environment script for {0}.", app.ID),
+                       progress, app.ID));
+                    string scriptOutput = null;
                     try
                     {
-                        RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, envScript);
+                        scriptOutput = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, envScript).Trim();
                     }
                     catch (ProcessExecutionFailedException e)
                     {
@@ -909,6 +915,12 @@ namespace Mastersign.Bench
                             string.Format("Running custom environment script for {0} failed: {1}", app.ID, e.Message),
                             app.ID, e.ProcessOutput, e));
                         continue;
+                    }
+                    if (!string.IsNullOrEmpty(scriptOutput))
+                    {
+                        notify(new TaskInfo(
+                            string.Format("Running custom environment script for {0} finished.", app.ID),
+                            app.ID, scriptOutput));
                     }
                 }
                 notify(new TaskProgress(
@@ -920,15 +932,19 @@ namespace Mastersign.Bench
             if (globalEnvScript != null)
             {
                 notify(new TaskProgress("Executing global environment script.", 0.9f));
-
+                string scriptOutput = null;
                 try
                 {
-                    RunGlobalCustomScript(man.Config, man.ProcessExecutionHost, globalEnvScript);
+                    scriptOutput = RunGlobalCustomScript(man.Config, man.ProcessExecutionHost, globalEnvScript).Trim();
                 }
                 catch (ProcessExecutionFailedException e)
                 {
                     notify(new TaskError("Executing global environment script failed.",
                         null, e.ProcessOutput, e));
+                }
+                if (!string.IsNullOrEmpty(scriptOutput))
+                {
+                    notify(new TaskInfo("Executing global environment script finished.", null, scriptOutput));
                 }
             }
 
@@ -1257,9 +1273,10 @@ namespace Mastersign.Bench
                     notify(new TaskProgress(
                         string.Format("Executing custom setup script for {0}.", app.ID),
                         progress, app.ID));
+                    string scriptOutput = null;
                     try
                     {
-                        RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customSetupScript);
+                        scriptOutput = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customSetupScript).Trim();
                     }
                     catch (ProcessExecutionFailedException e)
                     {
@@ -1267,6 +1284,12 @@ namespace Mastersign.Bench
                             string.Format("Execution of custom setup script for {0} failed.", app.ID),
                             app.ID, e.ProcessOutput, e));
                         continue;
+                    }
+                    if (!string.IsNullOrEmpty(scriptOutput))
+                    {
+                        notify(new TaskInfo(
+                            string.Format("Execution custom setup script for {0} finished.", app.ID),
+                            app.ID, scriptOutput));
                     }
                 }
 
@@ -1301,11 +1324,12 @@ namespace Mastersign.Bench
                 if (envScript != null)
                 {
                     notify(new TaskProgress(
-                       string.Format("Running the custom environment script for {0}.", app.ID),
+                       string.Format("Running custom environment script for {0}.", app.ID),
                        progress, app.ID));
+                    string scriptOutput = null;
                     try
                     {
-                        RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, envScript);
+                        scriptOutput = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, envScript).Trim();
                     }
                     catch (ProcessExecutionFailedException e)
                     {
@@ -1313,6 +1337,12 @@ namespace Mastersign.Bench
                             string.Format("Running the custom environment script for {0} failed.", app.ID),
                             app.ID, e.ProcessOutput, e));
                         continue;
+                    }
+                    if (!string.IsNullOrEmpty(scriptOutput))
+                    {
+                        notify(new TaskInfo(
+                            string.Format("Running custom environment script for {0} finished.", app.ID),
+                            app.ID, scriptOutput));
                     }
                 }
 
@@ -1324,15 +1354,20 @@ namespace Mastersign.Bench
             if (globalCustomSetupScript != null)
             {
                 notify(new TaskProgress("Executing global custom setup script.", 0.95f));
+                string scriptOutput = null;
                 try
                 {
-                    RunGlobalCustomScript(man.Config, man.ProcessExecutionHost, globalCustomSetupScript);
+                    scriptOutput = RunGlobalCustomScript(man.Config, man.ProcessExecutionHost, globalCustomSetupScript).Trim();
                 }
                 catch (ProcessExecutionFailedException e)
                 {
                     notify(new TaskError(
                         "Execution of global custom setup script failed.",
                         null, e.ProcessOutput, e));
+                }
+                if (!string.IsNullOrEmpty(scriptOutput))
+                {
+                    notify(new TaskInfo("Executing global custom setup script finished.", null, scriptOutput));
                 }
             }
 
@@ -1421,7 +1456,16 @@ namespace Mastersign.Bench
                 {
                     if (customScript != null)
                     {
-                        RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customScript);
+                        notify(new TaskProgress(
+                            string.Format("Executing custom uninstall script for {0}.", app.ID),
+                            progress, app.ID));
+                        var scriptOutput = RunCustomScript(man.Config, man.ProcessExecutionHost, app.ID, customScript).Trim();
+                        if (!string.IsNullOrEmpty(scriptOutput))
+                        {
+                            notify(new TaskInfo(
+                                string.Format("Execution of custom uninstall script for {0} finished.", app.ID),
+                                app.ID, scriptOutput));
+                        }
                     }
                     else
                     {
