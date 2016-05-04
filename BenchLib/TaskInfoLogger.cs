@@ -52,6 +52,7 @@ namespace Mastersign.Bench
                     writer.WriteLine(err.Exception.ToString());
                 }
             }
+            writer.Flush();
         }
     }
 }
