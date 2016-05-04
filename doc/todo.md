@@ -30,14 +30,15 @@
 	+ ~~Upgrade app~~
 * ~~Move checks into `AppFacade`~~
 * ~~Allow cancelation by user~~3
-* Prevent setup window from closing until cancelation is through
-* Clean cancelation in case the BenchManager process is exited
+* ~~Prevent setup window from closing until cancelation is through~~
+* ~~Clean cancelation in case the BenchManager process is exited~~  
+  _Cancelation is triggered, but child processes are not killed_
 * ~~Regard dependencies~~
 	+ ~~Install all dependencies recursively before installing an app~~
 	+ ~~Uninstall all responsibilities before uninstalling an app
 	  (with the exception of execution environments like NodeJS and Python)~~
 	+ inform the user when installing / uninstalling recursively
-* About dialog with acknowledgments
+* ~~About dialog with acknowledgments~~
 * Markdown editor with preview and index
 
 ## Command Line Interface
