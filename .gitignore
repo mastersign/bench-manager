@@ -1,4 +1,7 @@
+/release
 obj
 bin
 *.suo
+*.user
 *.cache
+packages
