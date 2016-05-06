@@ -766,10 +766,16 @@ namespace Mastersign.Bench
         {
             FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherDir));
             FileSystem.EmptyDir(config.GetStringValue(PropertyKeys.LauncherScriptDir));
+
+            var benchControlRootLink = Path.Combine(config.BenchRootDir, "Bench Control.lnk");
+            var benchDashboardRootLink = Path.Combine(config.BenchRootDir, "Bench Dashboard.lnk");
+            if (File.Exists(benchControlRootLink)) File.Delete(benchControlRootLink);
+            if (File.Exists(benchDashboardRootLink)) File.Delete(benchDashboardRootLink);
         }
 
         private static void CreateBenchDashboardLauncher(BenchConfiguration config)
         {
+            if (!IsDashboardSupported) return;
             var benchDashboard = Path.Combine(config.GetStringValue(PropertyKeys.BenchAuto), @"bin\BenchDashboard.exe");
             var benchDashboardShortcut = Path.Combine(config.GetStringValue(PropertyKeys.LauncherDir), "Bench Dashboard.lnk");
             FileSystem.CreateShortcut(benchDashboardShortcut, benchDashboard,
@@ -778,9 +784,10 @@ namespace Mastersign.Bench
             File.Copy(benchDashboardShortcut, Path.Combine(config.BenchRootDir, Path.GetFileName(benchDashboardShortcut)), true);
         }
 
-        private static void CreateActionLauncher(BenchConfiguration config, string label, string action, string icon)
+        private static void CreateActionLauncher(BenchConfiguration config, string label, string action, string icon,
+            string targetDir = null)
         {
-            var launcherDir = config.GetStringValue(PropertyKeys.LauncherDir);
+            var launcherDir = targetDir ?? config.GetStringValue(PropertyKeys.LauncherDir);
             var actionDir = config.GetStringValue(PropertyKeys.ActionDir);
             var shortcut = Path.Combine(launcherDir, label + ".lnk");
             var target = Path.Combine(actionDir, action + ".cmd");
@@ -791,7 +798,12 @@ namespace Mastersign.Bench
         {
             CreateBenchDashboardLauncher(config);
 
-            //CreateActionLauncher(config, "Bench Control", "bench-ctl", @"%SystemRoot%\System32\imageres.dll,109");
+            if (!IsDashboardSupported)
+            {
+                CreateActionLauncher(config, "Bench Control", "bench-ctl", @"%SystemRoot%\System32\imageres.dll,109");
+                CreateActionLauncher(config, "Bench Control", "bench-ctl", @"%SystemRoot%\System32\imageres.dll,109",
+                    config.BenchRootDir);
+            }
             CreateActionLauncher(config, "Command Line", "bench-cmd", @"%SystemRoot%\System32\cmd.exe");
             CreateActionLauncher(config, "PowerShell", "bench-ps", @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe");
             CreateActionLauncher(config, "Bourne Again Shell", "bench-bash", @"%SystemRoot%\System32\imageres.dll,89");
