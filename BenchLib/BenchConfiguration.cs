@@ -215,6 +215,7 @@ namespace Mastersign.Bench
                 || property == PropertyKeys.AppExe
                 || property == PropertyKeys.AppSetupTestFile
                 || property == PropertyKeys.AppAdornedExecutables
+                || property == PropertyKeys.AppLauncherExecutable
                 || property == PropertyKeys.AppLauncherIcon;
         }
 
