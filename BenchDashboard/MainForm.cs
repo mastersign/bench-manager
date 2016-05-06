@@ -56,6 +56,7 @@ namespace Mastersign.Bench.Dashboard
         private void AppStateChangedHandler(object sender, EventArgs e)
         {
             InitializeAppLauncherList();
+            InitializeStatusStrip();
         }
 
         private void InitializeAppLauncherList()
