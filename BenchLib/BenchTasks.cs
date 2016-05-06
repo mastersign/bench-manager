@@ -8,11 +8,17 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Mastersign.Bench.UI;
+using Mastersign.Bench.Windows;
 
 namespace Mastersign.Bench
 {
     public static class BenchTasks
     {
+        public static bool IsDashboardSupported
+        {
+            get { return ClrInfo.IsVersionSupported(new Version(4, 5)); }
+        }
+
         public static BenchConfiguration InitializeSiteConfiguration(string benchRootDir)
         {
             var cfg = new BenchConfiguration(benchRootDir, false, false, false);
