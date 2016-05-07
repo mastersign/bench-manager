@@ -197,7 +197,7 @@ namespace Mastersign.Bench
 
         private void RecordResponsibilities()
         {
-            foreach(var app in Apps)
+            foreach(var app in new List<AppFacade>(Apps))
             {
                 app.TrackResponsibilities();
             }
