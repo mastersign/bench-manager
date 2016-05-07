@@ -23,7 +23,7 @@ namespace Mastersign.Bench
         public DefaultBenchManager(BenchConfiguration config)
         {
             Config = config;
-            Downloader = new Downloader(config.GetInt32Value(PropertyKeys.ParallelDownloads, 1));
+            Downloader = BenchTasks.InitializeDownloader(config);
             Env = new BenchEnvironment(Config);
             ProcessExecutionHost = new DefaultExecutionHost();
             UI = new ConsoleUserInterface();

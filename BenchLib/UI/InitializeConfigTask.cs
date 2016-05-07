@@ -92,6 +92,14 @@ namespace Mastersign.Bench.UI
                 var siteConfigTemplateFile = config.GetStringValue(PropertyKeys.SiteConfigTemplateFile);
                 var defaultSiteConfigFile = Path.Combine(config.BenchRootDir,
                     config.GetStringValue(PropertyKeys.SiteConfigFileName));
+                if (File.Exists(defaultSiteConfigFile))
+                {
+                    var backupFile = defaultSiteConfigFile + ".bak";
+                    if (!File.Exists(backupFile))
+                    {
+                        File.Move(defaultSiteConfigFile, backupFile);
+                    }
+                }
                 File.Copy(siteConfigTemplateFile, defaultSiteConfigFile, false);
                 MarkdownHelper.UpdateFile(defaultSiteConfigFile, updates);
             }
