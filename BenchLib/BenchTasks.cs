@@ -29,14 +29,6 @@ namespace Mastersign.Bench
             var initSiteConfig = siteConfigFiles.Length == 0;
             var initCustomConfig = !File.Exists(customConfigFile);
 
-            var defaultSiteConfigFile = Path.Combine(benchRootDir,
-                cfg.GetStringValue(PropertyKeys.SiteConfigFileName));
-            if (initSiteConfig)
-            {
-                File.Copy(cfg.GetStringValue(PropertyKeys.SiteConfigTemplateFile),
-                    defaultSiteConfigFile);
-            }
-
             if (initSiteConfig || initCustomConfig)
             {
                 var wizzardTask = new InitializeConfigTask(cfg,
