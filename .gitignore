@@ -1,4 +1,5 @@
 /release
+/artwork/tmp
 obj
 bin
 *.suo
