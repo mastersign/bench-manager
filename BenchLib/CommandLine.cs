@@ -12,7 +12,7 @@ namespace Mastersign.Bench
             var result = new List<string>();
             for (int i = 0; i < argumentList.Length; i++)
             {
-                var arg = CommandLine.SubstituteArgument(argumentList[i], args);
+                var arg = SubstituteArgument(argumentList[i], args);
                 if (arg == "%*")
                 {
                     result.AddRange(args);
@@ -22,7 +22,7 @@ namespace Mastersign.Bench
                     result.Add(arg);
                 }
             }
-            return CommandLine.FormatArgumentList(result.ToArray());
+            return FormatArgumentList(result.ToArray());
         }
 
         public static string SubstituteArgument(string arg, string[] args)
@@ -35,6 +35,8 @@ namespace Mastersign.Bench
             }
             return arg;
         }
+
+        // http://www.windowsinspired.com/understanding-the-command-line-string-and-arguments-received-by-a-windows-program/
 
         public static string FormatArgumentList(params string[] args)
         {
@@ -50,7 +52,8 @@ namespace Mastersign.Bench
         {
             var s = Regex.Replace(arg.Trim('"'), @"(\\*)" + "\"", @"$1$1\" + "\"");
             s = Regex.Replace(s, @"(\\+)$", @"$1$1");
-            if (alwaysQuote || Regex.IsMatch(s, @"\s")) s = "\"" + s + "\"";
+            var quote = alwaysQuote || Regex.IsMatch(s, @"\s");
+            if (quote) s = "\"" + s + "\"";
             return s;
         }
     }
