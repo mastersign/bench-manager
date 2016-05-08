@@ -1162,7 +1162,7 @@ namespace Mastersign.Bench
             var packageName = app.Version != null
                 ? string.Format("{0}@{1}", app.PackageName, app.Version)
                 : app.PackageName;
-            var args = CommandLine.FormatArgumentList("install", packageName, "--global");
+            var args = CommandLine.FormatArgumentList("install", "--global", packageName);
             var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe, args,
                 ProcessMonitoring.ExitCodeAndOutput);
             if (result.ExitCode != 0)
@@ -1180,7 +1180,6 @@ namespace Mastersign.Bench
             {
                 throw new FileNotFoundException("The " + pyVer + " package manager PIP was not found.");
             }
-
             var argList = new List<string>();
             argList.Add("install");
             argList.Add(app.PackageName);
@@ -1410,7 +1409,7 @@ namespace Mastersign.Bench
             {
                 throw new FileNotFoundException("The NodeJS package manager was not found.");
             }
-            var args = CommandLine.FormatArgumentList("uninstall", app.PackageName, "--global");
+            var args = CommandLine.FormatArgumentList("uninstall", "--global", app.PackageName);
             var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, npmExe, args,
                 ProcessMonitoring.ExitCode);
             if (result.ExitCode != 0)
@@ -1429,7 +1428,6 @@ namespace Mastersign.Bench
             {
                 throw new FileNotFoundException("The " + pyVer + " package manager PIP was not found.");
             }
-
             var args = CommandLine.FormatArgumentList("uninstall", app.PackageName, "--yes", "--quiet");
             var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, pipExe, args,
                     ProcessMonitoring.ExitCode);

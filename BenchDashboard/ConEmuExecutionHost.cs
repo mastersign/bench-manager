@@ -60,7 +60,10 @@ namespace Mastersign.Bench.Dashboard
 
         private ConEmuStartInfo BuildStartInfo(BenchEnvironment env, string cwd, string executable, string arguments, bool collectOutput)
         {
-            var cmdLine = CommandLine.EscapeArgument(executable) + " " + arguments;
+            // http://www.windowsinspired.com/understanding-the-command-line-string-and-arguments-received-by-a-windows-program/
+
+            var cmdLine = (arguments.Contains("\"") ? "\"" : "")
+                + CommandLine.EscapeArgument(executable) + " " + arguments;
             var si = new ConEmuStartInfo();
             si.ConEmuExecutablePath = conEmuExe;
             si.ConsoleProcessCommandLine = cmdLine;
