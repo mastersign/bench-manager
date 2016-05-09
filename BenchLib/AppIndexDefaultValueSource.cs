@@ -35,6 +35,8 @@ namespace Mastersign.Bench
                     {
                         case AppTyps.NodePackage:
                             return AppIndex.GetGroupValue(AppKeys.Npm, PropertyKeys.AppDir);
+                        case AppTyps.RubyPackage:
+                            return AppIndex.GetGroupValue(AppKeys.Ruby, PropertyKeys.AppDir);
                         case AppTyps.Python2Package:
                             return AppIndex.GetGroupValue(AppKeys.Python2, PropertyKeys.AppDir);
                         case AppTyps.Python3Package:
@@ -50,6 +52,8 @@ namespace Mastersign.Bench
                     {
                         case AppTyps.NodePackage:
                             return AppIndex.GetGroupValue(AppKeys.Npm, PropertyKeys.AppPath);
+                        case AppTyps.RubyPackage:
+                            return AppIndex.GetGroupValue(AppKeys.Ruby, PropertyKeys.AppPath);
                         case AppTyps.Python2Package:
                             return Path.Combine(
                                 AppIndex.GetGroupValue(AppKeys.Python2, PropertyKeys.AppDir) as string,
