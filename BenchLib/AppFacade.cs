@@ -76,8 +76,9 @@ namespace Mastersign.Bench
             {
                 var typ = Typ;
                 return typ == AppTyps.NodePackage
-                        || typ == AppTyps.Python2Package
-                        || typ == AppTyps.Python3Package;
+                    || typ == AppTyps.RubyPackage
+                    || typ == AppTyps.Python2Package
+                    || typ == AppTyps.Python3Package;
             }
         }
 
@@ -310,6 +311,7 @@ namespace Mastersign.Bench
             {
                 return SetupTestFile != null
                     || Typ == AppTyps.NodePackage
+                    || Typ == AppTyps.RubyPackage
                     || Typ == AppTyps.Python2Package
                     || Typ == AppTyps.Python3Package;
             }
@@ -327,6 +329,16 @@ namespace Mastersign.Bench
                         IOPath.Combine(npmDir, "node_modules"),
                         PackageName);
                     return Directory.Exists(npmPackageDir);
+                case AppTyps.RubyPackage:
+                    var rubyDir = AppIndex.GetStringGroupValue(AppKeys.Ruby, PropertyKeys.AppDir);
+                    var rubyVersion = new Version(AppIndex.GetStringGroupValue(AppKeys.Ruby, PropertyKeys.AppVersion));
+                    var generalVersion = new Version(rubyVersion.Major, rubyVersion.Minor, 0);
+                    var generalVersionStr = generalVersion.ToString(3);
+                    var gemDirBase = IOPath.Combine(rubyDir,
+                        string.Format(@"lib\ruby\gems\{0}\gems", generalVersionStr));
+                    if (!Directory.Exists(gemDirBase)) return false;
+                    var folders = Directory.GetDirectories(gemDirBase, PackageName + "-*");
+                    return folders.Length > 0;
                 case AppTyps.Python2Package:
                     var python2Dir = AppIndex.GetStringGroupValue(AppKeys.Python2, PropertyKeys.AppDir);
                     var pip2PackageDir = IOPath.Combine(
@@ -531,6 +543,7 @@ namespace Mastersign.Bench
                             }
                         }
                     case AppTyps.NodePackage:
+                    case AppTyps.RubyPackage:
                     case AppTyps.Python2Package:
                     case AppTyps.Python3Package:
                         if (IsInstalled)
@@ -755,6 +768,9 @@ namespace Mastersign.Bench
             {
                 case AppTyps.NodePackage:
                     AddDependency(AppKeys.Npm);
+                    break;
+                case AppTyps.RubyPackage:
+                    AddDependency(AppKeys.Ruby);
                     break;
                 case AppTyps.Python2Package:
                     AddDependency(AppKeys.Python2);

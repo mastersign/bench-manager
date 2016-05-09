@@ -287,6 +287,14 @@ namespace Mastersign.Bench
                 exe, CommandLine.SubstituteArgumentList(app.LauncherArguments, args));
         }
 
+        private static string GemExe(BenchConfiguration config)
+        {
+            var rubyExe = config.GetStringGroupValue(AppKeys.Ruby, PropertyKeys.AppExe);
+            return rubyExe != null
+                ? Path.Combine(Path.GetDirectoryName(rubyExe), "gem.bat")
+                : null;
+        }
+
         private static string PipExe(BenchConfiguration config, PythonVersion pyVer)
         {
             switch (pyVer)
@@ -1173,6 +1181,32 @@ namespace Mastersign.Bench
             }
         }
 
+        private static void InstallRubyPackage(BenchConfiguration config, IProcessExecutionHost execHost, AppFacade app)
+        {
+            var gemExe = GemExe(config);
+            if (gemExe == null || !File.Exists(gemExe))
+            {
+                throw new FileNotFoundException("The Ruby package manager was not found.");
+            }
+            var argList = new List<string>();
+            argList.Add("install");
+            argList.Add(app.PackageName);
+            if (app.Version != null)
+            {
+                argList.Add("--version");
+                argList.Add(app.Version);
+            }
+            var args = CommandLine.FormatArgumentList(argList.ToArray());
+            var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, gemExe, args,
+                ProcessMonitoring.ExitCodeAndOutput);
+            if (result.ExitCode != 0)
+            {
+                throw new ProcessExecutionFailedException(
+                    string.Format("Installing the Ruby package {0} failed.", app.PackageName),
+                    gemExe + " " + args, result.ExitCode, result.Output);
+            }
+        }
+
         private static void InstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost, PythonVersion pyVer, AppFacade app)
         {
             var pipExe = PipExe(config, pyVer);
@@ -1251,6 +1285,9 @@ namespace Mastersign.Bench
                             break;
                         case AppTyps.NodePackage:
                             InstallNodePackage(man.Config, man.ProcessExecutionHost, app);
+                            break;
+                        case AppTyps.RubyPackage:
+                            InstallRubyPackage(man.Config, man.ProcessExecutionHost, app);
                             break;
                         case AppTyps.Python2Package:
                             InstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);
@@ -1420,6 +1457,25 @@ namespace Mastersign.Bench
             }
         }
 
+        private static void UninstallRubyPackage(BenchConfiguration config, IProcessExecutionHost execHost,
+            AppFacade app)
+        {
+            var gemExe = GemExe(config);
+            if (gemExe == null || !File.Exists(gemExe))
+            {
+                throw new FileNotFoundException("The Ruby package manager was not found.");
+            }
+            var args = CommandLine.FormatArgumentList("uninstall", app.PackageName, "-x", "-a");
+            var result = execHost.RunProcess(new BenchEnvironment(config), config.BenchRootDir, gemExe, args,
+                ProcessMonitoring.ExitCode);
+            if (result.ExitCode != 0)
+            {
+                throw new ProcessExecutionFailedException(
+                    string.Format("Uninstalling the Ruby package {0} failed.", app.PackageName),
+                    gemExe + " " + args, result.ExitCode, result.Output);
+            }
+        }
+
         private static void UninstallPythonPackage(BenchConfiguration config, IProcessExecutionHost execHost,
             PythonVersion pyVer, AppFacade app)
         {
@@ -1489,6 +1545,9 @@ namespace Mastersign.Bench
                                 break;
                             case AppTyps.NodePackage:
                                 UninstallNodePackage(man.Config, man.ProcessExecutionHost, app);
+                                break;
+                            case AppTyps.RubyPackage:
+                                UninstallRubyPackage(man.Config, man.ProcessExecutionHost, app);
                                 break;
                             case AppTyps.Python2Package:
                                 UninstallPythonPackage(man.Config, man.ProcessExecutionHost, PythonVersion.Python2, app);

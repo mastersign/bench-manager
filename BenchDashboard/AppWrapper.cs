@@ -41,6 +41,8 @@ namespace Mastersign.Bench.Dashboard
                         return "Group/Custom";
                     case AppTyps.NodePackage:
                         return "NodeJS";
+                    case AppTyps.RubyPackage:
+                        return "Ruby";
                     case AppTyps.Python2Package:
                         return "Python 2";
                     case AppTyps.Python3Package:

@@ -15,6 +15,7 @@ namespace Mastersign.Bench
 
         public const string NodeJS = "Node";
         public const string Npm = "Npm";
+        public const string Ruby = "Ruby";
         public const string Python2 = "Python2";
         public const string Python3 = "Python3";
     }
