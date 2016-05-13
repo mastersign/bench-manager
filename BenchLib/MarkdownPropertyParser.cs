@@ -23,8 +23,6 @@ namespace Mastersign.Bench
         private static readonly char[] ListSeparator = { ',' };
         private static readonly string ListSeparatorStr = ", ";
         private static readonly Regex ListStartExp = new Regex("^[\\*\\+-]\\s+(?<key>[a-zA-Z][a-zA-Z0-9]*?)\\s*:\\s*$");
-        private static readonly Regex ListElementPairExp = new Regex("^(?:\t|  +)[\\*\\+-]\\s+(?<key>.*?)\\s*:\\s*(?<value>.*?)\\s*$");
-        private static readonly string ListElementPairFormat = "`{0}: {1}`";
         private static readonly Regex ListElementExp = new Regex("^(?:\t|  +)[\\*\\+-]\\s+(?<value>.*?)\\s*$");
         private static readonly string ListElementFormat = "`{0}`";
 
@@ -99,29 +97,38 @@ namespace Mastersign.Bench
 
         private static bool IsListElement(string line, IList<string> elements)
         {
-            var m = ListElementPairExp.Match(line);
+            var m = ListElementExp.Match(line);
             if (m.Success)
             {
-                var key = RemoveQuotes(m.Groups["key"].Value);
-                var value = RemoveQuotes(m.Groups["value"].Value);
-                elements.Add(string.Format(ListElementPairFormat, key, value));
-                return true;
-            }
-            m = ListElementExp.Match(line);
-            if (m.Success)
-            {
-                var value = RemoveQuotes(m.Groups["value"].Value);
-                elements.Add(string.Format(ListElementFormat, value));
+                var value = m.Groups["value"].Value;
+                elements.Add(string.Format(ListElementFormat, CleanListElement(value)));
                 return true;
             }
             return false;
         }
 
+        private static string CleanListElement(string value)
+        {
+            var tickQuotes =
+                value.StartsWith("`") || value.EndsWith("`");
+            var angleQuotes =
+                value.StartsWith("<") && value.Contains(">") ||
+                value.EndsWith(">") && value.Contains("<");
+            if (tickQuotes)
+            {
+                value = value.Replace("`", "");
+            }
+            if (angleQuotes)
+            {
+                value = value.Replace("<", "").Replace(">", "");
+            }
+            return value;
+        }
+
         private static string RemoveQuotes(string value)
         {
             value = value.Trim();
-            if (value.StartsWith("`") && value.EndsWith("`") ||
-                value.StartsWith("<") && value.EndsWith(">"))
+            if (IsQuoted(value))
             {
                 return value.Substring(1, value.Length - 2);
             }
@@ -129,6 +136,12 @@ namespace Mastersign.Bench
             {
                 return value;
             }
+        }
+
+        private static bool IsQuoted(string value)
+        {
+            return value.StartsWith("`") && value.EndsWith("`") ||
+                   value.StartsWith("<") && value.EndsWith(">");
         }
 
         #endregion
@@ -201,6 +214,7 @@ namespace Mastersign.Bench
                 ProcessLine(line);
                 LineNo++;
             }
+            ProcessLine("");
         }
 
         private void ProcessLine(string line)
