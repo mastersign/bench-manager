@@ -25,7 +25,12 @@ namespace Mastersign.Bench
         public object ResolveGroupValue(string group, string name, object value)
         {
             if (value == null) return null;
-            if (value is string && (Selector == null || Selector(group, name)))
+            if (Selector == null || !Selector(group, name)) return value;
+            if (value is string[])
+            {
+                return Array.ConvertAll((string[])value, v => (string)ResolveGroupValue(group, name, v));
+            }
+            if (value is string)
             {
                 var path = (string)value;
                 if (!Path.IsPathRooted(path) && BasePathSource != null)
