@@ -72,6 +72,11 @@
     <Compile Include="IBenchManager.cs" />
     <Compile Include="IProcessExecutionHost.cs" />
     <Compile Include="LogLevels.cs" />
+    <Compile Include="Markdown\MarkdownHtmlConverter.cs" />
+    <Compile Include="Markdown\MdAnchor.cs" />
+    <Compile Include="Markdown\MdContext.cs" />
+    <Compile Include="Markdown\MdHeadline.cs" />
+    <Compile Include="Markdown\MdSyntax.cs" />
     <Compile Include="PowerShell.cs" />
     <Compile Include="ProcessExecutionFailedException.cs" />
     <Compile Include="PythonVersion.cs" />
@@ -131,8 +136,8 @@
     <Compile Include="IPropertyTarget.cs" />
     <Compile Include="IGroupedValueResolver.cs" />
     <Compile Include="IUrlResolver.cs" />
-    <Compile Include="MarkdownHelper.cs" />
-    <Compile Include="MarkdownPropertyParser.cs" />
+    <Compile Include="Markdown\MarkdownPropertyEditor.cs" />
+    <Compile Include="Markdown\MarkdownPropertyParser.cs" />
     <Compile Include="PageContentUrlResolver.cs" />
     <Compile Include="PathResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -141,6 +146,9 @@
     <Compile Include="ResolvingPropertyCollection.cs" />
     <Compile Include="IUserInterface.cs" />
     <Compile Include="VariableResolver.cs" />
+    <Compile Include="Vendor\MarkdownSharp\IExtensionInterface.cs" />
+    <Compile Include="Vendor\MarkdownSharp\Markdown.cs" />
+    <Compile Include="Vendor\MarkdownSharp\MarkdownOptions.cs" />
     <Compile Include="Windows\ClrInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mastersign.Bench.Dashboard.Properties;
+using Mastersign.Bench.Markdown;
 
 namespace Mastersign.Bench.Dashboard
 {
@@ -63,13 +64,16 @@ namespace Mastersign.Bench.Dashboard
             TempFile = NewTempFilePath();
             title = title ?? Path.GetFileNameWithoutExtension(file);
             Text = windowTitle + " - " + title;
-            string source;
             string html;
+            var md2html = new MarkdownToHtmlConverter();
             try
             {
-                source = File.ReadAllText(file, Encoding.UTF8);
-                html = new MarkdownSharp.Markdown().Transform(source);
+                using (var s = File.Open(file, FileMode.Open, FileAccess.Read))
+                {
+                    html = md2html.ConvertToHtml(s);
+                }
                 html = template.Replace("$TITLE$", title).Replace("$CONTENT$", html);
+
                 File.WriteAllText(TempFile, html, Encoding.UTF8);
             }
             catch (Exception e)

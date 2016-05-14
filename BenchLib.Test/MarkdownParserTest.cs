@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Mastersign.Bench.Markdown;
 using NUnit.Framework;
 
 namespace Mastersign.Bench.Test

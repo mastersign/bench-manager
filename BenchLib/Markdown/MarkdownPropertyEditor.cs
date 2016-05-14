@@ -4,9 +4,9 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Mastersign.Bench
+namespace Mastersign.Bench.Markdown
 {
-    public static class MarkdownHelper
+    public static class MarkdownPropertyEditor
     {
         private const string PatternTemplate = @"^{0}\s+((?:~~)?)\s*{1}\s*:\s*{2}\s*\1\s*$";
         private const string PropertyTemplate = @"* {0}: `{1}`";
