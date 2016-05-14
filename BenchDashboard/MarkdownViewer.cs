@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mastersign.Bench.Dashboard.Properties;
+using Mastersign.Bench.Markdown;
 
 namespace Mastersign.Bench.Dashboard
 {
@@ -33,9 +34,24 @@ namespace Mastersign.Bench.Dashboard
             this.windowTitle = Text;
         }
 
+        private void MarkdownViewer_Load(object sender, EventArgs e)
+        {
+            InitializeBounds();
+        }
+
         private void MarkdownViewer_FormClosed(object sender, FormClosedEventArgs e)
         {
             TempFile = null;
+        }
+
+        private void InitializeBounds()
+        {
+            var region = Screen.PrimaryScreen.WorkingArea;
+            var w = Math.Max(MinimumSize.Width, region.Width / 2);
+            var h = Math.Max(MinimumSize.Height, region.Height);
+            var x = 0;
+            var y = region.Top;
+            SetBounds(x, y, w, h);
         }
 
         private string TempFile
@@ -51,6 +67,8 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
+        private Uri TempDocumentUrl { get { return new Uri("file:///" + TempFile); } }
+
         private string NewTempFilePath()
         {
             return Path.Combine(
@@ -63,13 +81,16 @@ namespace Mastersign.Bench.Dashboard
             TempFile = NewTempFilePath();
             title = title ?? Path.GetFileNameWithoutExtension(file);
             Text = windowTitle + " - " + title;
-            string source;
             string html;
+            var md2html = new MarkdownToHtmlConverter();
             try
             {
-                source = File.ReadAllText(file, Encoding.UTF8);
-                html = new MarkdownSharp.Markdown().Transform(source);
+                using (var s = File.Open(file, FileMode.Open, FileAccess.Read))
+                {
+                    html = md2html.ConvertToHtml(s);
+                }
                 html = template.Replace("$TITLE$", title).Replace("$CONTENT$", html);
+
                 File.WriteAllText(TempFile, html, Encoding.UTF8);
             }
             catch (Exception e)
@@ -78,7 +99,65 @@ namespace Mastersign.Bench.Dashboard
                 TempFile = null;
                 return;
             }
-            webBrowser.Navigate(TempFile);
+            webBrowser.Navigate(TempDocumentUrl);
+            LoadTree(md2html.Anchors);
+        }
+
+        private void LoadTree(IList<MdAnchor> anchors)
+        {
+            treeView.Nodes.Clear();
+            var parents = new Stack<TreeNode>();
+
+            foreach (var a in anchors)
+            {
+                if (a is MdHeadline)
+                {
+                    var h = (MdHeadline)a;
+                    for (int i = parents.Count; i >= h.Level; i--)
+                    {
+                        parents.Pop();
+                    }
+                    for (int i = parents.Count; i < h.Level - 1; i++)
+                    {
+                        var pU = new TreeNode("Unlabeled");
+                        var cU = parents.Count > 0 ? parents.Peek().Nodes : treeView.Nodes;
+                        cU.Add(pU);
+                        parents.Push(pU);
+                    }
+                    var n = new TreeNode(h.Label);
+                    n.Tag = h;
+                    var c = parents.Count > 0 ? parents.Peek().Nodes : treeView.Nodes;
+                    c.Add(n);
+                    parents.Push(n);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            treeView.ExpandAll();
+        }
+
+        private void treeView_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            var mdElement = e.Node.Tag as MdHeadline;
+            if (mdElement != null)
+            {
+                var element = webBrowser.Document.GetElementById(mdElement.Id);
+                if (element != null)
+                {
+                    element.ScrollIntoView(true);
+                }
+            }
+        }
+
+        private void webBrowser_Navigating(object sender, WebBrowserNavigatingEventArgs e)
+        {
+            if (e.Url.Scheme != "file")
+            {
+                e.Cancel = true;
+                Process.Start(e.Url.ToString());
+            }
         }
     }
 }

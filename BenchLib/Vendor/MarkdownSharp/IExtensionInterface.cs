@@ -7,7 +7,7 @@
 
 namespace MarkdownSharp.Extensions
 {
-    public interface IExtensionInterface
+    internal interface IExtensionInterface
     {
         /// <summary>
         /// Replace inline element

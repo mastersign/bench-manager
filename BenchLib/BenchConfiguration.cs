@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Mastersign.Bench.Markdown;
 
 namespace Mastersign.Bench
 {

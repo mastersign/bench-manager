@@ -4,17 +4,12 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Mastersign.Bench
+namespace Mastersign.Bench.Markdown
 {
     public class MarkdownPropertyParser
     {
         #region Static Members
 
-        private static readonly string YamlHeaderStart = "---";
-        private static readonly Regex YamlHeaderEndExp = new Regex("^---|...$");
-        private static readonly Regex CodeBlockExp = new Regex("^(?<preamble>```+|~~~+)");
-        private static readonly string HtmlCommentStart = "<!--";
-        private static readonly string HtmlCommentEnd = "-->";
         private static readonly Regex MdListExp = new Regex("^[\\*\\+-]\\s+(?<key>[a-zA-Z][a-zA-Z0-9]*?)\\s*:\\s*(?<value>.*?)\\s*$");
         private static readonly string MdListFormat = "* {0}: {1}";
 
@@ -30,59 +25,6 @@ namespace Mastersign.Bench
         private static readonly Regex DefaultGroupEndCue = new Regex("^\\s*$");
 
         private static readonly Regex DefaultCategoryCue = new Regex("^##\\s+(?<category>.+?)\\s*(?:\\{.*?\\})?\\s*(?:##)?$");
-
-        private static bool IsYamlHeaderStart(int lineNo, string line)
-        {
-            if (lineNo > 0) return false;
-            return line == YamlHeaderStart;
-        }
-
-        private static bool IsYamlHeaderEnd(int lineNo, string line)
-        {
-            if (lineNo == 0) return false;
-            return YamlHeaderEndExp.IsMatch(line);
-        }
-
-        private static bool IsHtmlCommentStart(string line, int pos = 0)
-        {
-            var startP = line.LastIndexOf(HtmlCommentStart, pos);
-            if (startP < 0) return false;
-            return line.IndexOf(HtmlCommentEnd, startP) < 0;
-        }
-
-        private static bool IsHtmlCommentEnd(string line)
-        {
-            var endP = line.IndexOf(HtmlCommentEnd);
-            if (endP < 0) return false;
-            return !IsHtmlCommentStart(line, endP);
-        }
-
-        private static bool IsCodeBlockStart(string line, ref string preamble)
-        {
-            var m = CodeBlockExp.Match(line);
-            if (m.Success)
-            {
-                preamble = m.Groups["preamble"].Value;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private static bool IsCodeBlockEnd(string line, ref string preamble)
-        {
-            if (line.Trim() == preamble)
-            {
-                preamble = null;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
 
         private static bool IsListStart(string line, ref string key)
         {
@@ -222,33 +164,33 @@ namespace Mastersign.Bench
             switch (Context)
             {
                 case MdContext.Inactive:
-                    if (IsYamlHeaderStart(LineNo, line))
+                    if (MdSyntax.IsYamlHeaderStart(LineNo, line))
                         Context = MdContext.YamlHeader;
-                    else if (IsHtmlCommentStart(line))
+                    else if (MdSyntax.IsHtmlCommentStart(line))
                         Context = MdContext.HtmlComment;
-                    else if (IsCodeBlockStart(line, ref CodePreamble))
+                    else if (MdSyntax.IsCodeBlockStart(line, ref CodePreamble))
                         Context = MdContext.CodeBlock;
                     else if (IsActivationCue(line))
                         Context = MdContext.Text;
                     break;
                 case MdContext.YamlHeader:
-                    if (IsYamlHeaderEnd(LineNo, line))
+                    if (MdSyntax.IsYamlHeaderEnd(LineNo, line))
                         Context = MdContext.Text;
                     break;
                 case MdContext.HtmlComment:
-                    if (IsHtmlCommentEnd(line))
+                    if (MdSyntax.IsHtmlCommentEnd(line))
                         Context = MdContext.Text;
                     break;
                 case MdContext.CodeBlock:
-                    if (IsCodeBlockEnd(line, ref CodePreamble))
+                    if (MdSyntax.IsCodeBlockEnd(line, ref CodePreamble))
                         Context = MdContext.Text;
                     break;
                 case MdContext.Text:
-                    if (IsYamlHeaderStart(LineNo, line))
+                    if (MdSyntax.IsYamlHeaderStart(LineNo, line))
                         Context = MdContext.YamlHeader;
-                    else if (IsHtmlCommentStart(line))
+                    else if (MdSyntax.IsHtmlCommentStart(line))
                         Context = MdContext.HtmlComment;
-                    else if (IsCodeBlockStart(line, ref CodePreamble))
+                    else if (MdSyntax.IsCodeBlockStart(line, ref CodePreamble))
                         Context = MdContext.CodeBlock;
                     else if (IsDeactivationCue(line))
                         Context = MdContext.Inactive;
@@ -336,16 +278,6 @@ namespace Mastersign.Bench
                     OnPropertyValue(key, value);
                 }
             }
-        }
-
-        private enum MdContext
-        {
-            Inactive,
-            YamlHeader,
-            Text,
-            CodeBlock,
-            HtmlComment,
-            List
         }
     }
 }

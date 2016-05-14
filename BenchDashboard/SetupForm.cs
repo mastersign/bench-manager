@@ -538,14 +538,14 @@ namespace Mastersign.Bench.Dashboard
         {
             var viewer = new MarkdownViewer(core);
             viewer.LoadMarkdown(core.Config.GetStringValue(PropertyKeys.AppIndexFile), "App Repository");
-            viewer.Show(core.GuiContext);
+            viewer.Show();
         }
 
         private void ShowCustomAppIndexHandler(object sender, EventArgs e)
         {
             var viewer = new MarkdownViewer(core);
             viewer.LoadMarkdown(core.Config.GetStringValue(PropertyKeys.CustomAppIndexFile), "Custom Apps");
-            viewer.Show(core.GuiContext);
+            viewer.Show();
         }
 
         private void SetupForm_FormClosing(object sender, FormClosingEventArgs e)

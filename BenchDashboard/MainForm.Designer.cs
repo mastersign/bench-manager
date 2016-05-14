@@ -36,13 +36,13 @@
             this.tsslAppCountLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.tsslAppCount = new System.Windows.Forms.ToolStripStatusLabel();
             this.panelTop = new System.Windows.Forms.Panel();
+            this.btnAbout = new System.Windows.Forms.Button();
             this.btnShellBash = new System.Windows.Forms.Button();
             this.btnShellPowerShell = new System.Windows.Forms.Button();
             this.btnShellCmd = new System.Windows.Forms.Button();
             this.btnSetup = new System.Windows.Forms.Button();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.appLauncherList = new Mastersign.Bench.Dashboard.AppLauncherControl();
-            this.btnAbout = new System.Windows.Forms.Button();
             this.statusStrip.SuspendLayout();
             this.panelTop.SuspendLayout();
             this.SuspendLayout();
@@ -99,6 +99,18 @@
             this.panelTop.Size = new System.Drawing.Size(400, 29);
             this.panelTop.TabIndex = 5;
             // 
+            // btnAbout
+            // 
+            this.btnAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnAbout.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.info_16;
+            this.btnAbout.Location = new System.Drawing.Point(368, 2);
+            this.btnAbout.Margin = new System.Windows.Forms.Padding(2);
+            this.btnAbout.Name = "btnAbout";
+            this.btnAbout.Size = new System.Drawing.Size(29, 25);
+            this.btnAbout.TabIndex = 4;
+            this.toolTip.SetToolTip(this.btnAbout, "Bench Info");
+            this.btnAbout.Click += new System.EventHandler(this.AboutHandler);
+            // 
             // btnShellBash
             // 
             this.btnShellBash.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.bash_16;
@@ -154,18 +166,6 @@
             this.appLauncherList.Size = new System.Drawing.Size(400, 310);
             this.appLauncherList.TabIndex = 3;
             // 
-            // btnAbout
-            // 
-            this.btnAbout.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnAbout.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.info_16;
-            this.btnAbout.Location = new System.Drawing.Point(368, 2);
-            this.btnAbout.Margin = new System.Windows.Forms.Padding(2);
-            this.btnAbout.Name = "btnAbout";
-            this.btnAbout.Size = new System.Drawing.Size(29, 25);
-            this.btnAbout.TabIndex = 4;
-            this.toolTip.SetToolTip(this.btnAbout, "Bench Info");
-            this.btnAbout.Click += new System.EventHandler(this.AboutHandler);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -176,7 +176,6 @@
             this.Controls.Add(this.statusStrip);
             this.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
             this.MinimumSize = new System.Drawing.Size(216, 128);
             this.Name = "MainForm";
             this.Text = "Bench";

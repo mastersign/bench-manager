@@ -131,9 +131,6 @@
     <Compile Include="Vendor\IconExtractor\IconExtractor.cs" />
     <Compile Include="Vendor\IconExtractor\IconUtil.cs" />
     <Compile Include="Vendor\IconExtractor\NativeMethods.cs" />
-    <Compile Include="Vendor\MarkdownSharp\IExtensionInterface.cs" />
-    <Compile Include="Vendor\MarkdownSharp\Markdown.cs" />
-    <Compile Include="Vendor\MarkdownSharp\MarkdownOptions.cs" />
     <Compile Include="WinFormsUserInterface.cs" />
     <EmbeddedResource Include="AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>

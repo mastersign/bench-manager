@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Mastersign.Bench.Markdown;
 
 namespace Mastersign.Bench.UI
 {
@@ -101,7 +102,7 @@ namespace Mastersign.Bench.UI
                     }
                 }
                 File.Copy(siteConfigTemplateFile, defaultSiteConfigFile, false);
-                MarkdownHelper.UpdateFile(defaultSiteConfigFile, updates);
+                MarkdownPropertyEditor.UpdateFile(defaultSiteConfigFile, updates);
             }
 
             if (InitCustomConfig)
