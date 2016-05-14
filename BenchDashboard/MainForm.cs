@@ -146,7 +146,7 @@ namespace Mastersign.Bench.Dashboard
             {
                 setupForm = new SetupForm(core);
             }
-            if (!setupForm.Visible) setupForm.Show(this);
+            if (!setupForm.Visible) setupForm.Show();
         }
 
         private void AboutHandler(object sender, EventArgs e)
