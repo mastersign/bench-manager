@@ -107,7 +107,14 @@ namespace Mastersign.Bench.Dashboard
             {
                 return backupHost.RunProcess(env, cwd, executable, arguments, monitoring);
             }
-
+            if (!File.Exists(executable))
+            {
+                throw new FileNotFoundException("The executable could not be found.", executable);
+            }
+            if (!Directory.Exists(cwd))
+            {
+                throw new DirectoryNotFoundException("The working directory could not be found: " + cwd);
+            }
             var collectOutput = (monitoring & ProcessMonitoring.Output) == ProcessMonitoring.Output;
             var startInfo = BuildStartInfo(env, cwd, executable, arguments, collectOutput);
             NotifyProcessStart();
@@ -140,7 +147,14 @@ namespace Mastersign.Bench.Dashboard
                 backupHost.StartProcess(env, cwd, executable, arguments, cb, monitoring);
                 return;
             }
-
+            if (!File.Exists(executable))
+            {
+                throw new FileNotFoundException("The executable could not be found.", executable);
+            }
+            if (!Directory.Exists(cwd))
+            {
+                throw new DirectoryNotFoundException("The working directory could not be found: " + cwd);
+            }
             var collectOutput = (monitoring & ProcessMonitoring.Output) == ProcessMonitoring.Output;
             var startInfo = BuildStartInfo(env, cwd, executable, arguments, collectOutput);
             NotifyProcessStart();
