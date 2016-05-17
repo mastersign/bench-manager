@@ -17,6 +17,7 @@ namespace Mastersign.Bench.Dashboard
         public AboutDialog()
         {
             InitializeComponent();
+            lblVersion.Text = "Version " + Program.Core.Config.GetStringValue(PropertyKeys.Version);
             txtLicenses.Text = Resources.licenses;
             var acks = new List<string>();
             foreach (var ack in Resources.acknowledgements.Split(
