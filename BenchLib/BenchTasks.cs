@@ -804,9 +804,18 @@ namespace Mastersign.Bench
                 CreateActionLauncher(config, "Bench Control", "bench-ctl", @"%SystemRoot%\System32\imageres.dll,109",
                     config.BenchRootDir);
             }
-            CreateActionLauncher(config, "Command Line", "bench-cmd", @"%SystemRoot%\System32\cmd.exe");
-            CreateActionLauncher(config, "PowerShell", "bench-ps", @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe");
-            CreateActionLauncher(config, "Bourne Again Shell", "bench-bash", @"%SystemRoot%\System32\imageres.dll,89");
+            if (config.GetBooleanValue(PropertyKeys.QuickAccessCmd, true))
+            {
+                CreateActionLauncher(config, "Command Line", "bench-cmd", @"%SystemRoot%\System32\cmd.exe");
+            }
+            if (config.GetBooleanValue(PropertyKeys.QuickAccessPowerShell, false))
+            {
+                CreateActionLauncher(config, "PowerShell", "bench-ps", @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe");
+            }
+            if (config.GetBooleanValue(PropertyKeys.QuickAccessBash, false))
+            {
+                CreateActionLauncher(config, "Bash", "bench-bash", @"%SystemRoot%\System32\imageres.dll,95");
+            }
         }
 
         private static void CreateLauncher(BenchConfiguration config, AppFacade app)

@@ -35,6 +35,9 @@ namespace Mastersign.Bench
 
         public const string WizzardEditCustomConfigBeforeSetup = "WizzardEditCustomConfigBeforeSetup";
         public const string WizzardStartAutoSetup = "WizzardStartAutoSetup";
+        public const string QuickAccessCmd = "QuickAccessCmd";
+        public const string QuickAccessPowerShell = "QuickAccessPowerShell";
+        public const string QuickAccessBash = "QuickAccessBash";
 
         public const string ConEmuConfigFile = "ConEmuConfigFile";
         public const string ConEmuConfigTemplateFile = "ConEmuConfigTemplateFile";

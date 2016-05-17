@@ -61,7 +61,17 @@ namespace Mastersign.Bench.Dashboard.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Microsoft for the OS and .NET ecosystem
+        ///Igor Pavlov for 7-Zip
+        ///Scott Willeke for Less Msiérables
+        ///Ariman for Inno Setup Unpacker
+        ///Maximus5 for ConEmu
+        ///Dino Chisa for DotNetZip
+        ///John Gruber for Markdown
+        ///Jeff Atwood for MarkdownSharp
+        ///Tsuda Kageyu for the IconExtractor
+        ///Linus Torvalds, Junio C. Hamano, Shawn O. Pearce, et.al. for Git
+        /// ähnelt.
         /// </summary>
         internal static string acknowledgements {
             get {
@@ -75,16 +85,6 @@ namespace Mastersign.Bench.Dashboard.Properties {
         internal static System.Drawing.Bitmap apps {
             get {
                 object obj = ResourceManager.GetObject("apps", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Ressource vom Typ System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap bash_16 {
-            get {
-                object obj = ResourceManager.GetObject("bash_16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -230,7 +230,16 @@ namespace Mastersign.Bench.Dashboard.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bench / Bench Dashboard
+        ///The MIT License (MIT)
+        ///Copyright (c) 2016 Tobias Kiertscher &lt;dev@mastersign.de&gt;
+        ///
+        ///Permission is hereby granted, free of charge, to any person obtaining a copy
+        ///of this software and associated documentation files (the &quot;Software&quot;), to deal
+        ///in the Software without restriction, including without limitation the rights
+        ///to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        ///copies of the Software, and to permit persons to whom the Software is
+        ///furnished to do so, sub [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         internal static string licenses {
             get {

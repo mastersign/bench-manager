@@ -113,7 +113,7 @@
             // 
             // btnShellBash
             // 
-            this.btnShellBash.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.bash_16;
+            this.btnShellBash.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.missing_app_16;
             this.btnShellBash.Location = new System.Drawing.Point(64, 2);
             this.btnShellBash.Margin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.btnShellBash.Name = "btnShellBash";
