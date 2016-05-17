@@ -34,13 +34,14 @@
             this.lblAckLabel = new System.Windows.Forms.Label();
             this.panelHead = new System.Windows.Forms.Panel();
             this.picLogo = new System.Windows.Forms.PictureBox();
-            this.linkAuthor = new System.Windows.Forms.LinkLabel();
             this.lblSubtitle = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.panelFooter = new System.Windows.Forms.Panel();
             this.btnClose = new System.Windows.Forms.Button();
             this.lblAcks = new System.Windows.Forms.Label();
             this.txtLicenses = new System.Windows.Forms.TextBox();
+            this.lblVersion = new System.Windows.Forms.Label();
+            this.linkAuthor = new System.Windows.Forms.LinkLabel();
             this.table.SuspendLayout();
             this.panelHead.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picLogo)).BeginInit();
@@ -95,8 +96,8 @@
             // 
             this.panelHead.BackColor = System.Drawing.SystemColors.Control;
             this.table.SetColumnSpan(this.panelHead, 2);
+            this.panelHead.Controls.Add(this.lblVersion);
             this.panelHead.Controls.Add(this.picLogo);
-            this.panelHead.Controls.Add(this.linkAuthor);
             this.panelHead.Controls.Add(this.lblSubtitle);
             this.panelHead.Controls.Add(this.lblTitle);
             this.panelHead.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -115,19 +116,6 @@
             this.picLogo.Size = new System.Drawing.Size(64, 64);
             this.picLogo.TabIndex = 3;
             this.picLogo.TabStop = false;
-            // 
-            // linkAuthor
-            // 
-            this.linkAuthor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.linkAuthor.AutoSize = true;
-            this.linkAuthor.LinkColor = System.Drawing.SystemColors.HotTrack;
-            this.linkAuthor.Location = new System.Drawing.Point(436, 12);
-            this.linkAuthor.Name = "linkAuthor";
-            this.linkAuthor.Size = new System.Drawing.Size(92, 13);
-            this.linkAuthor.TabIndex = 2;
-            this.linkAuthor.TabStop = true;
-            this.linkAuthor.Text = "Tobias Kiertscher";
-            this.linkAuthor.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkAuthor_LinkClicked);
             // 
             // lblSubtitle
             // 
@@ -153,6 +141,7 @@
             // 
             this.panelFooter.BackColor = System.Drawing.SystemColors.Control;
             this.table.SetColumnSpan(this.panelFooter, 2);
+            this.panelFooter.Controls.Add(this.linkAuthor);
             this.panelFooter.Controls.Add(this.btnClose);
             this.panelFooter.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelFooter.Location = new System.Drawing.Point(0, 421);
@@ -198,6 +187,28 @@
             this.txtLicenses.Size = new System.Drawing.Size(502, 288);
             this.txtLicenses.TabIndex = 5;
             // 
+            // lblVersion
+            // 
+            this.lblVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblVersion.Location = new System.Drawing.Point(440, 16);
+            this.lblVersion.Name = "lblVersion";
+            this.lblVersion.Size = new System.Drawing.Size(100, 13);
+            this.lblVersion.TabIndex = 4;
+            this.lblVersion.Text = "v0.0.0";
+            this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // linkAuthor
+            // 
+            this.linkAuthor.AutoSize = true;
+            this.linkAuthor.LinkColor = System.Drawing.SystemColors.HotTrack;
+            this.linkAuthor.Location = new System.Drawing.Point(12, 24);
+            this.linkAuthor.Name = "linkAuthor";
+            this.linkAuthor.Size = new System.Drawing.Size(93, 13);
+            this.linkAuthor.TabIndex = 4;
+            this.linkAuthor.TabStop = true;
+            this.linkAuthor.Text = "Tobias Kiertscher";
+            this.linkAuthor.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkAuthor_LinkClicked);
+            // 
             // AboutDialog
             // 
             this.AcceptButton = this.btnClose;
@@ -220,6 +231,7 @@
             this.panelHead.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picLogo)).EndInit();
             this.panelFooter.ResumeLayout(false);
+            this.panelFooter.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -230,7 +242,6 @@
         private System.Windows.Forms.Label lblAckLabel;
         private System.Windows.Forms.Panel panelHead;
         private System.Windows.Forms.PictureBox picLogo;
-        private System.Windows.Forms.LinkLabel linkAuthor;
         private System.Windows.Forms.Label lblSubtitle;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Panel panelFooter;
@@ -238,5 +249,7 @@
         private System.Windows.Forms.Label lblAcks;
         private System.Windows.Forms.Label lblLicenses;
         private System.Windows.Forms.TextBox txtLicenses;
+        private System.Windows.Forms.Label lblVersion;
+        private System.Windows.Forms.LinkLabel linkAuthor;
     }
 }

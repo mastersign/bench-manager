@@ -225,7 +225,6 @@
     <Content Include="Resources\upgrade_16.png" />
     <Content Include="Resources\warning_16.png" />
     <None Include="Resources\apps.png" />
-    <None Include="Resources\bash_16.png" />
     <Content Include="Resources\bench.ico" />
     <None Include="Resources\missing_app_16.png" />
     <None Include="Resources\config.png" />

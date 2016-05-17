@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -25,7 +23,7 @@ namespace Mastersign.Bench.Dashboard
             this.core = core;
             core.AllAppStateChanged += AppStateChangedHandler;
             core.AppStateChanged += AppStateChangedHandler;
-            core.ConfigReloaded += AppStateChangedHandler;
+            core.ConfigReloaded += ConfigReloadedHandler;
             InitializeComponent();
             InitializeAppLauncherList();
             InitializeTopPanel();
@@ -59,6 +57,13 @@ namespace Mastersign.Bench.Dashboard
             InitializeStatusStrip();
         }
 
+        private void ConfigReloadedHandler(object sender, EventArgs e)
+        {
+            UpdateShellButtons();
+            InitializeAppLauncherList();
+            InitializeStatusStrip();
+        }
+
         private void InitializeAppLauncherList()
         {
             appLauncherList.Core = core;
@@ -73,31 +78,66 @@ namespace Mastersign.Bench.Dashboard
 
         private void InitializeTopPanel()
         {
+            UpdateShellButtons();
             new Thread(() =>
             {
                 var cmdImg = ExtractIcon(core.CmdPath, "CMD");
                 var psImg = ExtractIcon(core.PowerShellPath, "PowerShell");
+                var imageResDllPath = Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\imageres.dll");
+                var bashImg = ExtractIcon(imageResDllPath, "Bash", 95);
                 BeginInvoke((ThreadStart)(() =>
                 {
                     btnShellCmd.Image = cmdImg ?? Resources.missing_app_16;
                     btnShellPowerShell.Image = psImg ?? Resources.missing_app_16;
+                    btnShellBash.Image = bashImg ?? Resources.missing_app_16;
                 }));
             }).Start();
         }
 
-        private static Bitmap ExtractIcon(string path, string name)
+        private static Bitmap ExtractIcon(string path, string name, int index = 0)
         {
             if (!File.Exists(path)) return null;
             try
             {
                 var extractor = new IconExtractor(path);
-                var icon = extractor.GetIcon(0);
+                var icon = extractor.GetIcon(index);
                 return new Icon(icon, new Size(16, 16)).ToBitmap();
             }
             catch (Exception e)
             {
                 Debug.WriteLine("Failed to load icon for " + name + ": " + e);
                 return null;
+            }
+        }
+
+        private void UpdateShellButtons()
+        {
+            var buttons = new[]
+            {
+                btnShellCmd,
+                btnShellPowerShell,
+                btnShellBash,
+            };
+            var buttonEnabled = new[]
+            {
+                core.Config.GetBooleanValue(PropertyKeys.QuickAccessCmd, true),
+                core.Config.GetBooleanValue(PropertyKeys.QuickAccessPowerShell, false),
+                core.Config.GetBooleanValue(PropertyKeys.QuickAccessBash, false),
+            };
+            var x = buttons[0].Left;
+            var y = buttons[0].Top;
+            var d = 2;
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                var b = buttons[i];
+                b.Visible = buttonEnabled[i];
+                b.Location = new Point(x, y);
+                Debug.WriteLine("Enabled: " + i + " -> " + buttonEnabled[i]);
+                if (buttonEnabled[i])
+                {
+                    x = x + b.Width + d;
+                    Debug.WriteLine("Next Stop: " + x);
+                }
             }
         }
 
