@@ -89,6 +89,23 @@ namespace Mastersign.Bench
             }
         }
 
+        public AppFacade[] RequiredApps
+        {
+            get
+            {
+                var result = new List<AppFacade>();
+                foreach (var appName in AppIndex.Groups())
+                {
+                    var app = GetAppFacade(appName);
+                    if (app.IsRequired)
+                    {
+                        result.Add(app);
+                    }
+                }
+                return result.ToArray();
+            }
+        }
+
         public IEnumerator<AppFacade> GetEnumerator()
         {
             foreach (var appName in AppIndex.Groups())
