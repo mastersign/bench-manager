@@ -122,7 +122,7 @@ namespace Mastersign.Bench
             appIndexFacade = new AppIndexFacade(this);
 
             AutomaticConfiguration();
-            AutomaticActivation();
+            AutomaticActivation(loadCustomConfiguration);
             RecordResponsibilities();
         }
 
@@ -161,7 +161,7 @@ namespace Mastersign.Bench
             SetValue(PropertyKeys.Version, version);
         }
 
-        private void AutomaticActivation()
+        private void AutomaticActivation(bool withCustomConfiguration)
         {
             // activate required apps
 
@@ -171,27 +171,30 @@ namespace Mastersign.Bench
                 app.ActivateAsRequired();
             }
 
-            // activate manually activated apps
-
-            var activationFile = new ActivationFile(GetStringValue(PropertyKeys.AppActivationFile));
-            foreach (var appName in activationFile)
+            if (withCustomConfiguration)
             {
-                if (Apps.Exists(appName))
+                // activate manually activated apps
+
+                var activationFile = new ActivationFile(GetStringValue(PropertyKeys.AppActivationFile));
+                foreach (var appName in activationFile)
                 {
-                    Debug.WriteLine(string.Format("Activating app '{0}'", appName));
-                    Apps[appName].Activate();
+                    if (Apps.Exists(appName))
+                    {
+                        Debug.WriteLine(string.Format("Activating app '{0}'", appName));
+                        Apps[appName].Activate();
+                    }
                 }
-            }
 
-            // deactivate manually deactivated apps
+                // deactivate manually deactivated apps
 
-            var deactivationFile = new ActivationFile(GetStringValue(PropertyKeys.AppDeactivationFile));
-            foreach (var appName in deactivationFile)
-            {
-                if (Apps.Exists(appName))
+                var deactivationFile = new ActivationFile(GetStringValue(PropertyKeys.AppDeactivationFile));
+                foreach (var appName in deactivationFile)
                 {
-                    Debug.WriteLine(string.Format("Deactivating app '{0}'", appName));
-                    Apps[appName].Deactivate();
+                    if (Apps.Exists(appName))
+                    {
+                        Debug.WriteLine(string.Format("Deactivating app '{0}'", appName));
+                        Apps[appName].Deactivate();
+                    }
                 }
             }
         }
