@@ -314,6 +314,22 @@ namespace Mastersign.Bench
 
         #region Higher Order Actions
 
+        public static ActionResult DoSetupRequiredApps(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new ICollection<AppFacade>[]
+                {
+                    man.Config.Apps.RequiredApps,
+                    man.Config.Apps.RequiredApps
+                },
+                notify, cancelation,
+                UninstallApps,
+                DownloadAppResources,
+                InstallApps,
+                UpdateEnvironment);
+        }
+
         public static ActionResult DoAutoSetup(IBenchManager man,
             Action<TaskInfo> notify, Cancelation cancelation)
         {

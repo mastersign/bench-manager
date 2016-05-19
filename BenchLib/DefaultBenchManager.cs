@@ -64,6 +64,8 @@ namespace Mastersign.Bench
             return action(this, NotificationHandler, new Cancelation()).Success;
         }
 
+        public bool SetupRequiredApps() { return RunAction(BenchTasks.DoSetupRequiredApps); }
+
         public bool AutoSetup() { return RunAction(BenchTasks.DoAutoSetup); }
 
         public bool UpdateEnvironment() { return RunAction(BenchTasks.DoUpdateEnvironment); }
