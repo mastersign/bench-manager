@@ -756,7 +756,7 @@ namespace Mastersign.Bench
                     var proxyPath = app.GetExecutableProxy(exePath);
                     var code = new StringBuilder();
                     code.AppendLine("@ECHO OFF");
-                    code.AppendLine(string.Format("runps Run-Adorned {0}, \"{1}\" %*", app.ID, exePath));
+                    code.AppendLine(string.Format("runps Run-Adorned \"{0}\" \"{1}\" %*", app.ID, exePath));
                     File.WriteAllText(proxyPath, code.ToString());
                 }
             }
