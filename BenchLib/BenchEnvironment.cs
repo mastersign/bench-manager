@@ -130,6 +130,7 @@ namespace Mastersign.Bench
                 if (Config.GetBooleanValue(PropertyKeys.IgnoreSystemPath))
                 {
                     w.WriteLine("SET PATH={0}", PathList(
+                        "%BENCH_AUTO%",
                         "%BENCH_PATH%",
                         "%SystemRoot%",
                         @"%SystemRoot%\System32",
@@ -137,7 +138,10 @@ namespace Mastersign.Bench
                 }
                 else
                 {
-                    w.WriteLine("SET PATH={0}", PathList("%BENCH_PATH%", "%PATH%"));
+                    w.WriteLine("SET PATH={0}", PathList(
+                        "%BENCH_AUTO%", 
+                        "%BENCH_PATH%", 
+                        "%PATH%"));
                 }
 
                 var env = Config.Apps.Environment;
