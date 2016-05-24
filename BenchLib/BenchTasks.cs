@@ -314,6 +314,22 @@ namespace Mastersign.Bench
 
         #region Higher Order Actions
 
+        public static ActionResult DoSetupRequiredApps(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new ICollection<AppFacade>[]
+                {
+                    man.Config.Apps.RequiredApps,
+                    man.Config.Apps.RequiredApps
+                },
+                notify, cancelation,
+                UninstallApps,
+                DownloadAppResources,
+                InstallApps,
+                UpdateEnvironment);
+        }
+
         public static ActionResult DoAutoSetup(IBenchManager man,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
@@ -756,7 +772,7 @@ namespace Mastersign.Bench
                     var proxyPath = app.GetExecutableProxy(exePath);
                     var code = new StringBuilder();
                     code.AppendLine("@ECHO OFF");
-                    code.AppendLine(string.Format("runps Run-Adorned {0}, \"{1}\" %*", app.ID, exePath));
+                    code.AppendLine(string.Format("runps Run-Adorned \"{0}\" \"{1}\" %*", app.ID, exePath));
                     File.WriteAllText(proxyPath, code.ToString());
                 }
             }

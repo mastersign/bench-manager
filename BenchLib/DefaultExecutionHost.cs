@@ -30,6 +30,10 @@ namespace Mastersign.Bench
             {
                 throw new FileNotFoundException("The executable could not be found.", exe);
             }
+            if (!Directory.Exists(cwd))
+            {
+                throw new DirectoryNotFoundException("The working directory could not be found: " + cwd);
+            }
             var collectOutput = (monitoring & ProcessMonitoring.Output) == ProcessMonitoring.Output;
             StringBuilder sbStd = null;
             StringBuilder sbErr = null;
