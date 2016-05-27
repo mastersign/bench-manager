@@ -197,11 +197,13 @@
     <None Include="licenses.txt" />
     <Content Include="Resources\cached_16.png" />
     <None Include="Resources\cancelled_48.png" />
+    <Content Include="Resources\cleanup_16.png" />
     <Content Include="Resources\clear_16.png" />
     <None Include="Resources\warning_36_animation.gif" />
     <None Include="Resources\warning_48.png" />
     <EmbeddedResource Include="Resources\ConEmu.xml" />
     <Content Include="Resources\deletedownload_16.png" />
+    <Content Include="Resources\downloadall_16.png" />
     <Content Include="Resources\download_16.png" />
     <Content Include="Resources\do_16.png" />
     <Content Include="Resources\do_32.png" />

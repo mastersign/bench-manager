@@ -365,16 +365,28 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
-        private async void DownloadAllHandler(object sender, EventArgs e)
+        private async void DownloadActiveHandler(object sender, EventArgs e)
         {
             AnnounceTask("Download App Resources");
             await core.DownloadAppResourcesAsync(TaskInfoHandler);
+        }
+
+        private async void DownloadAllHandler(object sender, EventArgs e)
+        {
+            AnnounceTask("Download All App Resources");
+            await core.DownloadAllAppResourcesAsync(TaskInfoHandler);
         }
 
         private async void DeleteAllResourcesHandler(object sender, EventArgs e)
         {
             AnnounceTask("Delete App Resources");
             await core.DeleteAppResourcesAsync(TaskInfoHandler);
+        }
+
+        private async void CleanUpResourcesHandler(object sender, EventArgs e)
+        {
+            AnnounceTask("Cleaning Up App Resources");
+            await core.CleanUpResourcesAsync(TaskInfoHandler);
         }
 
         private async void InstallAllHandler(object sender, EventArgs e)
@@ -562,6 +574,11 @@ namespace Mastersign.Bench.Dashboard
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+        }
+
+        private void tsmiDownloadAllAppResources_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

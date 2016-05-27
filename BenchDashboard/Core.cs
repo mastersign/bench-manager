@@ -305,6 +305,31 @@ namespace Mastersign.Bench.Dashboard
             return result;
         }
 
+        public async Task<ActionResult> DownloadAllAppResourcesAsync(Action<TaskInfo> notify)
+        {
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoDownloadAllAppResources, notify, cancelation);
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Downloading All App Resources", "Canceled.");
+            }
+            else if (result.Success)
+            {
+                UI.ShowInfo("Downloading All App Resources", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Downloading All App Resources",
+                    BuildCombinedErrorMessage(
+                        "Downloading resources for the following apps failed:",
+                        "Downloading the app resources failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
+            return result;
+        }
+
         public async Task<ActionResult> DeleteAppResourcesAsync(Action<TaskInfo> notify)
         {
             BeginAction();
@@ -344,6 +369,31 @@ namespace Mastersign.Bench.Dashboard
                         result.Errors, 10));
             }
             OnAppStateChanged(appId);
+            return result;
+        }
+
+        public async Task<ActionResult> CleanUpResourcesAsync(Action<TaskInfo> notify)
+        {
+            BeginAction();
+            var result = await RunTaskAsync(BenchTasks.DoCleanUpAppResources, notify, cancelation);
+            EndAction(result.Success);
+            if (result.Canceled)
+            {
+                UI.ShowWarning("Clening Up App Resources", "Canceled.");
+            }
+            else if (result.Success)
+            {
+                UI.ShowInfo("Cleaning Up App Resources", "Finished.");
+            }
+            else
+            {
+                UI.ShowWarning("Cleaning Up App Resources",
+                    BuildCombinedErrorMessage(
+                        "Cleaning up resources failed:",
+                        "Cleaning up the app resources failed.",
+                        result.Errors, 10));
+            }
+            OnAllAppStateChanged();
             return result;
         }
 
