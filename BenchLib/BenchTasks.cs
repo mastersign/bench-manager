@@ -804,7 +804,6 @@ namespace Mastersign.Bench
                 var progress = (float)cnt / fileNames.Count;
 
                 var resourcePath = Path.Combine(downloadDir, name);
-                System.Windows.Forms.MessageBox.Show("Delete: " + resourcePath);
                 try
                 {
                     File.Delete(resourcePath);
