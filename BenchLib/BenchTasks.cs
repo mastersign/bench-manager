@@ -52,6 +52,12 @@ namespace Mastersign.Bench
                 resultCfg.SetValue(key, cfg.GetValue(key));
             }
 
+            if (resultCfg.GetValue(PropertyKeys.CustomConfigRepository) != null)
+            {
+                resultCfg.SetGroupCategory(AppKeys.Git, BenchConfiguration.DefaultAppCategory);
+                resultCfg.Apps[AppKeys.Git].ActivateAsRequired();
+            }
+
             return resultCfg;
         }
 
