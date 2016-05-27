@@ -76,7 +76,9 @@
             this.tsmiUpgradeAll = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiUninstallAll = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDownloadAllResources = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiDownloadAllAppResources = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiDeleteAllResources = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiCleanUpObsoleteResources = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmEdit = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditCustomConfig = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiEditCustomApps = new System.Windows.Forms.ToolStripMenuItem();
@@ -100,12 +102,12 @@
             // toolStripSeparator2
             // 
             toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(181, 6);
+            toolStripSeparator2.Size = new System.Drawing.Size(227, 6);
             // 
             // toolStripSeparator3
             // 
             toolStripSeparator3.Name = "toolStripSeparator3";
-            toolStripSeparator3.Size = new System.Drawing.Size(181, 6);
+            toolStripSeparator3.Size = new System.Drawing.Size(227, 6);
             // 
             // toolStripSeparator1
             // 
@@ -500,7 +502,9 @@
             this.tsmiUpgradeAll,
             this.tsmiUninstallAll,
             toolStripSeparator3,
+            this.tsmiCleanUpObsoleteResources,
             this.tsmiDownloadAllResources,
+            this.tsmiDownloadAllAppResources,
             this.tsmiDeleteAllResources});
             this.tsmSetup.Name = "tsmSetup";
             this.tsmSetup.Size = new System.Drawing.Size(49, 20);
@@ -510,7 +514,7 @@
             // 
             this.tsmiAuto.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.do_16;
             this.tsmiAuto.Name = "tsmiAuto";
-            this.tsmiAuto.Size = new System.Drawing.Size(184, 22);
+            this.tsmiAuto.Size = new System.Drawing.Size(230, 22);
             this.tsmiAuto.Text = "&Automatic Setup";
             this.tsmiAuto.Click += new System.EventHandler(this.AutoHandler);
             // 
@@ -518,7 +522,7 @@
             // 
             this.tsmiUpdateEnvironment.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.updateenv_16;
             this.tsmiUpdateEnvironment.Name = "tsmiUpdateEnvironment";
-            this.tsmiUpdateEnvironment.Size = new System.Drawing.Size(184, 22);
+            this.tsmiUpdateEnvironment.Size = new System.Drawing.Size(230, 22);
             this.tsmiUpdateEnvironment.Text = "Update &Environment";
             this.tsmiUpdateEnvironment.Click += new System.EventHandler(this.UpdateEnvironment);
             // 
@@ -526,7 +530,7 @@
             // 
             this.tsmiInstallAll.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.install_16;
             this.tsmiInstallAll.Name = "tsmiInstallAll";
-            this.tsmiInstallAll.Size = new System.Drawing.Size(184, 22);
+            this.tsmiInstallAll.Size = new System.Drawing.Size(230, 22);
             this.tsmiInstallAll.Text = "&Install Apps";
             this.tsmiInstallAll.Click += new System.EventHandler(this.InstallAllHandler);
             // 
@@ -534,7 +538,7 @@
             // 
             this.tsmiReinstallAll.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.reinstall_16;
             this.tsmiReinstallAll.Name = "tsmiReinstallAll";
-            this.tsmiReinstallAll.Size = new System.Drawing.Size(184, 22);
+            this.tsmiReinstallAll.Size = new System.Drawing.Size(230, 22);
             this.tsmiReinstallAll.Text = "&Reinstall Apps";
             this.tsmiReinstallAll.Click += new System.EventHandler(this.ReinstallAllHandler);
             // 
@@ -542,7 +546,7 @@
             // 
             this.tsmiUpgradeAll.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.upgrade_16;
             this.tsmiUpgradeAll.Name = "tsmiUpgradeAll";
-            this.tsmiUpgradeAll.Size = new System.Drawing.Size(184, 22);
+            this.tsmiUpgradeAll.Size = new System.Drawing.Size(230, 22);
             this.tsmiUpgradeAll.Text = "&Upgrade Apps";
             this.tsmiUpgradeAll.Click += new System.EventHandler(this.UpgradeAllHandler);
             // 
@@ -550,7 +554,7 @@
             // 
             this.tsmiUninstallAll.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.uninstall_16;
             this.tsmiUninstallAll.Name = "tsmiUninstallAll";
-            this.tsmiUninstallAll.Size = new System.Drawing.Size(184, 22);
+            this.tsmiUninstallAll.Size = new System.Drawing.Size(230, 22);
             this.tsmiUninstallAll.Text = "U&ninstall Apps";
             this.tsmiUninstallAll.Click += new System.EventHandler(this.UninstallAllHandler);
             // 
@@ -558,17 +562,33 @@
             // 
             this.tsmiDownloadAllResources.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.download_16;
             this.tsmiDownloadAllResources.Name = "tsmiDownloadAllResources";
-            this.tsmiDownloadAllResources.Size = new System.Drawing.Size(184, 22);
-            this.tsmiDownloadAllResources.Text = "Do&wnload Resources";
-            this.tsmiDownloadAllResources.Click += new System.EventHandler(this.DownloadAllHandler);
+            this.tsmiDownloadAllResources.Size = new System.Drawing.Size(230, 22);
+            this.tsmiDownloadAllResources.Text = "Do&wnload Active Resources";
+            this.tsmiDownloadAllResources.Click += new System.EventHandler(this.DownloadActiveHandler);
+            // 
+            // tsmiDownloadAllAppResources
+            // 
+            this.tsmiDownloadAllAppResources.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.downloadall_16;
+            this.tsmiDownloadAllAppResources.Name = "tsmiDownloadAllAppResources";
+            this.tsmiDownloadAllAppResources.Size = new System.Drawing.Size(230, 22);
+            this.tsmiDownloadAllAppResources.Text = "Down&load All Resources";
+            this.tsmiDownloadAllAppResources.Click += new System.EventHandler(this.DownloadAllHandler);
             // 
             // tsmiDeleteAllResources
             // 
             this.tsmiDeleteAllResources.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.deletedownload_16;
             this.tsmiDeleteAllResources.Name = "tsmiDeleteAllResources";
-            this.tsmiDeleteAllResources.Size = new System.Drawing.Size(184, 22);
-            this.tsmiDeleteAllResources.Text = "&Delete Resources";
+            this.tsmiDeleteAllResources.Size = new System.Drawing.Size(230, 22);
+            this.tsmiDeleteAllResources.Text = "&Delete All Resources";
             this.tsmiDeleteAllResources.Click += new System.EventHandler(this.DeleteAllResourcesHandler);
+            // 
+            // tsmiCleanUpObsoleteResources
+            // 
+            this.tsmiCleanUpObsoleteResources.Image = global::Mastersign.Bench.Dashboard.Properties.Resources.cleanup_16;
+            this.tsmiCleanUpObsoleteResources.Name = "tsmiCleanUpObsoleteResources";
+            this.tsmiCleanUpObsoleteResources.Size = new System.Drawing.Size(230, 22);
+            this.tsmiCleanUpObsoleteResources.Text = "&Clean-Up Obsolete Resources";
+            this.tsmiCleanUpObsoleteResources.Click += new System.EventHandler(this.CleanUpResourcesHandler);
             // 
             // tsmEdit
             // 
@@ -742,5 +762,7 @@
         private System.Windows.Forms.PictureBox picState;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowAppIndex;
         private System.Windows.Forms.ToolStripMenuItem tsmiShowCustomAppIndex;
+        private System.Windows.Forms.ToolStripMenuItem tsmiDownloadAllAppResources;
+        private System.Windows.Forms.ToolStripMenuItem tsmiCleanUpObsoleteResources;
     }
 }
