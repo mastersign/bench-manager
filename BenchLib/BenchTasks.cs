@@ -366,6 +366,15 @@ namespace Mastersign.Bench
                 DownloadAppResources);
         }
 
+        public static ActionResult DoDownloadAllAppResources(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new List<AppFacade>(man.Config.Apps),
+                notify, cancelation,
+                DownloadAppResources);
+        }
+
         public static ActionResult DoDeleteAppResources(IBenchManager man,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
