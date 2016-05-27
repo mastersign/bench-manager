@@ -42,7 +42,7 @@ namespace Mastersign.Bench
             var parser = new MarkdownPropertyParser
             {
                 Target = this,
-                GroupBeginCue = new Regex("^[\\*\\+-]\\s+ID:\\s*`(?<group>\\S+?)`$"),
+                GroupBeginCue = new Regex("^[\\*\\+-]\\s+ID:\\s*(`?)(?<group>\\S+?)\\1$"),
                 GroupEndCue = new Regex("^\\s*$"),
             };
 
