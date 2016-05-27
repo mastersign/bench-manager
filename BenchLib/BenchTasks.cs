@@ -394,6 +394,15 @@ namespace Mastersign.Bench
                 DeleteAppResources);
         }
 
+        public static ActionResult DoCleanUpAppResources(IBenchManager man,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            return RunTasks(man,
+                new List<AppFacade>(man.Config.Apps),
+                notify, cancelation,
+                CleanUpAppResources);
+        }
+
         public static ActionResult DoInstallApps(IBenchManager man,
             Action<TaskInfo> notify, Cancelation cancelation)
         {
@@ -753,6 +762,61 @@ namespace Mastersign.Bench
                     string.Format("Deleted app resource for {0}.", app.ID),
                     progress, app.ID));
                 app.DiscardCachedValues();
+            }
+
+            if (!cancelation.IsCanceled)
+            {
+                notify(new TaskProgress("Finished deleting app resources.", 1f));
+            }
+        }
+
+        internal static void CleanUpAppResources(IBenchManager man,
+            ICollection<AppFacade> apps,
+            Action<TaskInfo> notify, Cancelation cancelation)
+        {
+            var downloadDir = man.Config.GetStringValue(PropertyKeys.DownloadDir);
+
+            notify(new TaskProgress("Deleting obsolete app resources", 0));
+
+            var preservedFileNames = new List<string>();
+            foreach (var app in apps)
+            {
+                if (!app.HasResource) continue;
+                var resourceName = (app.ResourceFileName ?? app.ResourceArchiveName)
+                    .ToLowerInvariant();
+                preservedFileNames.Add(resourceName);
+            }
+
+            var fileNames = new List<string>();
+            foreach (var path in Directory.GetFiles(downloadDir))
+            {
+                var name = Path.GetFileName(path).ToLowerInvariant();
+                if (!preservedFileNames.Contains(name))
+                {
+                    fileNames.Add(name);
+                }
+            }
+
+            var cnt = 0;
+            foreach(var name in fileNames)
+            {
+                if (cancelation.IsCanceled) break;
+                var progress = (float)cnt / fileNames.Count;
+
+                var resourcePath = Path.Combine(downloadDir, name);
+                System.Windows.Forms.MessageBox.Show("Delete: " + resourcePath);
+                try
+                {
+                    File.Delete(resourcePath);
+                }
+                catch (Exception e)
+                {
+                    notify(new TaskError(e.Message, null, null, e));
+                    continue;
+                }
+                notify(new TaskProgress(
+                    string.Format("Deleted obsolete app resource {0}.", name),
+                    progress));
             }
 
             if (!cancelation.IsCanceled)
