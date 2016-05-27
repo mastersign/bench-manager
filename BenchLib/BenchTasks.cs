@@ -52,6 +52,12 @@ namespace Mastersign.Bench
                 resultCfg.SetValue(key, cfg.GetValue(key));
             }
 
+            if (resultCfg.GetValue(PropertyKeys.CustomConfigRepository) != null)
+            {
+                resultCfg.SetGroupCategory(AppKeys.Git, BenchConfiguration.DefaultAppCategory);
+                resultCfg.Apps[AppKeys.Git].ActivateAsRequired();
+            }
+
             return resultCfg;
         }
 
@@ -804,7 +810,6 @@ namespace Mastersign.Bench
                 var progress = (float)cnt / fileNames.Count;
 
                 var resourcePath = Path.Combine(downloadDir, name);
-                System.Windows.Forms.MessageBox.Show("Delete: " + resourcePath);
                 try
                 {
                     File.Delete(resourcePath);

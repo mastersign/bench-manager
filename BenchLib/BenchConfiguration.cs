@@ -13,7 +13,7 @@ namespace Mastersign.Bench
         private const string AutoDir = @"auto";
         private const string ScriptsDir = @"auto\lib";
         private const string ConfigFile = @"res\config.md";
-        private const string DefaultAppCategory = "Required";
+        public const string DefaultAppCategory = "Required";
 
         private readonly AppIndexFacade appIndexFacade;
 
