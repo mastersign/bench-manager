@@ -146,6 +146,7 @@
     <Compile Include="ResolvingPropertyCollection.cs" />
     <Compile Include="IUserInterface.cs" />
     <Compile Include="VariableResolver.cs" />
+    <Compile Include="Vendor\MarkdownSharp\GitHubCodeBlockExtension.cs" />
     <Compile Include="Vendor\MarkdownSharp\IExtensionInterface.cs" />
     <Compile Include="Vendor\MarkdownSharp\Markdown.cs" />
     <Compile Include="Vendor\MarkdownSharp\MarkdownOptions.cs" />

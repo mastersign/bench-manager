@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using MarkdownSharp.Extensions;
 
 namespace Mastersign.Bench.Markdown
 {
@@ -44,6 +45,7 @@ namespace Mastersign.Bench.Markdown
         private string ConvertToHtml(string source)
         {
             var md = new MarkdownSharp.Markdown();
+            md.AddExtension(new GitHubCodeBlockExtension());
             var html = md.Transform(source);
             html = CleanHtml(html);
             return html;
