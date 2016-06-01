@@ -120,6 +120,27 @@ namespace Mastersign.Bench
             }
         }
 
+        private object InternalGetRawValue(string groupName, string propertyName, out bool found)
+        {
+            groupName = groupName ?? string.Empty;
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentOutOfRangeException("propertyName", "The property name must not be null or empty.");
+            }
+            Dictionary<string, object> group;
+            if (groups.TryGetValue(groupName, out group))
+            {
+                object value;
+                if (group.TryGetValue(propertyName, out value))
+                {
+                    found = true;
+                    return value;
+                }
+            }
+            found = false;
+            return null;
+        }
+
         private object InternalGetValue(string groupName, string propertyName, out bool found, object def = null)
         {
             groupName = groupName ?? string.Empty;
@@ -167,7 +188,7 @@ namespace Mastersign.Bench
         public object GetRawGroupValue(string group, string name)
         {
             bool found;
-            return InternalGetValue(group, name, out found, null);
+            return InternalGetRawValue(group, name, out found);
         }
 
         public object GetValue(string name) { return GetGroupValue(null, name, null); }
