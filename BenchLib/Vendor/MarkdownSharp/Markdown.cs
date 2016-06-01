@@ -1601,11 +1601,11 @@ namespace MarkdownSharp
         /// <summary>
         /// Encode/escape certain Markdown characters inside code blocks and spans where they are literals
         /// </summary>
-        private string EncodeCode(string code)
+        public static string EncodeCode(string code)
         {
             return _codeEncoder.Replace(code, EncodeCodeEvaluator);
         }
-        private string EncodeCodeEvaluator(Match match)
+        private static string EncodeCodeEvaluator(Match match)
         {
             switch (match.Value)
             {

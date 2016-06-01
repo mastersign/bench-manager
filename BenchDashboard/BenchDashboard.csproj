@@ -68,6 +68,12 @@
     </Compile>
     <Compile Include="ActionState.cs" />
     <Compile Include="AppEventArgs.cs" />
+    <Compile Include="AppInfoDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AppInfoDialog.Designer.cs">
+      <DependentUpon>AppInfoDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="AppLauncherControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -122,6 +128,7 @@
       <DependentUpon>SetupForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SortedBindingList.cs" />
+    <Compile Include="UiExtensions.cs" />
     <Compile Include="UserInfoDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,6 +141,9 @@
     <Compile Include="WinFormsUserInterface.cs" />
     <EmbeddedResource Include="AboutDialog.resx">
       <DependentUpon>AboutDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AppInfoDialog.resx">
+      <DependentUpon>AppInfoDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="AppLauncherControl.resx">
       <DependentUpon>AppLauncherControl.cs</DependentUpon>
