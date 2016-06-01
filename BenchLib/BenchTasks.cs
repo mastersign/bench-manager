@@ -1405,14 +1405,14 @@ namespace Mastersign.Bench
                 catch (ProcessExecutionFailedException e)
                 {
                     notify(new TaskError(
-                        string.Format("Installing app {0} failed: {1}.", app.ID, e.Message),
+                        string.Format("Installing app {0} failed: {1}", app.ID, e.Message),
                         app.ID, e.ProcessOutput, e));
                     continue;
                 }
                 catch (Exception e)
                 {
                     notify(new TaskError(
-                        string.Format("Installing app {0} failed: {1}.", app.ID, e.Message),
+                        string.Format("Installing app {0} failed: {1}", app.ID, e.Message),
                         app.ID, null, e));
                     continue;
                 }
