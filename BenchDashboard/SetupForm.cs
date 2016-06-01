@@ -233,6 +233,8 @@ namespace Mastersign.Bench.Dashboard
                 BeginInvoke((ThreadStart)(() =>
                 {
                     var selectedRow = gridApps.SelectedRows.Count > 0 ? gridApps.SelectedRows[0].Index : -10;
+                    var firstVisibleRow = gridApps.FirstDisplayedScrollingRowIndex;
+                    gridApps.SuspendLayout();
                     gridApps.DataSource = bindingList;
                     if (sortedColumn != null)
                     {
@@ -242,6 +244,11 @@ namespace Mastersign.Bench.Dashboard
                     {
                         gridApps.Rows[selectedRow].Selected = true;
                     }
+                    if (firstVisibleRow >= 0)
+                    {
+                        gridApps.FirstDisplayedScrollingRowIndex = firstVisibleRow;
+                    }
+                    gridApps.ResumeLayout();
                 }));
             });
         }
