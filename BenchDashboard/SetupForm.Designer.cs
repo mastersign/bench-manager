@@ -89,6 +89,7 @@
             this.tsmiShowCustomAppIndex = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiAlwaysShowDownloads = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRefreshView = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -764,5 +765,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsmiShowCustomAppIndex;
         private System.Windows.Forms.ToolStripMenuItem tsmiDownloadAllAppResources;
         private System.Windows.Forms.ToolStripMenuItem tsmiCleanUpObsoleteResources;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }

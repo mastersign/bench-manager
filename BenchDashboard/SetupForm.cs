@@ -2,6 +2,7 @@
 using v40async::ConEmu.WinForms;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -108,33 +109,37 @@ namespace Mastersign.Bench.Dashboard
 
         private void UpdatePendingCounts()
         {
-            var pendingDownloads = 0;
-            var pendingInstalls = 0;
-            var pendingUninstalls = 0;
+            var downloadIDs = new List<string>();
+            var uninstallIDs = new List<string>();
+            var installIDs = new List<string>();
             foreach (var app in core.Config.Apps)
             {
-                if (app.IsActive && app.CanDownloadResource) pendingDownloads++;
-                if (app.IsActive && app.CanInstall) pendingInstalls++;
-                if (!app.IsActive && app.CanUninstall) pendingUninstalls++;
+                if (app.IsActive && app.CanDownloadResource) downloadIDs.Add(app.ID);
+                if (!app.IsActive && app.CanUninstall) uninstallIDs.Add(app.ID);
+                if (app.IsActive && app.CanInstall) installIDs.Add(app.ID);
             }
+            toolTip.SetToolTip(lblPending,
+                (downloadIDs.Count > 0 ? "Downloads: " + string.Join(", ", downloadIDs) + Environment.NewLine : "") +
+                (uninstallIDs.Count > 0 ? "Uninstalls: " + string.Join(", ", uninstallIDs) + Environment.NewLine : "") +
+                (installIDs.Count > 0 ? "Installs: " + string.Join(", ", installIDs) : ""));
             var list = new List<string>();
-            if (pendingUninstalls > 0)
+            if (downloadIDs.Count > 0)
             {
                 list.Add(string.Format("{0} {1}",
-                    pendingUninstalls,
-                    pendingUninstalls == 1 ? "Uninstall" : "Uninstalls"));
+                    downloadIDs.Count,
+                    downloadIDs.Count == 1 ? "Download" : "Downloads"));
             }
-            if (pendingDownloads > 0)
+            if (uninstallIDs.Count > 0)
             {
                 list.Add(string.Format("{0} {1}",
-                    pendingDownloads,
-                    pendingDownloads == 1 ? "Download" : "Downloads"));
+                    uninstallIDs.Count,
+                    uninstallIDs.Count == 1 ? "Uninstall" : "Uninstalls"));
             }
-            if (pendingInstalls > 0)
+            if (installIDs.Count > 0)
             {
                 list.Add(string.Format("{0} {1}",
-                    pendingInstalls,
-                    pendingInstalls == 1 ? "Install" : "Installs"));
+                    installIDs.Count,
+                    installIDs.Count == 1 ? "Install" : "Installs"));
             }
             lblPending.Text = list.Count > 0 ? string.Join(", ", list) : "Nothing";
         }
