@@ -565,6 +565,17 @@ namespace Mastersign.Bench.Dashboard
             }
         }
 
+        private void gridApps_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex < 0 || e.RowIndex < 0) return;
+            var row = gridApps.Rows[e.RowIndex];
+            var appWrapper = row.DataBoundItem as AppWrapper;
+            if (appWrapper != null)
+            {
+                new AppInfoDialog(core.Config, appWrapper.App).ShowDialog(this);
+            }
+        }
+
         private void ShowAppIndexHandler(object sender, EventArgs e)
         {
             var viewer = new MarkdownViewer(core);
