@@ -170,6 +170,7 @@ namespace Mastersign.Bench.Dashboard
             {
                 case ActionState.BusyWithoutErrors:
                     picState.Image = Resources.progress_36_animation;
+                    toolTip.SetToolTip(picState, null);
                     break;
                 case ActionState.BusyCanceled:
                     picState.Image = Resources.stop_36_animation;
@@ -356,6 +357,11 @@ namespace Mastersign.Bench.Dashboard
             if (progressInfo != null)
             {
                 UpdateProgressBar(progressInfo.Progress);
+            }
+            var taskError = info as TaskError;
+            if (taskError != null)
+            {
+                toolTip.SetToolTip(picState, taskError.Message);
             }
         }
 
