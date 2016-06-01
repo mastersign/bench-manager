@@ -122,6 +122,7 @@
       <DependentUpon>SetupForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SortedBindingList.cs" />
+    <Compile Include="UiExtensions.cs" />
     <Compile Include="UserInfoDialog.cs">
       <SubType>Form</SubType>
     </Compile>

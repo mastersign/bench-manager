@@ -36,6 +36,7 @@ namespace Mastersign.Bench.Dashboard
             core.BusyChanged += CoreBusyChangedHandler;
             core.ActionStateChanged += CoreActionStateChangedHandler;
             InitializeComponent();
+            gridApps.DoubleBuffered(true);
             InitializeConsole();
             gridApps.AutoGenerateColumns = false;
         }
