@@ -92,6 +92,8 @@ namespace Mastersign.Bench
             }
         }
 
+        public string Website { get { return StringValue(PropertyKeys.AppWebsite); } }
+
         public string[] Dependencies
         {
             get { return ListValue(PropertyKeys.AppDependencies); }
