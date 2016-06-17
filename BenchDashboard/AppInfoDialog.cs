@@ -104,12 +104,12 @@ namespace Mastersign.Bench.Dashboard
             else if (value is string[])
             {
                 AddRow(grid, name, string.Join(", ",
-                    ((string[])value).Select(v => $"`{v}`")));
+                    ((string[])value).Select(v => string.Format("`{0}`", v))));
             }
             else if (value is IDictionary<string, string>)
             {
                 AddRow(grid, name, string.Join(", ",
-                    ((IDictionary<string, string>)value).Select(kvp => $"`{kvp.Key}`=`{kvp.Value}`")));
+                    ((IDictionary<string, string>)value).Select(kvp => string.Format("`{0}`=`{1}`", kvp.Key, kvp.Value))));
             }
             else if (value == null)
             {

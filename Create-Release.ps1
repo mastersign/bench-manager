@@ -1,22 +1,39 @@
 $myDir = [IO.Path]::GetDirectoryName($MyInvocation.MyCommand.Definition)
 
-$msbuild = "$env:SystemRoot\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
-$solutionFile = "BenchManager.sln"
+$projectName = "BenchManager"
 $mode = "Release"
-$releaseDir = "$myDir\release"
-$releaseFile = "$releaseDir\BenchManager.zip"
+$clrVersion = "4.0.30319"
+$toolsVersion = "14.0"
+$verbosity = "minimal"
+$msbuild = "$env:SystemRoot\Microsoft.NET\Framework\v$clrVersion\MSBuild.exe"
+$rootDir = "$myDir" # absolute
+$solutionDir = "" # relative to root dir
+$solutionFile = "$projectName.sln" # relative to solution dir
+$releaseDir = "$rootDir\release" # absolute
+$releaseFileName = "$projectName"
 
-$tagedZipFile = "$releaseDir\BenchManager_$([DateTime]::Now.ToString("yyyy-MM-dd")).zip"
+# Paths of build artifacts are relative to the solution dir
+$buildArtifacts = @(
+    "BenchLib\lib\Ionic.Zip.dll",
+    "BenchLib\bin\$mode\Interop.*.dll",
+    "BenchLib\bin\$mode\BenchLib.dll",
+    "BenchDashboard\bin\$mode\ConEmu.WinForms.dll",
+    "BenchDashboard\bin\$mode\BenchDashboard.exe",
+    "BenchDashboard\bin\$mode\BenchDashboard.exe.config"
+)
+
+$taggedzipName = "$releaseDir\${releaseFileName}_$([DateTime]::Now.ToString("yyyy-MM-dd"))"
 $suffix = 0
-while (Test-Path $tagedZipFile)
+$taggedZipFile = "${taggedZipName}.zip"
+while (Test-Path $taggedZipFile)
 {
     $suffix++
-    $tagedZipFile = "$releaseDir\BenchManager_$([DateTime]::Now.ToString("yyyy-MM-dd"))_$suffix.zip"
+    $taggedZipFile = "${taggedZipName}_${suffix}.zip"
 }
 
-cd $myDir
+cd "$rootDir\$solutionDir"
 
-& $msbuild $solutionFile /v:minimal /p:Configuration=$mode
+& $msbuild $solutionFile /v:$verbosity /tv:$toolsVersion /p:Configuration=$mode
 
 if ($LastExitCode -ne 0)
 {
@@ -30,17 +47,19 @@ $stageDir = "$releaseDir\staging"
 if (Test-Path $stageDir) { Remove-Item $stageDir -Force -Recurse }
 $_ = mkdir $stageDir
 
-cp "$myDir\BenchLib\lib\Ionic.Zip.dll" "$stageDir\"
-cp "$myDir\BenchLib\bin\$mode\Interop.*.dll" "$stageDir\"
-cp "$myDir\BenchLib\bin\$mode\BenchLib.dll" "$stageDir\"
-cp "$myDir\BenchDashboard\bin\$mode\ConEmu.WinForms.dll" "$stageDir\"
-cp "$myDir\BenchDashboard\bin\$mode\BenchDashboard.exe" "$stageDir\"
-cp "$myDir\BenchDashboard\bin\$mode\BenchDashboard.exe.config" "$stageDir\"
+foreach ($artifact in $buildArtifacts)
+{
+    cp "$rootDir\$solutionDir\$artifact" "$stageDir\"
+}
+
+cd "$rootDir"
 
 $_ = [Reflection.Assembly]::LoadWithPartialName("System.IO.Compression.FileSystem")
-[IO.Compression.ZipFile]::CreateFromDirectory($stageDir, $tagedZipFile, "Optimal", $False)
+[IO.Compression.ZipFile]::CreateFromDirectory($stageDir, $taggedZipFile, "Optimal", $False)
 
-if (Test-Path $releaseFile) { del $releaseFile }
-cp $tagedZipFile $releaseFile
+$zipFile = "$releaseDir\$releaseFileName.zip"
+if (Test-Path $zipFile) { del $zipFile }
+cp $taggedZipFile $zipFile
 
+Write-Host ""
 Write-Host "Finished."
